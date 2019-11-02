@@ -462,29 +462,3 @@ user = {
 	"number_row_data" : 10
 }
 
-
-# init cortex instant
-c = Cortex(url, user)
-
-# record parameter
-record_name = 'test_export'
-record_description = 'test_export'
-record_length_s = 60 * 1
-record_marker_numbers = record_length_s
-
-# export parameter
-record_export_folder = 'C:\\export'
-record_export_data_types = ['EEG', 'MOTION', 'PM', 'BP']
-record_export_format = 'CSV'
-record_export_version = 'V2'
-
-# start record --> add marker --> stop marker --> disconnect headset --> export record
-c.create_and_export_record(	record_name,
-							record_description,
-							record_length_s,
-							record_marker_numbers,
-							record_export_folder,
-							record_export_data_types,
-							record_export_format,
-							record_export_version )
-# ---------------------------------------------------

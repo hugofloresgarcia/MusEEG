@@ -1,25 +1,28 @@
-""" main eeg object of MusEEG project
-    all of the processing and classification protocols for EEG data go here
-"""
-
-#todo: clean up the data structures. or at least explain how they move between pd.DataFrame to np.ndarray to python lists
+#todo: emotions are upper harmonics of signal
+#todo: clean up the data structures. or at least explain how they move between pandas.DataFrame to np.ndarray to python lists
 
 import sys
+import time
+
 import pandas
 import numpy as np
 from pywt import wavedec
+
 import pickle
 from scipy.stats import kurtosis, entropy, skew
+
 import tensorflow as tf
 from tensorflow import keras
-
+from keras import regularizers
 
 import matplotlib
 matplotlib.use('macosx')
-
-
 import matplotlib.pyplot as plt
 plt.ion()
+
+import mido
+from audiolazy.lazy_midi import str2midi
+
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -38,20 +41,20 @@ class eegData:
         self.thresholdChannel = 'F7'
         self.trainingChunks = []
 
-    def wavelet(self, chunk):
+    def wavelet(self):
         """"
         wavelet transform (4-level) for a single eeg chunk
         input argument is a chunk
         creates a self.wavelets list which contains np arrays with the coefficients
         """
-        self.nchannels = len(chunk[0, :])
+        self.nchannels = len(self.chunk[0, :])
         self.cA4 = []
         self.cD4 = []
         self.cD3 = []
         self.cD2 = []
         self.cD1 = []
         for i in range(0, self.nchannels):
-            cA4, cD4, cD3, cD2, cD1 = wavedec(chunk[:, i], 'db2', level=4)
+            cA4, cD4, cD3, cD2, cD1 = wavedec(self.chunk[:, i], 'db2', level=4)
             self.cA4.append(cA4)
             self.cD4.append(cD4)
             self.cD3.append(cD3)
@@ -94,6 +97,7 @@ class eegData:
 
         self.inputVector = np.array([mean, var, std, kurtosis, skew])
         self.inputVector = self.inputVector.flatten()
+        return self.inputVector
 
     def plotRawEEG(self, obj, offset=200):
         """
@@ -181,7 +185,13 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
+    def process(self):
+        self.wavelet()
+        self.extractStatsFromWavelets()
+        inputVector = self.flattenIntoVector()
+        return inputVector
 
+#todo: this has to work with relative paths
 class TrainingDataMacro(eegData):
     """
     child eegData class meant for user to evaluate a long .csv file with multiple training samples in it
@@ -291,14 +301,14 @@ class TrainingDataMacro(eegData):
 
             plt.close(fig)
 
-    def saveChunksToCSV(self, obj):
+    def saveChunksToCSV(self):
         """
-        saves an object that contains an array to CSV. meant to save self.curatedChunk todo: make it ONLY save self.curatedChunk
+        saves curated chunks to csv
         :param obj:
         :return:
         """
-        for i in range(len(obj)):
-            obj[i].to_csv(r'/Users/hugoffg/Documents/MusEEG/data/savedChunks/' + self.tag + '_' + str(i) + '.csv')
+        for i in range(len(self.curatedChunk)):
+            self.curatedChunk[i].to_csv(r'/Users/hugoffg/Documents/MusEEG/data/savedChunks/' + self.tag + '_' + str(i) + '.csv')
 
     def saveTrainingObject(self, filename, address='/Users/hugoffg/Documents/MusEEG/data/savedTrainingObjects/', ):
         filehandle = open(address + filename, 'w')
@@ -309,3 +319,168 @@ class TrainingDataMacro(eegData):
         file = open(address + filename, 'r')
         object = pickle.load(file)
         return object
+
+    def plotRawEEG(self, matrix, offset=200):
+        """
+        note: the only difference between this and the parent method is that this one displays the title of the thing
+        being plotted
+        :param matrix:
+        :param offset: DC offset between eeg channels
+        :return: plot with all 14
+        """
+        # define time axis
+        tAxis = np.arange(0, len(matrix))  # create time axis w same length as the data matrix
+        tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
+
+        # use eeg matrix as y axis
+        yAxis = matrix + offset * 13
+
+        # add offset to display all channels
+        for i in range(0, len(matrix[0, :])):
+            yAxis[:, i] -= offset * i
+
+        # plot figure
+        plt.figure()
+        plt.plot(tAxis, yAxis)
+        plt.title(self.tag)
+        plt.ylim(-300, offset * 20)
+        plt.legend(["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
+                    "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"],
+                   loc='upper right')
+        plt.xlabel('time')
+        plt.show(block=True)
+        # plt.pause(0.01)
+
+# todo: rebuild tensor flow with AVX2 FMA for faster performance
+
+class classifier:
+    hiddenNeurons = 20
+    numberOfTargets = 10
+    inputShape = 350
+
+    def __init__(self):
+        print('welcome')
+
+    def loadTrainingData(self, percentTrain=0.75,
+                         address='data/training/',
+                         inputFilename='inputs.csv',
+                         targetFilename='targets.csv'):
+        inputsAll = pandas.read_csv(address + inputFilename).values
+        targetsAll = pandas.read_csv(address + targetFilename).values
+        # use index from 1 on bc index 0 is just a counter for some reason.
+        inputsAll[:, 0] = targetsAll[:, 1]
+        # first column of inputsAll will now be the targets (sorry programming gods, I'm going crazy over this one)
+        trainingData = pandas.DataFrame(inputsAll)
+        #shuffle the data!!!
+        trainingData = trainingData.reindex(np.random.permutation(trainingData.index))
+        trainingData = trainingData.values
+
+        #slice it up, baby
+        slice = round(len(trainingData[:, 0])*percentTrain)
+        train_inputs = trainingData[0:slice, 1:]
+        train_targets = trainingData[0:slice, 0]
+        test_inputs = trainingData[slice:, 1:]
+        test_targets = trainingData[slice:, 0]
+
+        return train_inputs, train_targets, test_inputs, test_targets
+
+    # build the model
+    def build_model(self, inputShape, hiddenNeurons, numberOfTargets, hiddenActivation='relu',
+                    outputActivation='softmax', regularization='l2_l2', optimizer='adam', loss='sparse_categorical_crossentropy'):
+        if regularization == 'l1':
+            reg = regularizers.l1(0.001)
+            self.model = keras.Sequential([
+                keras.layers.Dense(hiddenNeurons,
+                                   activation=hiddenActivation,
+                                   activity_regularizer=reg,
+                                   Dropout=0.5,
+                                   input_dim=inputShape),
+                keras.layers.Dense(numberOfTargets, activation=outputActivation),
+            ])
+        elif regularization == 'l2':
+            reg = regularizers.l2(0.001)
+            self.model = keras.Sequential([
+                keras.layers.Dense(hiddenNeurons,
+                                   activation=hiddenActivation,
+                                   activity_regularizer=reg,
+                                   Dropout=0.5,
+                                   input_dim=inputShape),
+                keras.layers.Dense(numberOfTargets, activation=outputActivation),
+            ])
+        elif regularization == 'l1_l2':
+            reg = regularizers.l1_l2(0.001)
+            self.model = keras.Sequential([
+                keras.layers.Dense(hiddenNeurons,
+                                   activation=hiddenActivation,
+                                   activity_regularizer=reg,
+                                   Dropout=0.5,
+                                   input_dim=inputShape),
+                keras.layers.Dense(numberOfTargets, activation=outputActivation),
+            ])
+        else:
+            self.model = keras.Sequential([
+                keras.layers.Dense(hiddenNeurons, activation=hiddenActivation,
+                                   input_dim=inputShape),
+                keras.layers.Dense(numberOfTargets, activation=outputActivation)])
+
+        self.model.compile(optimizer=optimizer,
+                           loss=loss,
+                           metrics=['accuracy'])
+        self.hiddenNeurons = hiddenNeurons
+        self.numberOfTargets = numberOfTargets
+        self.inputShape = inputShape
+        return self.model
+
+    # train the model
+    def train_model(self, train_inputs, train_targets, nEpochs, verbose=0):
+        self.model.fit(train_inputs, train_targets, epochs=nEpochs, verbose=verbose)
+
+    def evaluate_model(self, test_inputs, test_targets, verbose=2):
+        test_loss, test_acc = self.model.evaluate(test_inputs, test_targets, verbose)
+        print('\nTest accuracy:', test_acc)
+        return test_acc
+
+    def classify(self, inputVector):
+        prediction = self.model.predict(inputVector)
+        output = np.argmax(prediction)
+        return output
+
+    def clear(self):
+        keras.backend.clear_session()
+
+    def savemodel(self, filepath):
+        self.model.save(filepath, save_format='tf')
+
+    def loadmodel(self, filepath):
+        self.model = keras.models.load_model(filepath)
+
+
+class chord:
+    midiChannel=0
+
+    def __init__(self, notelist):
+        self.notelist = notelist
+        self.port = mido.open_output()
+        self.tempo = 120
+
+    def play(self, vel=64):
+        for notes in self.notelist:
+            msg = mido.Message('note_on', note=str2midi(notes), velocity=vel, channel=self.midiChannel)
+            self.port.send(msg)
+
+    def stop(self,):
+        for notes in self.notelist:
+            msg = mido.Message('note_off', note=str2midi(notes), channel=self.midiChannel)
+            self.port.send(msg)
+
+    def arpeggiate(self, interval, vel):
+        for notes in self.notelist:
+            msg = mido.Message('note_on', note=str2midi(notes), velocity=vel, channel=self.midiChannel)
+            self.port.send(msg)
+            time.sleep(interval)
+
+    def panic(self):
+        self.port.panic()
+
+    def pause(self,nQuarterNotes):
+        time.sleep((nQuarterNotes)*1/self.tempo*60)

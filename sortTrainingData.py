@@ -4,11 +4,14 @@ This is meant for u to look through each of the really long CSV files and cut th
 """
 
 import sys
-sys.path.append("/Users/hugoffg/Documents/MusEEG/MusEEG")
 
-from MusEEG.eegData import TrainingDataMacro
+sys.path.append("../MusEEG")
 
-trainingAddress = "/Users/hugoffg/documents/MusEEG/data/10_15_training_samples/"
+from MusEEG.MusEEG import TrainingDataMacro
+
+#this is where the your training data is stored
+trainingAddress = "../data/11_2_training_samples/"
+
 smile = TrainingDataMacro()
 biteLowerLip = TrainingDataMacro()
 hardBlink = TrainingDataMacro()
@@ -32,14 +35,19 @@ eyebrows.importCSV(trainingAddress, "eyebrows.csv", 'eyebrows')
 
 
 # #sort through the data and cut chunks whenever it reaches the threshold
-# smile.plotRawChannel(smile.F7, 60, 240)
-
-
 def evalAndPrep(obj):
     obj.plotRawEEG(obj.matrix, 400)
     obj.createChunks()
     obj.evalChunk()
-    obj.saveChunksToCSV(obj.curatedChunk)
+    obj.saveChunksToCSV()
 
 
+evalAndPrep(smile)
+evalAndPrep(biteLowerLip)
+evalAndPrep(eyebrows)
+evalAndPrep(hardBlink)
+evalAndPrep(lookLeft)
+evalAndPrep(lookRight)
+evalAndPrep(scrunch)
+evalAndPrep(tongue)
 evalAndPrep(eyebrows)

@@ -3,24 +3,24 @@
 
 import sys
 
-sys.path.append("/Users/hugoffg/Documents/MusEEG/MusEEG")
+sys.path.append("../MusEEG")
 
-from MusEEG.eegData import eegData
+from MusEEG.MusEEG import eegData
 import pandas as pandas
 import numpy as np
 
 
 def createTargetVector(objarray, *argv):
     labels = []
-    targets = [[0 for col in range(len(argv))] for row in range(len(objarray[0][:]) * len(objarray))]
+    targets = [0 for row in range(len(objarray[0][:]) * len(objarray))]
     index = 0
     for i in range(0, len(objarray)):
-        # print(objarray[i][0].filename)
+        print(objarray[i][0].filename)
         for j in range(0, len(objarray[i])):
             labels.append(objarray[i][j].filename)
             for arg in argv:
                 if arg in objarray[i][j].filename:
-                    targets[index][i] = 1
+                    targets[index] = i
                     index = index + 1
     return targets
 
@@ -50,26 +50,15 @@ for i in range(0, 60):
 
 # wavelet decomp for all samples
 for i in range(0, 60):
-    smile[i].wavelet(smile[i].chunk)
-    biteLowerLip[i].wavelet(biteLowerLip[i].chunk)
-    eyebrows[i].wavelet(eyebrows[i].chunk)
-    hardBlink[i].wavelet(hardBlink[i].chunk)
-    lookLeft[i].wavelet(lookLeft[i].chunk)
-    lookRight[i].wavelet(lookRight[i].chunk)
-    neutral[i].wavelet(neutral[i].chunk)
-    scrunch[i].wavelet(scrunch[i].chunk)
-    tongue[i].wavelet(tongue[i].chunk)
-
-for i in range(0, 60):
-    smile[i].wavelet(smile[i].chunk)
-    biteLowerLip[i].wavelet(biteLowerLip[i].chunk)
-    eyebrows[i].wavelet(eyebrows[i].chunk)
-    hardBlink[i].wavelet(hardBlink[i].chunk)
-    lookLeft[i].wavelet(lookLeft[i].chunk)
-    lookRight[i].wavelet(lookRight[i].chunk)
-    neutral[i].wavelet(neutral[i].chunk)
-    scrunch[i].wavelet(scrunch[i].chunk)
-    tongue[i].wavelet(tongue[i].chunk)
+    smile[i].wavelet()
+    biteLowerLip[i].wavelet()
+    eyebrows[i].wavelet()
+    hardBlink[i].wavelet()
+    lookLeft[i].wavelet()
+    lookRight[i].wavelet()
+    neutral[i].wavelet()
+    scrunch[i].wavelet()
+    tongue[i].wavelet()
 
 gestures = [smile, biteLowerLip, eyebrows, hardBlink, lookLeft, lookRight, neutral, scrunch, tongue]
 targets = createTargetVector(gestures, 'smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
@@ -86,7 +75,10 @@ for i in range(0, len(gestures)):
         inputs[inputindex][:] = gestures[i][j].inputVector
         inputindex = inputindex + 1
 
+print(targets)
+
 inputs = pandas.DataFrame(inputs)
 targets = pandas.DataFrame(targets)
-inputs.to_csv(r'/Users/hugoffg/Documents/MusEEG/data/training/inputs.csv')
-targets.to_csv(r'/Users/hugoffg/Documents/MusEEG/data/training/targets.csv')
+
+inputs.to_csv(r'../data/training/inputs.csv')
+targets.to_csv(r'../data/training/targets.csv')
