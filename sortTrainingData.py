@@ -2,15 +2,12 @@
 sortTrainingData
 This is meant for u to look through each of the really long CSV files and cut the time series EEG data into chunks that contain the desired gesture
 """
-
-import sys
-
-sys.path.append("../MusEEG")
-
+import os
+import MusEEG.MusEEG as MusEEG
 from MusEEG.MusEEG import TrainingDataMacro
 
 #this is where the your training data is stored
-trainingAddress = "../data/11_2_training_samples/"
+trainingAddress = os.path.join(MusEEG.parentDir, 'data', '11_12_training_samples')
 
 smile = TrainingDataMacro()
 biteLowerLip = TrainingDataMacro()

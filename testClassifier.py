@@ -1,3 +1,4 @@
+import os
 from MusEEG import MusEEG
 import numpy as np
 
@@ -13,11 +14,9 @@ brain.build_model(inputShape=brain.inputShape,
 brain.train_model(train_inputs, train_targets, nEpochs=80, verbose=2)
 brain.evaluate_model(test_inputs, test_targets)
 
-out = brain.classify(train_inputs[1, :])
-
 prompt = input('should we save this model, ye great master?')
 if prompt == 'yes':
     name = input('what should we name it, ye great master?')
-    brain.savemodel('data/savedModels/'+name)
+    brain.savemodel(name)
 else:
     print('oh ok')

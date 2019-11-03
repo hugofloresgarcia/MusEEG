@@ -1,6 +1,7 @@
-#todo: emotions are upper harmonics of signal
-#todo: clean up the data structures. or at least explain how they move between pandas.DataFrame to np.ndarray to python lists
+#todo: use emotions as upper harmonics of synthesized signal (affective computing)
+#todo: clean up
 
+import os
 import sys
 import time
 
@@ -25,6 +26,10 @@ from audiolazy.lazy_midi import str2midi
 
 
 np.set_printoptions(threshold=sys.maxsize)
+
+##some global attributes
+fileDir = os.path.dirname(os.path.abspath(__file__)) #should be the parent MusEEG directory
+parentDir = os.path.dirname(fileDir)
 
 #todo: make the plot windows non blocking and non stupid too
 
@@ -99,26 +104,27 @@ class eegData:
         self.inputVector = self.inputVector.flatten()
         return self.inputVector
 
-    def plotRawEEG(self, obj, offset=200):
+    def plotRawEEG(self, offset=200, title='eeg'):
         """
-        :param obj:
+        :param title: title of the figure
         :param offset: DC offset between eeg channels
-        :return: plot with all 14
+        :return: plot with all 14 eeg channels
         """
         # define time axis
-        tAxis = np.arange(0, len(obj))  # create time axis w same length as the data matrix
+        tAxis = np.arange(0, len(self.chunk))  # create time axis w same length as the data matrix
         tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
 
         # use eeg matrix as y axis
-        yAxis = obj + offset * 13
+        yAxis = self.chunk + offset * 13
 
         # add offset to display all channels
-        for i in range(0, len(obj[0, :])):
+        for i in range(0, len(self.chunk[0, :])):
             yAxis[:, i] -= offset * i
 
         # plot figure
         plt.figure()
         plt.plot(tAxis, yAxis)
+        plt.title(title)
         plt.ylim(-300, offset * 20)
         plt.legend(["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
                     "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"],
@@ -158,7 +164,7 @@ class eegData:
         fig.show()
         plt.show(block=True)
 
-    def loadChunkFromTraining(self, filename, address='/Users/hugoffg/Documents/MusEEG/data/savedChunks/'):
+    def loadChunkFromTraining(self, filename, address=os.path.join(parentDir, 'data', 'savedChunks')):
         """
         load single chunk
         creates self.chunk object
@@ -167,7 +173,7 @@ class eegData:
         :return:
         """
         self.filename = filename
-        self.chunk = pandas.read_csv(address+filename, usecols=self.emotivChannels)
+        self.chunk = pandas.read_csv(os.path.join(address,filename), usecols=self.emotivChannels)
         self.chunk = self.chunk.values
         self.AF3 = self.chunk[:, 0]
         self.F7 = self.chunk[:, 1]
@@ -205,7 +211,7 @@ class TrainingDataMacro(eegData):
         self.curatedChunk = []
         self.label = []
 
-    def importCSV(self, address, filename,tag):
+    def importCSV(self, address, filename, tag):
         self.rawData = pandas.read_csv(address + filename, skiprows=1, dtype=float, header=0,
                                        usecols=self.emotivChannels)
         self.markers = pandas.read_csv(address + filename, skiprows=1, usecols=['EEG.MarkerHardware'])
@@ -308,15 +314,15 @@ class TrainingDataMacro(eegData):
         :return:
         """
         for i in range(len(self.curatedChunk)):
-            self.curatedChunk[i].to_csv(r'/Users/hugoffg/Documents/MusEEG/data/savedChunks/' + self.tag + '_' + str(i) + '.csv')
+            self.curatedChunk[i].to_csv(os.path.join(parentDir, 'data', 'savedChunks', self.tag + '_' + str(i) + '.csv'))
 
-    def saveTrainingObject(self, filename, address='/Users/hugoffg/Documents/MusEEG/data/savedTrainingObjects/', ):
-        filehandle = open(address + filename, 'w')
+    def saveTrainingObject(self, filename, address=os.path.join(parentDir, 'data', 'savedTrainingObjects')):
+        filehandle = open(os.path.join(address, filename), 'w')
         pickle.dump(self, filehandle)
 
     @staticmethod
-    def loadFromTrainingObject(filename, address='/Users/hugoffg/Documents/MusEEG/data/savedTrainingObjects/'):
-        file = open(address + filename, 'r')
+    def loadFromTrainingObject(filename, address=os.path.join(parentDir, 'data', 'savedTrainingObjects')):
+        file = open(os.path.join(address, filename), 'r')
         object = pickle.load(file)
         return object
 
@@ -362,11 +368,11 @@ class classifier:
         print('welcome')
 
     def loadTrainingData(self, percentTrain=0.75,
-                         address='data/training/',
+                         address=os.path.join(parentDir, 'data', 'training'),
                          inputFilename='inputs.csv',
                          targetFilename='targets.csv'):
-        inputsAll = pandas.read_csv(address + inputFilename).values
-        targetsAll = pandas.read_csv(address + targetFilename).values
+        inputsAll = pandas.read_csv(os.path.join(address, inputFilename)).values
+        targetsAll = pandas.read_csv(os.path.join(address, targetFilename)).values
         # use index from 1 on bc index 0 is just a counter for some reason.
         inputsAll[:, 0] = targetsAll[:, 1]
         # first column of inputsAll will now be the targets (sorry programming gods, I'm going crazy over this one)
@@ -393,7 +399,6 @@ class classifier:
                 keras.layers.Dense(hiddenNeurons,
                                    activation=hiddenActivation,
                                    activity_regularizer=reg,
-                                   Dropout=0.5,
                                    input_dim=inputShape),
                 keras.layers.Dense(numberOfTargets, activation=outputActivation),
             ])
@@ -403,7 +408,6 @@ class classifier:
                 keras.layers.Dense(hiddenNeurons,
                                    activation=hiddenActivation,
                                    activity_regularizer=reg,
-                                   Dropout=0.5,
                                    input_dim=inputShape),
                 keras.layers.Dense(numberOfTargets, activation=outputActivation),
             ])
@@ -413,7 +417,6 @@ class classifier:
                 keras.layers.Dense(hiddenNeurons,
                                    activation=hiddenActivation,
                                    activity_regularizer=reg,
-                                   Dropout=0.5,
                                    input_dim=inputShape),
                 keras.layers.Dense(numberOfTargets, activation=outputActivation),
             ])
@@ -448,11 +451,11 @@ class classifier:
     def clear(self):
         keras.backend.clear_session()
 
-    def savemodel(self, filepath):
-        self.model.save(filepath, save_format='tf')
+    def savemodel(self, filename, address=os.path.join(parentDir, 'data', 'savedModels')):
+        self.model.save(os.path.join(address, filename), save_format='tf')
 
-    def loadmodel(self, filepath):
-        self.model = keras.models.load_model(filepath)
+    def loadmodel(self,  filename, address=os.path.join(parentDir, 'data', 'savedModels')):
+        self.model = keras.models.load_model(os.path.join(address, filename))
 
 
 class chord:

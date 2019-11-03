@@ -1,10 +1,10 @@
 # script meant to extract features from curated training data and put features into an input vector for ANN as well as create
 # a target vector for labels
 
+import os
 import sys
 
-sys.path.append("../MusEEG")
-
+import MusEEG.MusEEG  as MusEEG
 from MusEEG.MusEEG import eegData
 import pandas as pandas
 import numpy as np
@@ -80,5 +80,5 @@ print(targets)
 inputs = pandas.DataFrame(inputs)
 targets = pandas.DataFrame(targets)
 
-inputs.to_csv(r'../data/training/inputs.csv')
-targets.to_csv(r'../data/training/targets.csv')
+inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'inputs.csv'))
+targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'targets.csv'))
