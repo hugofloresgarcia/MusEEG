@@ -1,5 +1,5 @@
 import os
-from MusEEG import MusEEG
+import MusEEG
 import pandas as pd
 
 brain = MusEEG.classifier()

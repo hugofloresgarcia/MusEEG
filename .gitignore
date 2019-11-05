@@ -1,2 +1,3 @@
 # Project exclude paths
 /MusEEG/venv/
+/MusEEG/cortex_creds

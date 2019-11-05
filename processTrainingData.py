@@ -4,8 +4,8 @@
 import os
 import sys
 
-import MusEEG.MusEEG  as MusEEG
-from MusEEG.MusEEG import eegData
+import MusEEG
+from MusEEG import eegData
 import pandas as pandas
 import numpy as np
 

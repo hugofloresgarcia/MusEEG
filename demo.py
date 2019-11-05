@@ -1,7 +1,10 @@
 import os
-import MusEEG.MusEEG as MusEEG
-from MusEEG.MusEEG import eegData, chord, classifier
+import MusEEG
+from MusEEG import eegData, chord, classifier
 import numpy as np
+
+#open and reset midiport
+MusEEG.resetPort()
 
 #list of gestures to be used
 gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
@@ -14,13 +17,14 @@ brain.loadmodel(os.path.join(MusEEG.parentDir, 'data', 'savedModels', 'bigBrain_
 #define chords and tempo to be used
 chord.tempo = 60 #bpm
 chord.midiChannel = 0 #add 1
+
 """
-chord objects are defined here. the chord() class takes any set of notes as an input. 
+chord objects are defined here. the chord() class takes any set of notes as an input.
 """
-cmaj7sharp11add13 = chord(['C4', 'E4', 'G4', 'B4', 'D5'])
+cmaj7sharp11add13 = chord(['C4', 'E4', 'G4', 'B4', 'D5', 'F#4', 'A5'])
 fminmaj7 = chord(['F4', 'Ab4', 'C5', 'E5'])
 fmaj7 = chord(['F4', 'A4', 'C5', 'E5', 'G5'])
-ab69 = chord(['Ab4', 'C5', 'F#5', 'Bb5', 'C6'])
+ab69 = chord(['Ab4', 'C5', 'F5', 'Bb5', 'C6'])
 dmin7b5 = chord(['D4', 'F4', 'Ab4', 'C5', 'E5'])
 g7b9 = chord(['G4', 'B4', 'D5', 'F5', 'Ab5'])
 c5 = chord(['C3', 'G3'])
@@ -31,10 +35,10 @@ margaretsmagicchord = chord(['D4', 'F4', 'A#4'])
 
 #refer gestures to chords
 """
-this dictionary is where chords are referenced to facial gestures. 
+this dictionary is where chords are referenced to facial gestures.
 """
 mididict = {'smile': cmaj7sharp11add13,
-            'bitelowerlip': margaretsmagicchord,
+            'bitelowerlip': fmaj7,
             'hardblink': fminmaj7,
             'eyebrows': ab69,
             'lookleft': g7b9,
@@ -70,7 +74,6 @@ def demoComponent():
             gestureResult = gestures[brainOutput]
             print('classification result: ' + gestureResult)
 
-
             #refer classification to midi dictionary and refer chord object to musician
             musician = mididict[gestureResult]
 
@@ -83,7 +86,17 @@ def demoComponent():
             musician.stop()
             print('\n\n\n')
 
+            cont = input('would you like to try another eeg signal? (y/n)')
+            if cont == 'y':
+                continue
+            elif cont == 'n':
+                break
+            else:
+                print('invalid command. exiting anyway')
+                break
+
         except KeyboardInterrupt:
             break
 
 demoComponent()
+MusEEG.closePort()
