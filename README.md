@@ -20,10 +20,12 @@ The MusEEG module uses the following libraries
 
 # Installation (Python 3.7)
 install requirements.txt:
+
 `pip install -r requirements.txt`
 
 # Code Examples
 Since I am still waiting on departmental funding to obtain a RAW EEG license to access RAW EEG data, there still isn't a way to implement MusEEG in real time. However, the demo.py file showcases how the eegData, classifier, and chord classes are used to create an eegData object, classify it using the classifier, and use it to trigger a MIDI event using chord. To run the file, simply run this command from terminal: 
+
 `python demo.py`
 
 
