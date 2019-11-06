@@ -10,9 +10,8 @@ import numpy as np
 from pywt import wavedec
 
 import pickle
-from scipy.stats import kurtosis, entropy, skew
+from scipy.stats import kurtosis, skew
 
-import tensorflow as tf
 from tensorflow import keras
 from keras import regularizers
 

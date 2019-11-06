@@ -6,11 +6,11 @@ import numpy as np
 #open and reset midiport
 MusEEG.resetPort()
 
-#list of gestures to be used
+#list of gestures to be used in classifier
 gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
             'neutral', 'scrunch', 'tongue']
 
-#load the classifier (bigbrain for whole eeg chunks)
+#load the DNN classifier (bigbrain for whole eeg chunks)
 brain = classifier()
 brain.loadmodel(os.path.join(MusEEG.parentDir, 'data', 'savedModels', 'bigBrain_v2'))
 
@@ -56,6 +56,8 @@ def demoComponent():
                   'a facial gesture using a deep learning algorithm, and the turn it into a set of pre-referenced\n'
                   ' chords. if you are familiar with music and prorgamming, feel free to edit the chord objects\n '
                   'and the chord-facial gesture dictionary in the cerebro.py file\n\n')
+            print('NOTE: make sure to run this script BEFORE you open your DAW/virtual instrument due to MIDI port '
+                  'reset purposes\n')
             print('available gestures: ' )
             print(gestures)
             name = input('\n\nwhat gesture would you like to send to the neural network? ')
@@ -63,12 +65,20 @@ def demoComponent():
                 raise Exception('this gesture was not found.')
             length = input('how long would you like the note to last (in quarter notes)? the current tempo is: ' + str(chord.tempo) + ' ')
 
-            #load random sample, process, and classify
-            eeg.loadChunkFromTraining(name+'_'+str(np.random.randint(0, 60))+'.csv')
+            #load random sample from bigChunks subdirectory.
+            eeg.loadChunkFromTraining(subdir='bigChunks', filename=name+'_'+str(np.random.randint(0, 60))+'.csv')
+
+            #plot raw eeg data
             eeg.plotRawEEG(title=eeg.filename)
+
+            #process eegdata: wavelet transform, statistical extraction
             print('performing wavelet transform')
             brainInput = eeg.process()
-            # eeg.plotWavelets(channel=1)
+
+            #plot wavelet transform of channel 2
+            eeg.plotWavelets(channel=1)
+
+            #classify facial gesture in DNN
             brainOutput = brain.classify(brainInput.reshape(1, 350))
             print('\nthe neural network has taken the brain signal and classified it.')
             gestureResult = gestures[brainOutput]
@@ -77,9 +87,12 @@ def demoComponent():
             #refer classification to midi dictionary and refer chord object to musician
             musician = mididict[gestureResult]
 
+
             print('\nthe musician is about to play the chord object. It is sending a midi message through channel '
                   + str(chord.midiChannel+1)+ '. if you have a DAW/MIDI monitor installed, the message should have been'
                                               ' received.')
+            musician.pause(4)
+
             #finally, play the chord for the length requested
             musician.play()
             musician.pause(int(length))

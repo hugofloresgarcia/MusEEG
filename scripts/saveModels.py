@@ -1,6 +1,4 @@
-import os
-from MusEEG import MusEEG
-import numpy as np
+import MusEEG
 
 brain = MusEEG.classifier()
 train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(percentTrain=0.75)

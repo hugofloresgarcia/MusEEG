@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/data/savedModels/README" beforeDir="false" afterPath="$PROJECT_DIR$/data/savedModels/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/demo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/for small chunks/saveSmallModels.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/for small chunks/saveSmallModels.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/saveModels.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/saveModels.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -38,15 +42,15 @@
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/scripts" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/" />
       <recent name="$PROJECT_DIR$/scripts/for small chunks" />
       <recent name="$PROJECT_DIR$/scripts" />
       <recent name="$PROJECT_DIR$/data/training/bigChunks" />
-      <recent name="$PROJECT_DIR$/" />
       <recent name="$PROJECT_DIR$/MusEEG/" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -61,7 +65,28 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.saveSmallModels">
+  <component name="RunManager" selected="Python.demo">
+    <configuration name="demo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="MusEEG" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/demo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="processSmallTrainingData" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -148,6 +173,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.demo" />
         <item itemvalue="Python.saveSmallModels" />
         <item itemvalue="Python.processSmallTrainingData" />
         <item itemvalue="Python.sortTrainingData" />
@@ -204,7 +230,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573011863212</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Update README.md">
+      <created>1573012091799</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1573012091799</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -234,17 +267,11 @@
     <MESSAGE value="version 1! (should be)" />
     <MESSAGE value="fixed relative directory problems" />
     <MESSAGE value="added smallBrain_v1 model for smaller chunk processing" />
-    <option name="LAST_COMMIT_MESSAGE" value="added smallBrain_v1 model for smaller chunk processing" />
+    <MESSAGE value="Update README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update README.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/MusEEG/__init__.py</url>
-          <line>389</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
