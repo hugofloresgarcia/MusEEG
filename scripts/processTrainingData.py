@@ -25,7 +25,7 @@ def createTargetVector(objarray, *argv):
     return targets
 
 
-# create object lists.  They are lists, not arrays
+# create object lists, for easier handling
 smile = [eegData() for i in range(0, 60)]
 biteLowerLip = [eegData() for i in range(0, 60)]
 eyebrows = [eegData() for i in range(0, 60)]
@@ -36,7 +36,7 @@ neutral = [eegData() for i in range(0, 60)]
 scrunch = [eegData() for i in range(0, 60)]
 tongue = [eegData() for i in range(0, 60)]
 
-# load chunks
+# load chunks for each of the objects
 for i in range(0, 60):
     smile[i].loadChunkFromTraining('smile_' + str(i) + '.csv')
     biteLowerLip[i].loadChunkFromTraining('bitelowerlip_' + str(i) + '.csv')
@@ -48,12 +48,11 @@ for i in range(0, 60):
     tongue[i].loadChunkFromTraining('tongue_' + str(i) + '.csv')
     hardBlink[i].loadChunkFromTraining('hardblink_' + str(i) + '.csv')
 
-
+# create single list with all of other gesture lists.
 gestures = [smile, biteLowerLip, eyebrows, hardBlink, lookLeft, lookRight, neutral, scrunch, tongue]
 targets = createTargetVector(gestures, 'smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
                              'neutral', 'scrunch', 'tongue')
 
-##for smallchunks only. smallchunks are 1/8 of bigChunks (comment if you're working with big chunks)
 
 inputs = np.ndarray([540, 350])
 inputindex = 0

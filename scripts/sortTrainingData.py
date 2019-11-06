@@ -7,7 +7,7 @@ import MusEEG
 from MusEEG import TrainingDataMacro
 
 #this is where the your training data is stored
-subdir = '10_15_training_samples'
+subdir = 'hugo_facialgestures'
 
 smile = TrainingDataMacro()
 biteLowerLip = TrainingDataMacro()

@@ -60,13 +60,16 @@ def demoComponent():
                   'reset purposes\n')
             print('available gestures: ' )
             print(gestures)
-            name = input('\n\nwhat gesture would you like to send to the neural network? ')
+            name = input('\n\nwhat gesture would you like to send to the neural network? please enter one of the '
+                         'gestures available above:  ')
             if name not in mididict:
                 raise Exception('this gesture was not found.')
             length = input('how long would you like the note to last (in quarter notes)? the current tempo is: ' + str(chord.tempo) + ' ')
 
+            #subdirectory where sample chunks are located
+            SUBDIR = os.path.join('bigChunks', 'hugo_facialgestures')
             #load random sample from bigChunks subdirectory.
-            eeg.loadChunkFromTraining(subdir='bigChunks', filename=name+'_'+str(np.random.randint(0, 60))+'.csv')
+            eeg.loadChunkFromTraining(subdir=SUBDIR, filename=name+'_'+str(np.random.randint(0, 60))+'.csv')
 
             #plot raw eeg data
             eeg.plotRawEEG(title=eeg.filename)

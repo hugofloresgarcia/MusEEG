@@ -223,9 +223,15 @@ class TrainingDataMacro(eegData):
         self.label = []
 
     def importCSV(self, subdir, filename, tag):
-        self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', subdir, filename), skiprows=1, dtype=float, header=0,
+        """
+        :param subdir: subdirectory under MusEEG/data/longRawTrainingSamples where the .csv files are located
+        :param filename: filename of the .csv file
+        :param tag: the label you would like to associate the file with. typically the same as filename.
+        :return:
+        """
+        self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename), skiprows=1, dtype=float, header=0,
                                        usecols=self.emotivChannels)
-        self.markers = pandas.read_csv(os.path.join(parentDir, 'data', subdir, filename), skiprows=1, usecols=['EEG.MarkerHardware'])
+        self.markers = pandas.read_csv(os.path.join(parentDir, 'data','longRawTrainingSamples', subdir, filename), skiprows=1, usecols=['EEG.MarkerHardware'])
         self.address = subdir
         self.filename = filename
         self.tag = tag
@@ -248,9 +254,9 @@ class TrainingDataMacro(eegData):
     def plotRawChannel(self, channel, start, stop):
         """
         plot raw channel for trainingdatamacro object
-        :param channel:
-        :param start:
-        :param stop:
+        :param channel: channel to be plotted
+        :param start: (in seconds) where in the recording to start plotting
+        :param stop: (in seconds) where in the recording to stop plotting
         :return:
         """
         channel = channel[start*self.sampleRate:stop*self.sampleRate]
