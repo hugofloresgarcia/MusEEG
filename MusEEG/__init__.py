@@ -42,9 +42,10 @@ def closePort():
     port.close()
 
 class eegData:
-    threshold = 250
+    threshold = 20
     sampleRate = 256
     chunkSize = int(256*1.5)
+    smallchunkSize = int(chunkSize/6)
     backTrack = 35
     nchannels = 14
     emotivChannels = ["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
@@ -171,16 +172,14 @@ class eegData:
         fig.show()
         plt.show(block=True)
 
-    def loadChunkFromTraining(self, filename, address=os.path.join(parentDir, 'data', 'savedChunks')):
+    def loadChunkFromTraining(self, subdir, filename):
         """
-        load single chunk
-        creates self.chunk object
-        :param filename: name of file
-        :param address: address where file is located
+        :param subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
+        :param filename: filename
         :return:
         """
         self.filename = filename
-        self.chunk = pandas.read_csv(os.path.join(address,filename), usecols=self.emotivChannels)
+        self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename), usecols=self.emotivChannels)
         self.chunk = self.chunk.values
         self.AF3 = self.chunk[:, 0]
         self.F7 = self.chunk[:, 1]
@@ -197,6 +196,12 @@ class eegData:
         self.F8 = self.chunk[:, 12]
         self.AF4 = self.chunk[:, 13]
         return self.chunk
+
+    def cutChunk(self):
+        """
+        for smallBrain: cut chunk to smallchunkSize
+        """
+        self.chunk = self.chunk[0:(self.smallchunkSize-1), :]
 
     def process(self):
         self.wavelet()
@@ -218,11 +223,11 @@ class TrainingDataMacro(eegData):
         self.curatedChunk = []
         self.label = []
 
-    def importCSV(self, address, filename, tag):
-        self.rawData = pandas.read_csv(address + filename, skiprows=1, dtype=float, header=0,
+    def importCSV(self, subdir, filename, tag):
+        self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', subdir, filename), skiprows=1, dtype=float, header=0,
                                        usecols=self.emotivChannels)
-        self.markers = pandas.read_csv(address + filename, skiprows=1, usecols=['EEG.MarkerHardware'])
-        self.address = address
+        self.markers = pandas.read_csv(os.path.join(parentDir, 'data', subdir, filename), skiprows=1, usecols=['EEG.MarkerHardware'])
+        self.address = subdir
         self.filename = filename
         self.tag = tag
         self.matrix = np.array(self.rawData.values - 4100)
@@ -314,14 +319,14 @@ class TrainingDataMacro(eegData):
 
             plt.close(fig)
 
-    def saveChunksToCSV(self):
+    def saveChunksToCSV(self, subdir='smallChunks'):
         """
         saves curated chunks to csv
         :param obj:
         :return:
         """
         for i in range(len(self.curatedChunk)):
-            self.curatedChunk[i].to_csv(os.path.join(parentDir, 'data', 'savedChunks', self.tag + '_' + str(i) + '.csv'))
+            self.curatedChunk[i].to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, self.tag + '_' + str(i) + '.csv'))
 
     def saveTrainingObject(self, filename, address=os.path.join(parentDir, 'data', 'savedTrainingObjects')):
         filehandle = open(os.path.join(address, filename), 'w')
@@ -376,10 +381,11 @@ class classifier:
 
     def loadTrainingData(self, percentTrain=0.75,
                          address=os.path.join(parentDir, 'data', 'training'),
+                         subdir='bigChunks',
                          inputFilename='inputs.csv',
                          targetFilename='targets.csv'):
-        inputsAll = pandas.read_csv(os.path.join(address, inputFilename)).values
-        targetsAll = pandas.read_csv(os.path.join(address, targetFilename)).values
+        inputsAll = pandas.read_csv(os.path.join(address, subdir,  inputFilename)).values
+        targetsAll = pandas.read_csv(os.path.join(address, subdir,  targetFilename)).values
         # use index from 1 on bc index 0 is just a counter for some reason.
         inputsAll[:, 0] = targetsAll[:, 1]
         # first column of inputsAll will now be the targets (sorry programming gods, I'm going crazy over this one)
