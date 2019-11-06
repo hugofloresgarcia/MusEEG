@@ -32,6 +32,8 @@ Since I am still waiting on departmental funding to obtain a RAW EEG license to 
 
 `python demo.py`
 
+NOTE: because MusEEG creates a virtual MIDI port upon startup, `demo.py` must be run BEFORE the virtual instrument/DAW is opened for it to function properly.  
+
 
 # Acknowledgments
 Special thanks to Dr. Fernando Ríos and Dr. John Thompson for being awesome faculty mentors!
