@@ -20,6 +20,7 @@ The MusEEG module uses the following libraries
 
 # Installation (Python 3.7)
 [Install Python](https://realpython.com/installing-python/)
+
 [Install pip](https://www.makeuseof.com/tag/install-pip-for-python/)
 
 install requirements.txt:
