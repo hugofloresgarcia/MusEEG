@@ -35,7 +35,7 @@ Since I am still waiting on departmental funding to obtain a RAW EEG license to 
 NOTE: because MusEEG creates a virtual MIDI port upon startup, `demo.py` must be run BEFORE the virtual instrument/DAW is opened for it to function properly.  
 
 ## The MusEEG Module
-Currently, the three main classes for this project (`MusEEG.eegData`, `MusEEG.classifier`, and `MusEEG.music`) are all located in `/MusEEG/__init__.py`
+Currently, the MusEEG package contains three main modules: `music.py` (MIDI objects, chords, and melodies), `classifier.py` (build, train, save keras models easily), `eegData` (import, process, plot, save EEG data). 
 
 ## Acknowledgments
 Special thanks to Dr. Fernando Ríos and Dr. John Thompson for being awesome faculty mentors!

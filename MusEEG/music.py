@@ -3,7 +3,6 @@ import time
 from audiolazy.lazy_midi import str2midi
 from MusEEG import parentDir, port, closePort, resetPort
 
-
 class music:
     midiChannel=0
     tempo = 120
@@ -18,6 +17,20 @@ class music:
 class chord(music):
     def __init__(self, notelist):
         self.notelist = notelist
+
+    def playchord(self, vel=64, durationInTicks=300):
+        self.midi = mido.MidiFile()
+        self.track = mido.MidiTrack()
+        self.midi.tracks.append(self.track)
+        for notes in self.notelist:
+            msg = mido.Message('note_on', note=str2midi(notes), velocity=vel, channel=self.midiChannel, time=0)
+            self.track.append(msg)
+        for notes in self.notelist:
+            msg = mido.Message('note_off', note=str2midi(notes), velocity=vel, channel=self.midiChannel, time=durationInTicks)
+            self.track.append(msg)
+        for msg in self.midi.play():
+            port.send(msg)
+
 
     def play(self, vel=64):
         for notes in self.notelist:
@@ -35,6 +48,7 @@ class chord(music):
                 msg = mido.Message('note_on', note=str2midi(notes), velocity=vel, channel=self.midiChannel)
                 port.send(msg)
                 self.pause(notelength)
+                self.stop()
 
 class melody(music):
     currentTime = 0

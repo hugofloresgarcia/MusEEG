@@ -2,12 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/MusEEG/classifier.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MusEEG/music.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MusEEG/cerebro.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/demoApp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/music.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/music.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/demo.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -40,6 +41,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="TODO_SCOPE" value="All Places" />
+    <property name="full.screen.before.presentation.mode" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/scripts" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
@@ -68,7 +70,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.demo">
+  <component name="RunManager" selected="Python.letsgetthisui">
     <configuration name="demo" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -90,6 +92,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="letsgetthisui" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="MusEEG" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/demoApp.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="processSmallTrainingData" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -103,27 +126,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="processTrainingData" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="MusEEG" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/processTrainingData.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -176,11 +178,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.letsgetthisui" />
         <item itemvalue="Python.demo" />
         <item itemvalue="Python.saveSmallModels" />
         <item itemvalue="Python.processSmallTrainingData" />
         <item itemvalue="Python.sortTrainingData" />
-        <item itemvalue="Python.processTrainingData" />
       </list>
     </recent_temporary>
   </component>
@@ -282,7 +284,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573066788373</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="organized MusEEG module">
+      <created>1573094082531</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1573094082531</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -313,15 +322,15 @@
     <MESSAGE value="fixed relative directory problems" />
     <MESSAGE value="added smallBrain_v1 model for smaller chunk processing" />
     <MESSAGE value="Update README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update README.md" />
+    <MESSAGE value="organized MusEEG module" />
+    <option name="LAST_COMMIT_MESSAGE" value="organized MusEEG module" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file:///usr/local/Cellar/python/3.7.4_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/mido/midifiles/midifiles.py</url>
-          <line>17</line>
-          <option name="timeStamp" value="1" />
+          <url>file://$PROJECT_DIR$/demo.py</url>
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
