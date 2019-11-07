@@ -1,6 +1,7 @@
 import os
 import MusEEG
-from MusEEG import eegData, chord, classifier
+from MusEEG import eegData, classifier
+from MusEEG.music import chord
 import numpy as np
 
 #open and reset midiport
