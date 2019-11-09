@@ -152,7 +152,9 @@ class demoApp(tk.Frame):
     def classificationResult(self):
         permanentText = 'classification result: '
         self.classificationResultVar = tk.StringVar(self)
+        self.classificationResultVar.set('none')
         self.classPrint = tk.Label(self, text=permanentText+self.classificationResultVar.get())
+        self.classPrint.grid(row=self.buttonRow+3, column=2)
 
 
     def create_widgets(self):
@@ -165,7 +167,7 @@ class demoApp(tk.Frame):
         self.plotWindow()
         # self.loadRandomSampleButton()
         self.checkboxArpeggiate()
-        self.classificationResult()
+        # self.classificationResult()
         self.buttonProcessAndSend()
         self.defineChordEntry()
 
