@@ -27,13 +27,13 @@ class demoApp(tk.Frame):
         self.welcomemsg = tk.Message(self, text=cerebro.hellomsg)
         self.welcomemsg.anchor('nw')
         # self.welcomemsg.pack(side="left")
-        self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=1, padx=5, pady=5)
+        self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=2, padx=5, pady=5)
 
     def tempoBox(self):
-        self.tempolbl = tk.Label(self, text='tempo').grid(row=buttonRow+1, column=1)
-        self.tempobx = tk.Entry(self, text="tempo")
+        self.tempolbl = tk.Label(self, text='tempo').grid(row=buttonRow+1, column=2)
+        self.tempobx = tk.Entry(self)
         self.tempobx.insert(10, '120')
-        self.tempobx.grid(row=self.buttonRow+2, column=1)
+        self.tempobx.grid(row=self.buttonRow, column=2)
 
     def arpeggioDuration(self):
         self.arpeglbl = tk.Label(self, text='arpeggio note duration (in qtr notes)').grid(row=self.buttonRow+1, column=3)
@@ -57,7 +57,7 @@ class demoApp(tk.Frame):
             self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
             self.canvas.draw()
             self.say_hi()
-            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=10, columnspan=3, padx=5, pady=5)
+            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
 
         self.loadRandBttn = tk.Button(self)
         self.loadRandBttn["text"] = "Load Random Sample"
@@ -74,7 +74,7 @@ class demoApp(tk.Frame):
     def buttonProcessAndSend(self):
         self.processAndSendBttn = tk.Button(self, command=lambda: cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get())))
         self.processAndSendBttn["text"] = "Process and Send to Musician"
-        self.processAndSendBttn.grid(row=self.buttonRow+1, column=2, padx=5, pady=5)
+        self.processAndSendBttn.grid(row=self.buttonRow+2, column=2, padx=5, pady=5)
 
     def gestureButtons(self):
         def gestBttnCommand(gesture):
@@ -86,7 +86,7 @@ class demoApp(tk.Frame):
             self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
             self.canvas.draw()
             self.say_hi()
-            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=10, columnspan=3,  padx=5, pady=5)
+            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3,  padx=5, pady=5)
 
         self.gesturebttn = list()
         for gestures in cerebro.gestures:
@@ -99,12 +99,12 @@ class demoApp(tk.Frame):
         self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
         self.canvas.draw()
         # self.canvas.get_tk_widget().pack(side="right", expand=True)
-        self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=10, columnspan=3, padx=5, pady=5)
+        self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
 
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
         self.checkboxArp = tk.Checkbutton(self, text="arpeggiate?", variable=self.arpVar)
-        self.checkboxArp.grid(row=self.buttonRow, column=2, padx=5, pady=5)
+        self.checkboxArp.grid(row=self.buttonRow+1, column=2, padx=5, pady=5)
 
     def defineChordEntry(self):
         def listToString(s):
@@ -155,7 +155,7 @@ class demoApp(tk.Frame):
         self.plotWindow()
         # self.loadRandomSampleButton()
         self.checkboxArpeggiate()
-        # self.buttonProcessAndSend()
+        self.buttonProcessAndSend()
         self.defineChordEntry()
 
 
