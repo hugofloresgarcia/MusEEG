@@ -10,11 +10,14 @@ class cerebro:
     """
     hello message to display in UI
     """
-    hellomsg = (
-        'Hello! welcome to the MusEEG demo. \nThis demo will send a pre-recorded brain signal, classify it into '
-        'a facial gesture using a deep learning algorithm, and the turn it into a set of pre-referenced '
-        ' chords. If you are familiar with music and prorgamming, feel free to edit the chord objects '
-        'and the chord-facial gesture dictionary in the cerebro.py file')
+    demomsg = (
+        'Hello! welcome to the MusEEG demo. This demo will: \n'
+        '- send a pre-recorded brain signal of your choice when you click on any of the gesture buttons\n'
+        '- process it using a 4-level, db2 wavelet transform\n'
+        '- extract the first four statistical moments of the wavelet decompositions (mean, variance, skewness, kurtosis)\n'
+        '- classify it using a deep neural network\n'
+        '- using the results from the DNN, play the chord that is referenced to the gesture using MIDI\n'
+        '- to change a chord, press the "update chord dictionary" button after youve changed the notes\n')
     eeg = eegData()
 
     gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
@@ -39,14 +42,13 @@ class cerebro:
     defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist, fmaj7.notelist, ab69.notelist, dmin7b5.notelist,
                         c5.notelist, noChord.notelist,
                         polychordcde.notelist, dbmaj7.notelist]
-    # refer gestures to chords
 
-    # refer gestures to chords
     """
     this dictionary is where chords are referenced to facial gestures.
     """
 
     def __init__(self):
+        #default mididict. it will be updated everytime the user presses the update chord button
         self.mididict = {'smile': self.cmaj7sharp11add13,
                          'bitelowerlip': self.fmaj7,
                          'hardblink': self.fminmaj7,
@@ -72,11 +74,10 @@ class cerebro:
         music.tempo = 60  # bpm
         music.midiChannel = 0  # add 1
 
-    def defineChords(self, chordlistlist):
+    def updateChordList(self, chordlistlist):
         for c in chordlistlist:
             index = chordlistlist.index(c)
             gestureBeingDefined = self.gestures[index]
-            this = chordlistlist[index]
             self.mididict[gestureBeingDefined] = chord(notelist=chordlistlist[index], name=gestureBeingDefined)
             print(self.mididict)
 
@@ -101,7 +102,6 @@ class cerebro:
         # refer classification to midi dictionary and refer chord object to musician
         musician = self.mididict[self.gestureResult]
         musician.set_tempo(tempo=tempo)
-
 
         #with threading
         musicianProcess = threading.Thread(target=self.perform, args=[musician, arp])

@@ -24,7 +24,7 @@ class demoApp(tk.Frame):
         self.create_widgets()
         
     def welcomeMessage(self):
-        self.welcomemsg = tk.Message(self, text=cerebro.hellomsg)
+        self.welcomemsg = tk.Message(self, text=cerebro.demomsg, relief=tk.RIDGE)
         self.welcomemsg.anchor('nw')
         # self.welcomemsg.pack(side="left")
         self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=2, padx=5, pady=5)
@@ -100,11 +100,15 @@ class demoApp(tk.Frame):
             self.gesturebttn.append(tk.Button(self, text=GESTURES, command=lambda GESTURES=GESTURES: gestBttnCommand(GESTURES)))
             self.gesturebttn[index].grid(row=self.gestureButtonStartRow+index, column=0)
 
+
+
     def plotWindow(self):
         self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
         self.canvas.draw()
         # self.canvas.get_tk_widget().pack(side="right", expand=True)
         self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
+
+
 
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
@@ -136,18 +140,22 @@ class demoApp(tk.Frame):
             self.chordEntrybx[index].insert(0, listToString(cerebro.defaultchordlist[index]))
             self.chordEntrybx[index].grid(row=self.gestureButtonStartRow+index, column=1)
 
+
+
         #retrieve chords from list
         def defineChordList():
             for items in range(len(self.chordlist)):
                 self.chordlist[items] = stringToList(self.chordEntrybx[items].get())
 
-            cerebro.defineChords(self.chordlist)
+            cerebro.updateChordList(self.chordlist)
 
         #button to update chords
         self.updateChords = tk.Button(self, command=defineChordList)
         self.updateChords["text"] = "update chord dictionary"
         #place the button under all the entry boxes
         self.updateChords.grid(row=self.gestureButtonStartRow+len(self.chordlist)+1, column=1)
+
+
 
     def classificationResult(self):
         permanentText = 'classification result: '
@@ -158,6 +166,9 @@ class demoApp(tk.Frame):
 
 
     def create_widgets(self):
+        self.winfo_toplevel().title("MusEEG")
+
+
         self.welcomeMessage()
         self.tempoBox()
         self.arpeggioDuration()
@@ -167,7 +178,7 @@ class demoApp(tk.Frame):
         self.plotWindow()
         # self.loadRandomSampleButton()
         self.checkboxArpeggiate()
-        # self.classificationResult()
+        self.classificationResult()
         self.buttonProcessAndSend()
         self.defineChordEntry()
 
