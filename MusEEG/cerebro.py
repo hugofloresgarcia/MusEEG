@@ -10,10 +10,11 @@ class cerebro:
     """
     hello message to display in UI
     """
-    hellomsg = ('Hello! welcome to the MusEEG demo. \nThis demo will send a pre-recorded brain signal, classify it into '
-            'a facial gesture using a deep learning algorithm, and the turn it into a set of pre-referenced '
-            ' chords. If you are familiar with music and prorgamming, feel free to edit the chord objects '
-            'and the chord-facial gesture dictionary in the cerebro.py file')
+    hellomsg = (
+        'Hello! welcome to the MusEEG demo. \nThis demo will send a pre-recorded brain signal, classify it into '
+        'a facial gesture using a deep learning algorithm, and the turn it into a set of pre-referenced '
+        ' chords. If you are familiar with music and prorgamming, feel free to edit the chord objects '
+        'and the chord-facial gesture dictionary in the cerebro.py file')
     eeg = eegData()
 
     gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
@@ -35,7 +36,8 @@ class cerebro:
     dbmaj7 = chord(['Db4', 'F4', 'Ab4', 'C5', 'Eb5'], name='dbmaj7')
     margaretsmagicchord = chord(['D4', 'F4', 'A#4'], name='margschord')
 
-    defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist, fmaj7.notelist, ab69.notelist, dmin7b5.notelist, c5.notelist, noChord.notelist,
+    defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist, fmaj7.notelist, ab69.notelist, dmin7b5.notelist,
+                        c5.notelist, noChord.notelist,
                         polychordcde.notelist, dbmaj7.notelist]
     # refer gestures to chords
 
@@ -44,17 +46,16 @@ class cerebro:
     this dictionary is where chords are referenced to facial gestures.
     """
 
-
     def __init__(self):
         self.mididict = {'smile': self.cmaj7sharp11add13,
-                    'bitelowerlip': self.fmaj7,
-                    'hardblink': self.fminmaj7,
-                    'eyebrows': self.ab69,
-                    'lookleft': self.g7b9,
-                    'lookright': self.c5,
-                    'neutral': self.noChord,
-                    'scrunch': self.polychordcde,
-                    'tongue': self.dbmaj7}
+                         'bitelowerlip': self.fmaj7,
+                         'hardblink': self.fminmaj7,
+                         'eyebrows': self.ab69,
+                         'lookleft': self.g7b9,
+                         'lookright': self.c5,
+                         'neutral': self.noChord,
+                         'scrunch': self.polychordcde,
+                         'tongue': self.dbmaj7}
 
         # open and reset midiport
         resetPort()
@@ -94,15 +95,17 @@ class cerebro:
         # classify facial gesture in DNN
         brainOutput = self.brain.classify(brainInput.reshape(1, 350))
         print('\nthe neural network has taken the brain signal and classified it.')
-        gestureResult = self.gestures[brainOutput]
-        print('classification result: ' + gestureResult)
+        self.gestureResult = self.gestures[brainOutput]
+        print('classification result: ' + self.gestureResult)
 
         # refer classification to midi dictionary and refer chord object to musician
-        musician = self.mididict[gestureResult]
+        musician = self.mididict[self.gestureResult]
         musician.set_tempo(tempo=tempo)
 
-        t1 = threading.Thread(target=self.perform, args=[musician, arp])
-        t1.start()
+
+        #with threading
+        musicianProcess = threading.Thread(target=self.perform, args=[musician, arp])
+        musicianProcess.start()
 
     def perform(self, musician, arp):
         if arp == True:
@@ -110,4 +113,5 @@ class cerebro:
             musician.arpeggiate(notelength=self.arpDurationFromGUI, vel=64, numTimes=8)
 
         else:
-            musician.playchord(durationInTicks=self.noteDurationFromGUI*3)
+            musician.panic()
+            musician.playchord(qtrnotes=self.noteDurationFromGUI)

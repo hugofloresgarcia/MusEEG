@@ -42,10 +42,10 @@ class demoApp(tk.Frame):
         self.arpegbx.grid(row=self.buttonRow, column=3)
 
     def chordDuration(self):
-        self.arpeglbl = tk.Label(self, text='sustain duration (in qtr notes)').grid(row=self.buttonRow + 3, column=3)
-        self.arpegbx = tk.Entry(self)
-        self.arpegbx.insert(10, '8')
-        self.arpegbx.grid(row=self.buttonRow+2, column=3)
+        self.sustainlbl = tk.Label(self, text='sustain duration (in qtr notes)').grid(row=self.buttonRow + 3, column=3)
+        self.sustainbx = tk.Entry(self)
+        self.sustainbx.insert(10, '8')
+        self.sustainbx.grid(row=self.buttonRow+2, column=3)
 
     def loadRandomSampleButton(self):
         def loadRandBttncommand():
@@ -72,14 +72,20 @@ class demoApp(tk.Frame):
         self.gestPopup.grid(row=self.buttonRow, column=0, padx=5, pady=5)
 
     def buttonProcessAndSend(self):
-        self.processAndSendBttn = tk.Button(self, command=lambda: cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get())))
+        def processFunction():
+            cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
+                                   arpDurationFromGUI=float(self.arpegbx.get()),
+                                   noteDurationFromGUI=float(self.sustainbx.get()))
+            self.classificationResultVar.set(cerebro.gestureResult)
+
+        self.processAndSendBttn = tk.Button(self, command=processFunction)
         self.processAndSendBttn["text"] = "Process and Send to Musician"
         self.processAndSendBttn.grid(row=self.buttonRow+2, column=2, padx=5, pady=5)
 
     def gestureButtons(self):
-        def gestBttnCommand(gesture):
+        def gestBttnCommand(gestureToLoad):
             #load from dataset
-            cerebro.loadFromDataSet(name=gesture)
+            cerebro.loadFromDataSet(name=gestureToLoad)
 
             #update plot window todo: make it not have to redefine entire plot window for faster processing
             self.canvas.flush_events()
@@ -89,11 +95,10 @@ class demoApp(tk.Frame):
             self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3,  padx=5, pady=5)
 
         self.gesturebttn = list()
-        for gestures in cerebro.gestures:
-            index = cerebro.gestures.index(gestures)
-            self.gesturebttn.append(tk.Button(self, text=gestures, command=lambda: gestBttnCommand(gestures)))
+        for GESTURES in cerebro.gestures:
+            index = cerebro.gestures.index(GESTURES)
+            self.gesturebttn.append(tk.Button(self, text=GESTURES, command=lambda GESTURES=GESTURES: gestBttnCommand(GESTURES)))
             self.gesturebttn[index].grid(row=self.gestureButtonStartRow+index, column=0)
-
 
     def plotWindow(self):
         self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
@@ -144,6 +149,11 @@ class demoApp(tk.Frame):
         #place the button under all the entry boxes
         self.updateChords.grid(row=self.gestureButtonStartRow+len(self.chordlist)+1, column=1)
 
+    def classificationResult(self):
+        permanentText = 'classification result: '
+        self.classificationResultVar = tk.StringVar(self)
+        self.classPrint = tk.Label(self, text=permanentText+self.classificationResultVar.get())
+
 
     def create_widgets(self):
         self.welcomeMessage()
@@ -155,8 +165,10 @@ class demoApp(tk.Frame):
         self.plotWindow()
         # self.loadRandomSampleButton()
         self.checkboxArpeggiate()
+        self.classificationResult()
         self.buttonProcessAndSend()
         self.defineChordEntry()
+
 
 
     def say_hi(self):
