@@ -3,19 +3,11 @@
 # Site wide configuration
 ####################################
 #
-<<<<<<< HEAD
 title: hugofloresgarcia/museeg
 email: hf01049@georgiasouthern.edu
 description: a cool open source brain-computer interface for music performance
 url: https://hugofloresgarcia.github.io/MusEEG/
-=======
-title: Leonids
-email:
-description: A simple and awesome blog theme powered by jekyll.
-url: https://hugofloresgarcia.github.io/MusEEG/
->>>>>>> 784f433f4b5a291845244ab57b405e3806ffc1d3
 keywords: ["blog", "jekyll"]
-
 #
 ###################################
 # Jekyll configuration
