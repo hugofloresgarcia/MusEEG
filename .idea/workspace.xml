@@ -338,7 +338,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573520288846</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="start website">
+      <created>1573521854459</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1573521854459</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -371,7 +378,8 @@
     <MESSAGE value="Update README.md" />
     <MESSAGE value="organized MusEEG module" />
     <MESSAGE value="added customizable chord methods for demoApp" />
-    <option name="LAST_COMMIT_MESSAGE" value="added customizable chord methods for demoApp" />
+    <MESSAGE value="start website" />
+    <option name="LAST_COMMIT_MESSAGE" value="start website" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
