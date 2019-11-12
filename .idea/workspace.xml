@@ -1,8 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="why isnt this working">
-      <change beforePath="$PROJECT_DIR$/docs/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_config.yml" afterDir="false" />
+    <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/docs/Gemfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/LICENSE.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_config.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_data/index/careers.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_data/index/education.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_data/index/projects.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_data/index/skills.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_drafts/2011-03-10-sample-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_drafts/2012-05-22-readability-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_drafts/2013-05-23-readability-feature-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_drafts/2013-08-12-sample-link-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_drafts/2013-08-16-code-highlighting-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_drafts/2015-08-18-welcome-to-jekyll.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/disqus.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/footer.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/head.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/js.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/nav.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/read_time.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/about.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/career.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/education.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/projects.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/skills.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/sidebar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_includes/social-links.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_layouts/default.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_layouts/page.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_layouts/post.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_layouts/post_listing.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_layouts/resume.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_posts/2011-03-10-sample-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_posts/2012-05-22-readability-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_posts/2013-05-23-readability-feature-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_posts/2013-08-12-sample-link-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_posts/2013-08-16-code-highlighting-post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_posts/2015-08-18-welcome-to-jekyll.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_buttons.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_global.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_grid.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_helpers.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_mixins.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_normalize.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_syntax-highlighting.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_typography.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_variables.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_archive.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_layout.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_post.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_tags.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/archive.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/categories/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/css/font-awesome.min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/css/main.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/favicon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/feed.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/fonts/fontawesome-webfont.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/img/avatar.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/img/leonids-logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/js/jquery-3.2.1.min.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/js/main.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/resume.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/tags.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,7 +85,7 @@
   </component>
   <component name="Git.Settings">
     <option name="PUSH_AUTO_UPDATE" value="true" />
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/docs" />
   </component>
   <component name="IgnoredFileRootStore">
     <option name="generatedRoots">
@@ -35,20 +101,21 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="TODO_SCOPE" value="All Places" />
     <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/scripts" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/docs" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/scripts" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/data/savedChunks/smallChunks/hugo_facialgestures" />
       <recent name="$PROJECT_DIR$/data/savedChunks/bigChunks/hugo_facialgestures" />
       <recent name="$PROJECT_DIR$/data/longRawTrainingSamples/hugo_facialgestures" />
       <recent name="$PROJECT_DIR$/" />
       <recent name="$PROJECT_DIR$/scripts/for small chunks" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
+      <recent name="$PROJECT_DIR$/scripts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -417,7 +484,21 @@
       <option name="project" value="LOCAL" />
       <updated>1573523533545</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="why isnt this working">
+      <created>1573523667910</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1573523667910</updated>
+    </task>
+    <task id="LOCAL-00034" summary="docs">
+      <created>1573523882415</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1573523882415</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -453,7 +534,8 @@
     <MESSAGE value="start website" />
     <MESSAGE value="ewe" />
     <MESSAGE value="why isnt this working" />
-    <option name="LAST_COMMIT_MESSAGE" value="why isnt this working" />
+    <MESSAGE value="docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
