@@ -17,7 +17,7 @@ timezone:          Europe/Paris
 markdown:          kramdown
 highlighter:       rouge
 excerpt_separator: <!--more-->
-permalink:         /articles/:year-:month/:title
+permalink:         /articles/:title
 
 kramdown:
   auto_ids: true
@@ -26,6 +26,9 @@ kramdown:
   toc_levels: 1..6
   enable_coderay: false
 
+collections:
+   docs:
+     output: true
 #
 ###################################
 # Site Owner configuration

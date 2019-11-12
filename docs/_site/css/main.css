@@ -338,13 +338,13 @@ footer .heart-icon { color: #f83e4b; text-shadow: 0 0 5px #fff, 0 0 10px #f83e4b
 
 .padly { padding-top: 1em; padding-bottom: 1em; }
 
-.primary-text-color { color: #42b983; }
+.primary-text-color { color: #A5D47B; }
 
-.primary-bg-color { background-color: #42b983; }
+.primary-bg-color { background-color: #A5D47B; }
 
-.secondary-text-color { color: #8d7edc; }
+.secondary-text-color { color: #A5D47B; }
 
-.secondary-bg-color { background-color: #8d7edc; }
+.secondary-bg-color { background-color: #A5D47B; }
 
 .success-text-color { color: #65e892; }
 
@@ -453,10 +453,10 @@ footer .heart-icon { color: #f83e4b; text-shadow: 0 0 5px #fff, 0 0 10px #f83e4b
 /* ========================================================================== Typography ========================================================================== */
 html { line-height: 1.5; font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: normal; color: rgba(0, 0, 0, 0.87); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 15px; }
 
-blockquote { display: block; position: relative; padding-left: 20px; font-style: italic; border-left: 5px solid #8d7edc; }
+blockquote { display: block; position: relative; padding-left: 20px; font-style: italic; border-left: 5px solid #A5D47B; }
 
-a { text-decoration: none; color: #42b983; }
-a:hover, a:focus { color: #75cea5; text-decoration: none; }
+a { text-decoration: none; color: #A5D47B; }
+a:hover, a:focus { color: #cae6b1; text-decoration: none; }
 
 h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.7; }
 
@@ -486,9 +486,9 @@ small, .small { font-size: 80%; font-weight: normal; }
 p { margin: 1.2em 0; word-spacing: 0.05em; line-height: 1.6em; }
 
 /* Buttons ========================================================================== */
-.btn { display: inline-block; margin-bottom: 20px; padding: 8px 20px; font-size: 0.875em; font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700; background-color: #42b983; color: #fff; border-width: 2px !important; border-style: solid !important; border-color: #42b983; text-decoration: none !important; border-radius: 5px; }
-.btn:visited { color: #fff; border-color: #42b983; }
-.btn:hover { background-color: #fff; color: #42b983; border-color: #42b983; }
+.btn { display: inline-block; margin-bottom: 20px; padding: 8px 20px; font-size: 0.875em; font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700; background-color: #A5D47B; color: #fff; border-width: 2px !important; border-style: solid !important; border-color: #A5D47B; text-decoration: none !important; border-radius: 5px; }
+.btn:visited { color: #fff; border-color: #A5D47B; }
+.btn:hover { background-color: #fff; color: #A5D47B; border-color: #A5D47B; }
 
 .btn-success { background-color: #65e892; color: #fff; border-color: #65e892; }
 .btn-success:visited { color: #fff; border-color: #65e892; }
@@ -589,23 +589,23 @@ pre code span { word-break: break-all; }
 .cover-card { color: rgba(0, 0, 0, 0.87); padding: 0 30px; }
 .cover-card .avatar { border-radius: 50%; width: 100px; height: 100px; float: none; }
 @media only screen and (min-width: 992px) { .cover-card .avatar { margin-right: 0; } }
-.cover-card .author_name { display: block; color: #F36170; font-size: 1.75em; text-transform: lowercase; }
-.cover-card .author_job { display: block; color: #8d7edc; font-size: 0.8em; font-weight: 700; text-transform: uppercase; margin: -5px auto 10px; }
+.cover-card .author_name { display: block; color: #F9CD3B; font-size: 1.75em; text-transform: lowercase; }
+.cover-card .author_job { display: block; color: #A5D47B; font-size: 0.8em; font-weight: 700; text-transform: uppercase; margin: -5px auto 10px; }
 .cover-card .author_bio { font-size: 90%; display: block; }
 @media only screen and (min-width: 992px) { .cover-card { text-align: right; margin: 0 auto; padding: 0 0px 80px; } }
 
 .social-links { margin-top: 0.5em; }
 .social-links ul { margin: 0; padding: 0; }
 .social-links ul li { list-style: none; display: inline-block; margin-left: 1em; }
-.social-links ul li a.social-link-item { color: #8d7edc; }
-.social-links ul li a.social-link-item:hover, .social-links ul li a.social-link-item:focus { color: #bfb6eb; }
+.social-links ul li a.social-link-item { color: #A5D47B; }
+.social-links ul li a.social-link-item:hover, .social-links ul li a.social-link-item:focus { color: #cae6b1; }
 
 .nav-list { margin: 0; padding: 0; list-style: none; }
 .nav-list .nav-item { display: inline-block; *display: inline; zoom: 1; }
 .nav-list .nav-item:after { content: '/'; }
 .nav-list .nav-item:last-child:after { content: ''; }
-.nav-list .nav-item a { margin-top: 1em; text-transform: lowercase; font-size: 85%; color: #8d7edc; }
-.nav-list .nav-item a:hover, .nav-list .nav-item a:focus { color: #bfb6eb; }
+.nav-list .nav-item a { margin-top: 1em; text-transform: lowercase; font-size: 85%; color: #A5D47B; }
+.nav-list .nav-item a:hover, .nav-list .nav-item a:focus { color: #cae6b1; }
 
 ul.tag-cloud { padding: 2em 0 3em; margin: 0; overflow: hidden; list-style: none; }
 ul.tag-cloud li { display: inline-block; margin-right: .5em; }
@@ -642,14 +642,14 @@ section.post { margin-bottom: 80px; }
 
 .back-home a { font-size: 13px; font-weight: bold; color: #09ABF6; border: 1px solid rgba(115, 115, 115, 0.87); border-radius: 0.4em; padding: 0.5em 1em; }
 
-.post-title-link { color: #42b983; font-size: 14px; margin-left: 10px; }
-.post-title-link:hover, .post-title-link:focus { color: #75cea5; }
+.post-title-link { color: #A5D47B; font-size: 14px; margin-left: 10px; }
+.post-title-link:hover, .post-title-link:focus { color: #cae6b1; }
 
 .post-meta { font-size: 13px; font-weight: bold; }
-.post-meta .post-date { color: #8d7edc; }
+.post-meta .post-date { color: #A5D47B; }
 .post-meta .post-author { text-transform: uppercase; color: #F5A623; }
 .post-meta .post-cat { text-transform: uppercase; color: #F5A623; }
-.post-meta .read-time { color: #42b983; }
+.post-meta .read-time { color: #A5D47B; }
 
 a.read-more { padding: 5px 8px; }
 

@@ -30,7 +30,7 @@ class demoApp(tk.Frame):
         self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=2, padx=5, pady=5)
 
     def tempoBox(self):
-        self.tempolbl = tk.Label(self, text='tempo').grid(row=buttonRow+1, column=2)
+        self.templbl = tk.Label(self, text='tempo (bpm)').grid(row=self.buttonRow+1, column=2)
         self.tempobx = tk.Entry(self)
         self.tempobx.insert(10, '120')
         self.tempobx.grid(row=self.buttonRow, column=2)
@@ -56,7 +56,7 @@ class demoApp(tk.Frame):
 
         self.processAndSendBttn = tk.Button(self, command=processFunction)
         self.processAndSendBttn["text"] = "Process and Send to Musician"
-        self.processAndSendBttn.grid(row=self.buttonRow+2, column=2, padx=5, pady=5)
+        self.processAndSendBttn.grid(row=self.buttonRow+3, column=2, padx=5, pady=5)
 
     def gestureButtons(self):
         def gestBttnCommand(gestureToLoad):
@@ -85,7 +85,7 @@ class demoApp(tk.Frame):
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
         self.checkboxArp = tk.Checkbutton(self, text="arpeggiate?", variable=self.arpVar)
-        self.checkboxArp.grid(row=self.buttonRow+1, column=2, padx=5, pady=5)
+        self.checkboxArp.grid(row=self.buttonRow+2, column=2, padx=5, pady=5)
 
     def defineChordEntry(self):
         def listToString(s):
@@ -147,7 +147,7 @@ class demoApp(tk.Frame):
         self.gestureButtons()
         self.plotWindow()
         self.checkboxArpeggiate()
-        self.classificationResult()
+        # self.classificationResult()
         self.buttonProcessAndSend()
         self.defineChordEntry()
 
