@@ -397,7 +397,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573523173896</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="why isnt this working">
+      <created>1573523232354</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1573523232354</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -432,7 +439,8 @@
     <MESSAGE value="added customizable chord methods for demoApp" />
     <MESSAGE value="start website" />
     <MESSAGE value="ewe" />
-    <option name="LAST_COMMIT_MESSAGE" value="ewe" />
+    <MESSAGE value="why isnt this working" />
+    <option name="LAST_COMMIT_MESSAGE" value="why isnt this working" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
