@@ -47,30 +47,6 @@ class demoApp(tk.Frame):
         self.sustainbx.insert(10, '8')
         self.sustainbx.grid(row=self.buttonRow+2, column=3)
 
-    def loadRandomSampleButton(self):
-        def loadRandBttncommand():
-            #load from dataset
-            cerebro.loadFromDataSet(name=self.gestVar.get())
-
-            #update plot window todo: make it not have to redefine entire plot window for faster processing
-            self.canvas.flush_events()
-            self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
-            self.canvas.draw()
-            self.say_hi()
-            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
-
-        self.loadRandBttn = tk.Button(self)
-        self.loadRandBttn["text"] = "Load Random Sample"
-        self.loadRandBttn["command"] = loadRandBttncommand
-        self.loadRandBttn.grid(row=self.buttonRow, column=1, padx=5, pady=5)
-
-    def dropDownGestures(self):
-        self.gestVar = tk.StringVar(self)
-        self.gestVar.set(self.defaultGesture)
-
-        self.gestPopup = tk.OptionMenu(self, self.gestVar, *self.availableGestures)
-        self.gestPopup.grid(row=self.buttonRow, column=0, padx=5, pady=5)
-
     def buttonProcessAndSend(self):
         def processFunction():
             cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
@@ -100,15 +76,11 @@ class demoApp(tk.Frame):
             self.gesturebttn.append(tk.Button(self, text=GESTURES, command=lambda GESTURES=GESTURES: gestBttnCommand(GESTURES)))
             self.gesturebttn[index].grid(row=self.gestureButtonStartRow+index, column=0)
 
-
-
     def plotWindow(self):
         self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
         self.canvas.draw()
         # self.canvas.get_tk_widget().pack(side="right", expand=True)
         self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
-
-
 
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
@@ -168,15 +140,12 @@ class demoApp(tk.Frame):
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG")
 
-
         self.welcomeMessage()
         self.tempoBox()
         self.arpeggioDuration()
         self.chordDuration()
         self.gestureButtons()
-        # self.dropDownGestures()
         self.plotWindow()
-        # self.loadRandomSampleButton()
         self.checkboxArpeggiate()
         self.classificationResult()
         self.buttonProcessAndSend()
