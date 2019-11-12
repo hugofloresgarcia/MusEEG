@@ -2,77 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/docs/Gemfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/LICENSE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_config.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_data/index/careers.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_data/index/education.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_data/index/projects.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_data/index/skills.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_drafts/2011-03-10-sample-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_drafts/2012-05-22-readability-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_drafts/2013-05-23-readability-feature-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_drafts/2013-08-12-sample-link-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_drafts/2013-08-16-code-highlighting-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_drafts/2015-08-18-welcome-to-jekyll.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/disqus.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/footer.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/head.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/js.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/nav.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/read_time.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/about.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/career.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/education.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/projects.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/sections/skills.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/sidebar.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_includes/social-links.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_layouts/default.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_layouts/page.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_layouts/post.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_layouts/post_listing.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_layouts/resume.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_posts/2011-03-10-sample-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_posts/2012-05-22-readability-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_posts/2013-05-23-readability-feature-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_posts/2013-08-12-sample-link-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_posts/2013-08-16-code-highlighting-post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_posts/2015-08-18-welcome-to-jekyll.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_buttons.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_global.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_grid.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_helpers.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_mixins.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_normalize.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_syntax-highlighting.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_typography.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/components/_variables.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_archive.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_layout.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_post.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/_sass/pages/_tags.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/archive.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/categories/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/css/font-awesome.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/css/main.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/favicon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/favicon.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/feed.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/fonts/FontAwesome.otf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/fonts/fontawesome-webfont.eot" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/fonts/fontawesome-webfont.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/fonts/fontawesome-webfont.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/fonts/fontawesome-webfont.woff" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/fonts/fontawesome-webfont.woff2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/img/avatar.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/img/leonids-logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/js/jquery-3.2.1.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/js/main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/resume.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/tags.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_config.yml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -431,7 +362,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573522514708</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="start website">
+      <created>1573522770874</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1573522770875</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
