@@ -3,28 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demoApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/demoApp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_posts/2019-11-11-about.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_posts/2019-11-11-previous-work.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_posts/2019-11-11-theMusEEGmodule.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_sass/components/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_sass/components/_variables.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_sass/pages/_layout.scss" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_sass/pages/_layout.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/archive/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/articles/2015-08/previous-work.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/articles/2019-11/about.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/articles/2019-11/theMusEEGmodule.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/categories/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_site/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_layouts/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_layouts/default.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/_site/feed.xml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_site/feed.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/_site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_site/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/resume/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_site/tags/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/archive.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/archive.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/categories/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/resume.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/resume.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/tags.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -461,7 +442,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573523993590</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="demo app made prettier">
+      <created>1573597720501</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1573597720501</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -503,7 +491,8 @@
     <MESSAGE value="ewe" />
     <MESSAGE value="why isnt this working" />
     <MESSAGE value="docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs" />
+    <MESSAGE value="demo app made prettier" />
+    <option name="LAST_COMMIT_MESSAGE" value="demo app made prettier" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
