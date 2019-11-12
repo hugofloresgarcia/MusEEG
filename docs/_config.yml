@@ -3,10 +3,10 @@
 # Site wide configuration
 ####################################
 #
-title: Leonids
-email:
-description: A simple and awesome blog theme powered by jekyll.
-url: https://hugofloresgarcia.github.io/museeg
+title: hugofloresgarcia/museeg
+email: hf01049@georgiasouthern.edu
+description: a cool open source brain-computer interface for music performance
+url: hugofloresgarcia.github.io/MusEEG
 keywords: ["blog", "jekyll"]
 
 #
@@ -33,11 +33,11 @@ kramdown:
 ####################################
 #
 owner:
-  name: Leonids
-  avatar: leonids-logo.png
-  job: "A jekyll theme"
-  bio: "A simple and awesome blog theme powered by jekyll."
-  email:
+  name: hugofloresgarcia/museeg
+  avatar: flower_logo_v1_cropped.png
+  job: ""
+  bio: "a cool open source brain-computer interface for music performance"
+  email: hf01049@georgiasouthern.edu
   disqus-shortname:
   twitter: #username
   facebook: #username
@@ -48,7 +48,7 @@ owner:
     ad-client:
     ad-slot:
   bing-verify:
-  github: #username
+  github: hugofloresgarcia/museeg
   gitlab: #username
   stackoverflow: #123456/username   from a "http://stackoverflow.com/users/123456/username" link
   linkedin: #username
