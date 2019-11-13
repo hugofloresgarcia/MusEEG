@@ -1,7 +1,7 @@
 ---
 layout: page
 title:  documentation
-permalink: ../documentation/
+permalink: documentation/
 ---
 
 
@@ -17,9 +17,14 @@ permalink: ../documentation/
 
 {% for doc in site.documentation %}
   <h2>
-    <a href="{{ doc.url }}">
-      {{ doc.title }}
-    </a>
+      <li><a href="{{ site.baseurl }}{{ doc.url }}">{{ doc.title }}</a></li>
   </h2>
   <!-- <p>{{ doc.content | markdownify }}</p> -->
 {% endfor %}
+
+<!--
+{% for page in pages %}
+    {% if page.flag == 'dev' %}
+    <li><a href="{{ site.baseurl }}{{ page.url }}">{{ page.title }}</a></li>
+    {% endif %}
+{% endfor %} -->
