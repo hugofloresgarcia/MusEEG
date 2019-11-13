@@ -8,35 +8,35 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="a cool open source brain-computer interface for music performance">
+  <meta name="description" content="The eegData ClassThe eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)...">
   <meta name="keywords" content="blog and jekyll">
-  <meta name="author" content="documentation | hugofloresgarcia/museeg">
+  <meta name="author" content="the eegData module | hugofloresgarcia/museeg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f5f5">
 
   <!-- Twitter Tags -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="documentation | hugofloresgarcia/museeg">
-  <meta name="twitter:description" content="a cool open source brain-computer interface for music performance">
+  <meta name="twitter:title" content="the eegData module | hugofloresgarcia/museeg">
+  <meta name="twitter:description" content="The eegData ClassThe eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)...">
   
     <meta property="twitter:image" content="http://localhost:4000/img/leonids-logo.png">
   
 
   <!-- Open Graph Tags -->
   <meta property="og:type" content="blog">
-  <meta property="og:url" content="http://localhost:4000/documentation/">
-  <meta property="og:title" content="documentation | hugofloresgarcia/museeg">
-  <meta property="og:description" content="a cool open source brain-computer interface for music performance">
+  <meta property="og:url" content="http://localhost:4000/documentation/the-eegdata-module">
+  <meta property="og:title" content="the eegData module | hugofloresgarcia/museeg">
+  <meta property="og:description" content="The eegData ClassThe eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)...">
   
     <meta property="og:image" content="http://localhost:4000/img/leonids-logo.png">
   
-  <title>documentation | hugofloresgarcia/museeg</title>
+  <title>the eegData module | hugofloresgarcia/museeg</title>
 
   <!-- CSS files -->
   <link rel="stylesheet" href="http://localhost:4000/css/font-awesome.min.css">
   <link rel="stylesheet" href="http://localhost:4000/css/main.css">
 
-  <link rel="canonical" href="http://localhost:4000/documentation/">
+  <link rel="canonical" href="http://localhost:4000/documentation/the-eegdata-module">
   <link rel="alternate" type="application/rss+xml" title="hugofloresgarcia/museeg" href="http://localhost:4000/feed.xml" />
 
   <!-- Icons -->
@@ -132,58 +132,11 @@
       <div class="post-listing">
           <div id="page">
     <header class="page-header">
-      <h2>documentation</h2>
+      <h2>the eegData module</h2>
     </header>
 
     <article class="page-content">
-      <!--  -->
-
-
-  <h2>
-    <a href="/documentation/1-previous-work">
-      previous work
-    </a>
-  </h2>
-  <!-- <p><p>MusEEG builds upon my research on the recognition of facial gestures using EEG signals. The gesture recognition process consisted of three phases: filtering, feature extraction, and classification. For more information, take a look at the poster shown below.</p>
-
-<p><img src="../img/GURC_FloresGarcia_v2.png" alt="previous work" /></p>
-
-<p><img src="" alt="" /></p>
-</p> -->
-
-  <h2>
-    <a href="/documentation/2-the-emotiv-epoc">
-      the emotiv EPOC+
-    </a>
-  </h2>
-  <!-- <p><p>This project was made using the Emotiv EPOC+ EEG headset.</p>
-
-<p><img src="../img/epoc.png" alt="epoc" height="183px" width="263px" /></p>
-
-<p>Some specs on it:</p>
-<ul>
-  <li>number of channels: 14</li>
-  <li>sampling rate: 128 or 256 Hz</li>
-  <li>resolution 14 bits with 1 LSB = 0.51μV</li>
-</ul>
-
-<p>but you can probably learn more about it from <a href="https://www.emotiv.com/product/emotiv-epoc-14-channel-mobile-eeg/">Emotiv</a> themselves.</p>
-</p> -->
-
-  <h2>
-    <a href="/documentation/the-classifier-module">
-      the classifier module
-    </a>
-  </h2>
-  <!-- <p><h5 id="the-classifier-class">The classifier Class</h5>
-</p> -->
-
-  <h2>
-    <a href="/documentation/the-eegdata-module">
-      the eegData module
-    </a>
-  </h2>
-  <!-- <p><h5 id="the-eegdata-class">The eegData Class</h5>
+      <h5 id="the-eegdata-class">The eegData Class</h5>
 
 <p>The eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)</p>
 
@@ -279,8 +232,6 @@ As an output, the <code class="language-plaintext highlighter-rouge">wavelet</co
             <span class="p">[</span><span class="n">mean</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">kurtosis</span><span class="p">,</span> <span class="n">skew</span><span class="p">]</span>
             <span class="n">each</span> <span class="n">of</span> <span class="n">these</span> <span class="ow">is</span> <span class="mi">14</span> <span class="n">channels</span> <span class="o">*</span> <span class="mi">5</span> <span class="n">wavelet</span> <span class="n">coefficients</span> <span class="nb">long</span> <span class="o">=</span> <span class="mi">70</span> <span class="n">floats</span>
             <span class="n">vector</span> <span class="ow">is</span> <span class="n">flattened</span><span class="p">,</span> <span class="ow">and</span> <span class="k">for</span> <span class="mi">5</span> <span class="n">stat</span> <span class="n">features</span> <span class="o">*</span> <span class="mi">70</span> <span class="n">numbers</span> <span class="o">=</span> <span class="mi">350</span> <span class="n">floats</span></code></pre></figure>
-
-</p> -->
 
 
     </article>
