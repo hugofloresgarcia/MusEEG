@@ -7,7 +7,7 @@ comments: false
 
 This project was made using the Emotiv EPOC+ EEG headset.
 
-![epoc](/img/epoc.png){:height="183px" width="263px"}
+![epoc](../img/epoc.png){:height="183px" width="263px"}
 
 Some specs on it:
 - number of channels: 14

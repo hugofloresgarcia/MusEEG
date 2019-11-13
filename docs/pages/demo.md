@@ -10,7 +10,7 @@ image:
 
 The MusEEG demo application provides an example of the basic functionality of the package.
 
-![demo app](/img/demoapp_v2.png)
+![demo app](../img/demoapp_v2.png)
 
 ##### the gesture buttons and chord dictionary
 The top left corner allows you to load a random sample from the existing facial gesture dataset by pressing on one of the facial gesture buttons. Once loaded, the 14-channel raw EEG signal will be plotted in the plot box.
