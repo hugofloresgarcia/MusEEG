@@ -6,7 +6,7 @@
 title: hugofloresgarcia/museeg
 email: hf01049@georgiasouthern.edu
 description: a cool open source brain-computer interface for music performance
-url: https://hugofloresgarcia.github.io/MusEEG/
+url: https://hugofloresgarcia.github.io/MusEEG
 keywords: ["blog", "jekyll"]
 #
 ###################################
@@ -29,6 +29,7 @@ kramdown:
 collections:
    docs:
      output: true
+     permalink: /:collection/:name
 #
 ###################################
 # Site Owner configuration
