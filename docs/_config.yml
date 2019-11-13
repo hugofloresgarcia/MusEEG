@@ -30,7 +30,7 @@ collections:
    docs:
      output: true
      permalink: /:collection/:name
-#
+
 ###################################
 # Site Owner configuration
 ####################################
