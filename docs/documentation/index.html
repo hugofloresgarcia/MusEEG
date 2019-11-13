@@ -1,0 +1,16 @@
+---
+layout: page
+title:  documentation
+permalink: /documentation/
+---
+
+
+{% for doc in site.docs %}
+  <h4>
+    <a href="{{ doc.url }}">
+      -   {{ doc.title }}
+    </a>
+  </h4>
+
+  <p></p>
+{% endfor %}

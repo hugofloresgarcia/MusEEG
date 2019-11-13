@@ -5,8 +5,8 @@
     <description>a cool open source brain-computer interface for music performance</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>2019-11-12</pubDate>
-    <lastBuildDate>Tue, 12 Nov 2019 23:59:16 +0100</lastBuildDate>
+    <pubDate>2019-11-13</pubDate>
+    <lastBuildDate>Wed, 13 Nov 2019 02:05:22 +0100</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
     
   </channel>

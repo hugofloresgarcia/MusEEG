@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="The eegData ClassThe eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)...">
+  <meta name="keywords" content="blog and jekyll">
+  <meta name="author" content="the eegData module | hugofloresgarcia/museeg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f5">
+
+  <!-- Twitter Tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="the eegData module | hugofloresgarcia/museeg">
+  <meta name="twitter:description" content="The eegData ClassThe eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)...">
+  
+    <meta property="twitter:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+
+  <!-- Open Graph Tags -->
+  <meta property="og:type" content="blog">
+  <meta property="og:url" content="http://localhost:4000/docs/the-eegData-module">
+  <meta property="og:title" content="the eegData module | hugofloresgarcia/museeg">
+  <meta property="og:description" content="The eegData ClassThe eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)...">
+  
+    <meta property="og:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+  <title>the eegData module | hugofloresgarcia/museeg</title>
+
+  <!-- CSS files -->
+  <link rel="stylesheet" href="http://localhost:4000/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://localhost:4000/css/main.css">
+
+  <link rel="canonical" href="http://localhost:4000/docs/the-eegData-module">
+  <link rel="alternate" type="application/rss+xml" title="hugofloresgarcia/museeg" href="http://localhost:4000/feed.xml" />
+
+  <!-- Icons -->
+  <!-- 16x16 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+  <!-- 32x32 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.png">
+</head>
+
+
+<body>
+  <div class="row">
+    <div class="col s12 m4">
+      <div class="table cover">
+        
+
+<div class="cover-card table-cell table-middle">
+  
+  <a href="http://localhost:4000/">
+    <img src="http://localhost:4000/img/flower_logo_v1_cropped.png" alt="" class="avatar">
+  </a>
+  
+  <a href="http://localhost:4000/" class="author_name">hugofloresgarcia/museeg</a>
+  <span class="author_job"></span>
+  <span class="author_bio mbm">a cool open source brain-computer interface for music performance</span>
+  <nav class="nav">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a href="http://localhost:4000/">home</a>
+      </li>
+       
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/demo">demo</a>
+      </li>
+          
+      <li class="nav-item">
+        <a href="http://localhost:4000/documentation/">documentation</a>
+      </li>
+             
+    </ul>
+  </nav>
+  <script type="text/javascript">
+  // based on http://stackoverflow.com/a/10300743/280842
+  function gen_mail_to_link(hs, subject) {
+    var lhs,rhs;
+    var p = hs.split('@');
+    lhs = p[0];
+    rhs = p[1];
+    document.write("<a class=\"social-link-item\" target=\"_blank\" href=\"mailto");
+    document.write(":" + lhs + "@");
+    document.write(rhs + "?subject=" + subject + "\"><i class=\"fa fa-fw fa-envelope\"></i><\/a>");
+  }
+</script>
+<div class="social-links">
+  <ul>
+    
+      <li>
+      <script>gen_mail_to_link('hf01049@georgiasouthern.edu', 'Hello from website');</script>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <li><a href="http://github.com/hugofloresgarcia/museeg" class="social-link-item" target="_blank"><i class="fa fa-fw fa-github"></i></a></li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  </ul>
+</div>
+
+</div>
+
+      </div>
+    </div>
+    <div class="col s12 m8">
+      <div class="post-listing">
+          <div id="page">
+    <header class="page-header">
+      <h2>the eegData module</h2>
+    </header>
+
+    <article class="page-content">
+      <h5 id="the-eegdata-class">The eegData Class</h5>
+
+<p>The eegData class can load and preprocess EEG data. The eegData class has the following defaulted attributes (tailored for the Emotiv EPOC+)</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">eegData</span><span class="p">:</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="mi">250</span> <span class="c1">#threshold, in mV, to indicate that a new facial gesture was created
+</span>    <span class="n">sampleRate</span> <span class="o">=</span> <span class="mi">256</span> <span class="c1">#sample rate of Emotiv EPOC+
+</span>    <span class="n">chunkSize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">256</span><span class="o">*</span><span class="mf">1.5</span><span class="p">)</span> <span class="c1">#number of samples in chunks that are processed
+</span>    <span class="n">backTrack</span> <span class="o">=</span> <span class="mi">35</span> <span class="c1">#number of samples to backtrack from threshold
+</span>    <span class="n">nchannels</span> <span class="o">=</span> <span class="mi">14</span> <span class="c1">#number of channels in Emotiv EPOC+
+</span>    <span class="n">emotivChannels</span> <span class="o">=</span> <span class="p">[</span><span class="s">"EEG.AF3"</span><span class="p">,</span> <span class="s">"EEG.F7"</span><span class="p">,</span> <span class="s">"EEG.F3"</span><span class="p">,</span> <span class="s">"EEG.FC5"</span><span class="p">,</span> <span class="s">"EEG.T7"</span><span class="p">,</span> <span class="s">"EEG.P7"</span><span class="p">,</span> <span class="s">"EEG.O1"</span><span class="p">,</span>
+                           <span class="s">"EEG.O2"</span><span class="p">,</span> <span class="s">"EEG.P8"</span><span class="p">,</span> <span class="s">"EEG.T8"</span><span class="p">,</span> <span class="s">"EEG.FC6"</span><span class="p">,</span> <span class="s">"EEG.F4"</span><span class="p">,</span> <span class="s">"EEG.F8"</span><span class="p">,</span> <span class="s">"EEG.AF4"</span><span class="p">]</span></code></pre></figure>
+
+<p>The <code class="language-plaintext highlighter-rouge">threshold</code> attribute defines the threshold (in mV) that an EEG signal has to cross in order for it to start the classification process. If the current EEG sample is past the given <code class="language-plaintext highlighter-rouge">threshold</code>, the processor in the main file (to be created) will create an <code class="language-plaintext highlighter-rouge">eegData</code> object with the number of samples in <code class="language-plaintext highlighter-rouge">chunkSize</code> starting at:
+     <code class="language-plaintext highlighter-rouge">current sample where threshold was passed - backTrack</code></p>
+
+<p>The <code class="language-plaintext highlighter-rouge">backTrack</code> parameter was added because some EEG messages have valuable information well before the threshold is passed, so the chunk that is processed must contain data before the threshold.</p>
+
+<h5 id="the-wavelet-method">The Wavelet Method</h5>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">    <span class="k">def</span> <span class="nf">wavelet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">""""
+        wavelet transform (4-level) for a single eeg chunk
+        creates a self.wavelets list which contains np arrays with the coefficients
+        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cA4</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cD4</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cD3</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cD2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cD1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">):</span>
+            <span class="n">cA4</span><span class="p">,</span> <span class="n">cD4</span><span class="p">,</span> <span class="n">cD3</span><span class="p">,</span> <span class="n">cD2</span><span class="p">,</span> <span class="n">cD1</span> <span class="o">=</span> <span class="n">wavedec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="s">'db2'</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cA4</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cD4</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cD3</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cD2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cD1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">wavelets</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="p">)]</span></code></pre></figure>
+
+<p>The <code class="language-plaintext highlighter-rouge">wavelet</code> method performs a 4-level wavelet decomposition on EEG signals. Based on my research (will upload a link to my thesis as soon as its done) a 4-level wavelet decomposition is an efficient way of performing feature extraction on EEG signals, as it essentially splits the raw signal into alpha, beta, delta, theta, and gamma waves, which are all different brain waves where different brain processes are executed.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">wavelet</code> method processes the <code class="language-plaintext highlighter-rouge">self.chunk</code>, which should be created prior to processing.
+As an output, the <code class="language-plaintext highlighter-rouge">wavelet</code> method creates a <code class="language-plaintext highlighter-rouge">self.wavelets</code> attribute, which is a list that contains lumpy arrays with each decomposition vector that results from the wavelet decomposition.</p>
+
+<h5 id="the-extractstatsfromwavelets-method">the extractStatsFromWavelets method</h5>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">   
+<span class="k">def</span> <span class="nf">extractStatsFromWavelets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">"""
+        calculates mean, standard deviation, variance, kurtosis, and skewness from self.wavelets object.
+        creates self.mean, self.std, self.kurtosis, self.skew which are numpy arrays with 14 rows (eeg channels)
+        and 5 columns (per coefficients)
+        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="c1">## ojo, dimensions are transposed here
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchannels</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">std</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">kurtosis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">kurtosis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">kurtosis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">kurtosis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">kurtosis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">skew</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">skew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cA4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">skew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD4</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">skew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD3</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">skew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD2</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">skew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cD1</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span></code></pre></figure>
+
+<p>The <code class="language-plaintext highlighter-rouge">extractStatsFromWavelets</code> calculates the mean, standard deviation, variance, kurtosis, and skewness from each of the wavelet coefficient vectors stored in self.wavelets. As a result, it creates the self.mean, self.std, self.kurtosis, self.skew which are numpy arrays with 14 rows (eeg channels) and 5 columns (per coefficients).</p>
+
+<h5 id="the-flattenintovector-method">the flattenIntoVector method</h5>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">   
+    <span class="k">def</span> <span class="nf">flattenIntoVector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">"""
+        creates an input array for ANN, structured as:
+            [mean, var, std, kurtosis, skew]
+            each of these is 14 channels * 5 wavelet coefficients long = 70 floats
+            vector is flattened, and for 5 stat features * 70 numbers = 350 numbers
+        """</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">std</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">kurtosis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosis</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">skew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skew</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputVector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mean</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">kurtosis</span><span class="p">,</span> <span class="n">skew</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputVector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputVector</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputVector</span></code></pre></figure>
+
+<p>The <code class="language-plaintext highlighter-rouge">flattenIntoVector</code> method prepares the statistical features calculated in <code class="language-plaintext highlighter-rouge">extractStatsFromWavelets</code> for a Deep Network by concatenating the vectors and flattening them into a single array. The structure of the input array is as follows:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">   
+            <span class="p">[</span><span class="n">mean</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">kurtosis</span><span class="p">,</span> <span class="n">skew</span><span class="p">]</span>
+            <span class="n">each</span> <span class="n">of</span> <span class="n">these</span> <span class="ow">is</span> <span class="mi">14</span> <span class="n">channels</span> <span class="o">*</span> <span class="mi">5</span> <span class="n">wavelet</span> <span class="n">coefficients</span> <span class="nb">long</span> <span class="o">=</span> <span class="mi">70</span> <span class="n">floats</span>
+            <span class="n">vector</span> <span class="ow">is</span> <span class="n">flattened</span><span class="p">,</span> <span class="ow">and</span> <span class="k">for</span> <span class="mi">5</span> <span class="n">stat</span> <span class="n">features</span> <span class="o">*</span> <span class="mi">70</span> <span class="n">numbers</span> <span class="o">=</span> <span class="mi">350</span> <span class="n">floats</span></code></pre></figure>
+
+
+    </article>
+
+
+  </div><!-- end page content -->
+
+
+  
+
+        <footer>
+  &copy; 2019 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
+</footer>
+
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="http://localhost:4000/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="http://localhost:4000/js/main.js"></script>
+
+
+</body>
+</html>
