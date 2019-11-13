@@ -1,7 +1,6 @@
 ---
 layout: page
 title:  "the emotiv EPOC+"
-categories: [docs]
 comments: false
 ---
 
