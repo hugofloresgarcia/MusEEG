@@ -5,7 +5,7 @@ permalink: /documentation/
 ---
 
 
-{% for doc in site.docs %}
+<!-- {% for doc in site.docs %}
   <h4>
     <a href="{{ doc.url }}">
       -   {{ doc.title }}
@@ -13,4 +13,13 @@ permalink: /documentation/
   </h4>
 
   <p></p>
+{% endfor %} -->
+
+{% for doc in site.docs %}
+  <h2>
+    <a href="{{ doc.url }}">
+      {{ doc.title }}
+    </a>
+  </h2>
+  <p>{{ doc.content | markdownify }}</p>
 {% endfor %}
