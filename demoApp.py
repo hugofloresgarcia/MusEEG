@@ -1,6 +1,5 @@
 import tkinter as tk
 from MusEEG import cerebro
-import pprint
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -52,7 +51,7 @@ class demoApp(tk.Frame):
             cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
                                    arpDurationFromGUI=float(self.arpegbx.get()),
                                    noteDurationFromGUI=float(self.sustainbx.get()))
-            self.classificationResultVar.set(cerebro.gestureResult)
+            # self.classificationResultVar.set(cerebro.gestureResult)
 
         self.processAndSendBttn = tk.Button(self, command=processFunction)
         self.processAndSendBttn["text"] = "Process and Send to Musician"

@@ -9,7 +9,6 @@ from pywt import wavedec
 import pickle
 from scipy.stats import kurtosis, skew
 
-from tensorflow import keras
 from keras import regularizers
 
 import matplotlib
