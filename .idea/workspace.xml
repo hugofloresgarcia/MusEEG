@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="demo app made prettier">
+    <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demoApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/demoApp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -456,7 +454,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573602624635</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="fix requirements.txt">
+      <created>1573689543975</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1573689543975</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -499,7 +504,8 @@
     <MESSAGE value="why isnt this working" />
     <MESSAGE value="docs" />
     <MESSAGE value="demo app made prettier" />
-    <option name="LAST_COMMIT_MESSAGE" value="demo app made prettier" />
+    <MESSAGE value="fix requirements.txt" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix requirements.txt" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

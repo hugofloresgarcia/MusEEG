@@ -1,4 +1,5 @@
 # MusEEG
+website: [hugofloresgarcia/museeg](https://hugofloresgarcia.github.io/MusEEG/)
 
 MusEEG is a python package designed to function as the software component for a music-oriented Brain-Computer Interface. The code is currently designed for the 14-Channel Emotiv EPOC+ (that's the only headset I have available at the moment), but it should be easily modifiable, provided that you have a means of obtaining a RAW EEG stream from your device. Although the main application is still in progres, the main MusEEG module is ready, and performs preprocessing and classification tasks on EEG data well. To view an example on how to use the MusEEG module, see the `demo.py` file. 
 
@@ -14,6 +15,7 @@ The MusEEG module uses the following libraries
 - scipy
 - pywt
 - mido
+- python-rtmidi
 - audiolazy
 - matplotlib
 - pandas
