@@ -17,6 +17,6 @@ The primary goal of MusEEG is to expand the creative capabilities of musicians p
 team members:
 - [huggo](https://hugofloresgarcia.github.io)
 
-BUT lmk if u wanna contribute!
-
-hit me up at [hf01049@georgiasouthern.edu](mailto:hf01049@georgiasouthern.edu)
+faculty advisors:
+- [Dr. Fernando Rios](mailto:frios@georgiasouthern.edu)
+- [Dr. John Thompson](mailto:jthompson@georgiasouthern.edu)
