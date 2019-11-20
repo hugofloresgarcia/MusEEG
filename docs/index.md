@@ -15,7 +15,7 @@ MusEEG is a python package designed to function as the software component for a 
 The primary goal of MusEEG is to expand the creative capabilities of musicians past any bodily limitations by creating a direct interface between the human brain and a musical instrument. By cutting the medium between the brain and music, MusEEG results in an instrument that is highly accessible to people with motor disabilities. This interdisciplinary project consists of multiple technical and creative modules nested in the fields of computer science, electrical engineering, music performance and composition, concluding with the performance of a piece composed for guitar and EEG.
 
 team members:
-- [huggo](https://hugofloresgarcia.github.io)
+- [hugo flores garcia](https://hugofloresgarcia.github.io)
 
 faculty advisors:
 - [Dr. Fernando Rios](mailto:frios@georgiasouthern.edu)

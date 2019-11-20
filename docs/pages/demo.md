@@ -1,11 +1,6 @@
 ---
 layout: page
 title: demo
-excerpt: "demo app for museeg"
-tags: [about]
-comments: false
-pinned: true
-image:
 ---
 
 The MusEEG demo application provides an example of the basic functionality of the package.
