@@ -28,10 +28,7 @@ class eegData:
     nchannels = 14
     emotivChannels = ["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
                            "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"]
-
-    def __init__(self):
-        self.thresholdChannel = 'F7'
-        self.trainingChunks = []
+    thresholdChannel = 'F7'
 
     def wavelet(self):
         """"
@@ -207,8 +204,7 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
-    def loadChunkFromClient(self, client):
-        self.chunk = client.stream()
+
 
     def cutChunk(self):
         """

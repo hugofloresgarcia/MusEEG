@@ -1,5 +1,6 @@
 from MusEEG import eegData
-
+from numpy import array
+import threading
 # -*- coding: utf8 -*-
 #
 # Cykit Example TCP - Client
@@ -14,7 +15,7 @@ class client:
     port = 5555
 
     # Named fields according to Warren doc !
-    FIELDS = {"COUNTER": 0, "DATA-TYPE": 1, "AF3": 4, "F7": 5, "F3": 2, "FC5": 3, "T7": 6, "P7": 7, "01": 8, "02": 9,
+    FIELDS = {"COUNTER": 0, "DATA-TYPE": 1, "AF3": 4, "F7": 5, "F3": 2, "FC5": 3, "T7": 6, "P7": 7, "O1": 8, "O2": 9,
               "P8": 10, "T8": 11, "FC6": 14, "F4": 15, "F8": 12, "AF4": 13, "DATALINE_1": 16, "DATALINE_2": 17}
 
     def data2dic(self, data):
@@ -64,17 +65,52 @@ class client:
                 self.n_buffer = msg_parts[-1][1:]
 
             # We interprete a whole message (begining from the previous step + the end
-            fields = self.data2dic(buffer + msg_parts[0])
+            fields = self.data2dic(self.buffer + msg_parts[0])
 
             # We setup the buffer for next step
             self.buffer = self.n_buffer
 
             # Print all channel
-            print(fields)
+
             return fields
 
+    def getSmallChunk(self):
+        chunk = []
+        while len(chunk) < eegData.smallchunkSize:
+            data = self.stream()
+            try:
+                chunk.append(
+                    [data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"],
+                     data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+            except TypeError:
+                continue
+        return array(chunk) - 4100
 
-if __name__ == 'main':
+    def getBigChunk(self):
+        chunk = []
+        while len(chunk) < eegData.chunkSize:
+            dummythread = threading.Thread(target=self.stream)
+            data = self.stream()
+            try:
+                chunk.append([data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+            except TypeError:
+                continue
+        return array(chunk) - 4100
+
+    def getThreshBigChunk(self):
+        chunk = []
+        while len(chunk) < eegData.chunkSize:
+            data = self.stream()
+            try:
+                if data[eegData.thresholdChannel] > eegData.threshold:
+                    chunk.append([data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+            except TypeError:
+                continue
+        return array(chunk) - 4100
+
+
+
+if __name__ == "__main__":
     client = client()
     client.setup()
-    client.stream()
+    print(client.getBigChunk())

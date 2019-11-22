@@ -24,7 +24,6 @@ def data2dic(data):
 if __name__ == "__main__":
 
     argparser = argparse.ArgumentParser("Cykitv2 -- EEG TCP Client")
-
     argparser.add_argument("--host", type=str, default="127.0.0.1",
                            help="Host")
     argparser.add_argument("--port", "-p", type=int, default=5555,
