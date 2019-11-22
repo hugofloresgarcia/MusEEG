@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="" />
+    <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/MusEEG/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/MusEEG.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MusEEG.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/Cortex.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/cerebro.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/cerebro.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/lib/cortex.py" beforeDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

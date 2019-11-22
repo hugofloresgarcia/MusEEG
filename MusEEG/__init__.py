@@ -28,3 +28,4 @@ from .classifier import *
 from .music import *
 from .eegData import *
 from .cerebro import *
+from .client import *

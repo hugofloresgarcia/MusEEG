@@ -1,6 +1,7 @@
 from .classifier import *
 from .eegData import *
 from .music import *
+from .client import *
 
 from MusEEG import parentDir, resetPort, closePort
 import threading
@@ -74,12 +75,19 @@ class cerebro:
         music.tempo = 60  # bpm
         music.midiChannel = 0  # add 1
 
+    def setupClient(self):
+        self.client = client()
+        self.client.setup()
+
     def updateChordList(self, chordlistlist):
         for c in chordlistlist:
             index = chordlistlist.index(c)
             gestureBeingDefined = self.gestures[index]
             self.mididict[gestureBeingDefined] = chord(notelist=chordlistlist[index], name=gestureBeingDefined)
             print(self.mididict)
+
+    def loadFromClient(self):
+        self.eeg.loadChunkFromClient(self.client)
 
     def loadFromDataSet(self, name):
         # subdirectory where sample chunks are located and load a random chunk from trianing dataset
@@ -115,3 +123,8 @@ class cerebro:
         else:
             musician.panic()
             musician.playchord(qtrnotes=self.noteDurationFromGUI)
+
+    def mainProcessor(self):
+        """
+        the main processor (where chunks are read and classified and whatnot) should go here. I don't think it should be inside the cerebro.py because cerebro.eeg objects?
+        """

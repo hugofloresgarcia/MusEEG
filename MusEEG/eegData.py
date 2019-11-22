@@ -207,6 +207,9 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
+    def loadChunkFromClient(self, client):
+        self.chunk = client.stream()
+
     def cutChunk(self):
         """
         for smallBrain: cut chunk to smallchunkSize
