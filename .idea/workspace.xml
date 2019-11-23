@@ -557,7 +557,7 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="eeg.sampleRate" />
+        <watch expression="chunk[16]" />
       </configuration>
     </watches-manager>
   </component>

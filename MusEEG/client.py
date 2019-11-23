@@ -50,51 +50,58 @@ class client:
 
     def stream(self):
         self.q = queue.LifoQueue()
-        def workerjob(q):
-            while True:
-                # We read a chunk
-                data = self.s.recv(self.BUFFER_SIZE)
+        def workerjob():
+            try:
+                while True:
+                    # We read a chunk
+                    data = self.s.recv(self.BUFFER_SIZE)
 
-                # If we have to remove \n at the begining
-                if self.remove_newline:
-                    data = data[1:]
-                    self.remove_newline = False
+                    # If we have to remove \n at the begining
+                    if self.remove_newline:
+                        data = data[1:]
+                        self.remove_newline = False
 
-                # Splitting the chunk into the end of the previous message and the begining of the next message
-                msg_parts = data.split(b'\r')
+                    # Splitting the chunk into the end of the previous message and the begining of the next message
+                    msg_parts = data.split(b'\r')
 
-                # If the second part ends with nothing when splitted we will have to remove \n next time
-                if msg_parts[-1] == b'':
-                    self.remove_newline = True
-                    # Therefore the buffer for the next step is empty
-                    self.n_buffer = b''
-                else:
-                    # otherwise we store the begining of the next message as the next buffer
-                    self.n_buffer = msg_parts[-1][1:]
+                    # If the second part ends with nothing when splitted we will have to remove \n next time
+                    if msg_parts[-1] == b'':
+                        self.remove_newline = True
+                        # Therefore the buffer for the next step is empty
+                        self.n_buffer = b''
+                    else:
+                        # otherwise we store the begining of the next message as the next buffer
+                        self.n_buffer = msg_parts[-1][1:]
 
-                # We interprete a whole message (begining from the previous step + the end
-                fields = self.data2dic(self.buffer + msg_parts[0])
+                    # We interprete a whole message (begining from the previous step + the end
+                    fields = self.data2dic(self.buffer + msg_parts[0])
 
-                # We setup the buffer for next step
-                self.buffer = self.n_buffer
+                    # We setup the buffer for next step
+                    self.buffer = self.n_buffer
 
-                # Print all channel
-                self.q.put(fields)
+                    # Print all channel
+                    self.q.put(fields)
+            except Exception as e:
+                self.q.join()
 
-        worker = threading.Thread(target=workerjob, args=(self.q,))
+        worker = threading.Thread(target=workerjob, args=())
         worker.setDaemon(True)
         worker.start()
 
     def getChunk(self, chunkSize=eegData.chunkSize):
         chunk = []
+        datakeeper = []
         while len(chunk) < chunkSize:
             try:
                 data = self.q.get()
-                print(data)
-                chunk.insert(0, [data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+                datakeeper.append(data)
+                chunk.append( [data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
             except TypeError:
-                continue
+                pass
+
+        print(datakeeper)
         return array(chunk) - 4100
+
 
 
 

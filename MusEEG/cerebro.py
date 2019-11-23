@@ -64,15 +64,14 @@ class cerebro:
         resetPort()
 
         # list of gestures to be used in classifier
-        gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
+        self.gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
                     'neutral', 'scrunch', 'tongue']
 
         # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
-        bigBrain = classifier()
-        bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v2'))
-
-        smallBrain = classifier()
-        smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_v1'))
+        self.bigBrain = classifier()
+        self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v2'))
+        self.smallBrain = classifier()
+        self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_v1'))
 
         # define chords and tempo to be used
         music.tempo = 60  # bpm
@@ -102,7 +101,7 @@ class cerebro:
         self.noteDurationFromGUI = noteDurationFromGUI
 
         # classify facial gesture in DNN
-        brainOutput = self.brain.classify(brainInput.reshape(1, 350))
+        brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
         print('\nthe neural network has taken the brain signal and classified it.')
         self.gestureResult = self.gestures[brainOutput]
         print('classification result: ' + self.gestureResult)

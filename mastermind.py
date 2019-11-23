@@ -14,22 +14,24 @@ client.stream()
 def mainProcessor():
     while (True):
         try:
-            while True:
+            activeGesture = False
+            while not activeGesture:
                 eeg = eegData()
                 eeg.chunk = client.getChunk(chunkSize=eegData.smallchunkSize)
                 brainInput = eeg.process()
                 brainOutput = cerebro.smallBrain.classify(brainInput.reshape(1, 350))
-                gestureResult = cerebro.gestures[brainOutput]
-                if gestureResult is not "neutral":
+                if brainOutput is not 1:
                     chunk = list(eeg.chunk)
-                    continue
+                    print('gesture found')
+                    activeGesture = True
 
-            while len(chunk) < eegData.chunkSize():
-                chunk.append(client.getChunk(chunkSize=eegData.smallchunkSize))
+            while len(chunk) < eegData.chunkSize:
+                chunk.extend(list(client.getChunk(chunkSize=eegData.smallchunkSize)))
 
             eeg = eegData()
 
             eeg.chunk = np.array(chunk)
+            eeg.plotRawEEG()
 
             brainInput = eeg.process()
 
