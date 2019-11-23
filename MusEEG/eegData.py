@@ -20,7 +20,7 @@ from matplotlib.figure import Figure
 from MusEEG import parentDir
 
 class eegData:
-    threshold = 20
+    threshold = 1000
     sampleRate = 256
     chunkSize = int(256*1.5)
     smallchunkSize = int(chunkSize/6)

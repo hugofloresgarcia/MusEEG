@@ -5,6 +5,8 @@ from MusEEG.music import chord
 import numpy as np
 import threading
 
+import matplotlib
+
 #todo: this is currently not working, due to an update to the perform and chord methods.
 
 # open and reset midiport
@@ -58,15 +60,16 @@ mididictstr = dict(zip(gestures, chordlist))
 
 client = client()
 client.setup()
+client.stream()
 
 def mainProcessor():
     while (True):
         try:
             eeg = eegData()
 
-            eeg.chunk = client.getThreshBigChunk()
+            eeg.chunk = client.getdummyBigChunk()
 
-            eeg.plotRawEEG()
+            # eeg.plotRawEEG()
 
             brainInput = eeg.process()
 
@@ -77,10 +80,10 @@ def mainProcessor():
             print('classification result: ' + gestureResult)
 
             # refer classification to midi dictionary and refer chord object to musician
-            # musician = mididict[gestureResult]
-            #
-            # t1 = threading.Thread(target=musician.perform, args=[musician, arp])
-            # t1.start()
+            musician = mididict[gestureResult]
+
+            t1 = threading.Thread(target=musician.playchord())
+            t1.start()
 
 
         except KeyboardInterrupt:
