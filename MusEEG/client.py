@@ -95,11 +95,13 @@ class client:
             try:
                 data = self.q.get()
                 datakeeper.append(data)
-                chunk.append( [data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+                chunk.append([data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
             except TypeError:
                 pass
 
-        print(datakeeper)
+        # for items in datakeeper:
+        #     print(items)
+
         return array(chunk) - 4100
 
 

@@ -3,9 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusEEG/cerebro.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/cerebro.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/mastermind.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -131,27 +131,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="letsgetthisui" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="MusEEG" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/demoApp.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="mastermind" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -173,13 +152,34 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="processSmallTrainingData" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="MusEEG" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/for small chunks" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.mastermind" />
+        <item itemvalue="Python.processSmallTrainingData" />
         <item itemvalue="Python.CyKIT" />
         <item itemvalue="Python.client" />
         <item itemvalue="Python.getsocket" />
-        <item itemvalue="Python.letsgetthisui" />
       </list>
     </recent_temporary>
   </component>

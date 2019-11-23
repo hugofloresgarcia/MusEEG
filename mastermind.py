@@ -4,6 +4,7 @@ from MusEEG import eegData, classifier, client, cerebro
 from MusEEG.music import chord
 import numpy as np
 import threading
+import time
 
 cerebro = cerebro()
 
@@ -14,37 +15,55 @@ client.stream()
 def mainProcessor():
     while (True):
         try:
+            checkpoint1  = time.time()
             activeGesture = False
             while not activeGesture:
                 eeg = eegData()
                 eeg.chunk = client.getChunk(chunkSize=eegData.smallchunkSize)
                 brainInput = eeg.process()
                 brainOutput = cerebro.smallBrain.classify(brainInput.reshape(1, 350))
-                if brainOutput is not 1:
+                if brainOutput == 0:
                     chunk = list(eeg.chunk)
                     print('gesture found')
                     activeGesture = True
+            checkpoint2 = time.time()
 
             while len(chunk) < eegData.chunkSize:
                 chunk.extend(list(client.getChunk(chunkSize=eegData.smallchunkSize)))
 
+            checkpoint3 = time.time()
             eeg = eegData()
 
             eeg.chunk = np.array(chunk)
-            eeg.plotRawEEG()
+            # eeg.plotRawEEG()
 
-            brainInput = eeg.process()
+            checkpoint4 = time.time()
 
-            # classify facial gesture in DNN
-            brainOutput = cerebro.bigBrain.classify(brainInput.reshape(1, 350))
-            gestureResult = cerebro.gestures[brainOutput]
-            print('classification result: ' + gestureResult)
+            def processAndPlay(eeg):
+                # print('performing wavelet transform')
+                brainInput = eeg.process()
 
-            # refer classification to midi dictionary and refer chord object to musician
-            resultingChord = cerebro.mididict[gestureResult]
+                # classify facial gesture in DNN
+                brainOutput = cerebro.bigBrain.classify(brainInput.reshape(1, 350))
+                # print('\nthe neural network has taken the brain signal and classified it.')
+                gestureResult = cerebro.gestures[brainOutput]
+                print('classification result: ' + gestureResult)
 
-            musician = threading.Thread(target=resultingChord.playchord())
-            musician.start()
+                resultingChord = cerebro.mididict[gestureResult]
+
+                musician = threading.Thread(target=resultingChord.playchord())
+                musician.start()
+
+            processor = threading.Thread(target=processAndPlay, args=(eeg,))
+            processor.start()
+
+            checkpoint5 = time.time()
+
+            print('checkpoint2 =' + str(checkpoint2 - checkpoint1))
+            print(checkpoint3 - checkpoint2)
+            print(checkpoint4 - checkpoint3)
+            print(checkpoint5 - checkpoint4)
+
         except KeyboardInterrupt:
             break
 

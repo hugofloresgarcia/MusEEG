@@ -35,32 +35,32 @@ splitsies = int(len(gesture)/8)
 
 # load chunks
 for i in range(0, len(nogesture)):
-    nogesture[i].loadChunkFromTraining('smallChunks', 'neutral_' + str(i) + '.csv')
+    nogesture[i].loadChunkFromTraining(os.path.join('smallChunks','hugo_facialgestures'), 'neutral_' + str(i) + '.csv')
 
 for j in range(0, splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'smile_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'smile_' + str(i) + '.csv')
 for j in range(splitsies, 2*splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'bitelowerlip_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'bitelowerlip_' + str(i) + '.csv')
 for j in range(2*splitsies, 3*splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'lookleft_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'lookleft_' + str(i) + '.csv')
 for j in range(3 * splitsies, 4 * splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'lookright_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'lookright_' + str(i) + '.csv')
 for j in range(4 * splitsies, 5 * splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'scrunch_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'scrunch_' + str(i) + '.csv')
 for j in range(5 * splitsies, 6 * splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'tongue_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'tongue_' + str(i) + '.csv')
 for j in range(6 * splitsies, 7 * splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'hardblink_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'hardblink_' + str(i) + '.csv')
 for j in range(7 * splitsies, 8 * splitsies):
     for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining('bigChunks', 'eyebrows_' + str(i) + '.csv')
+         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'eyebrows_' + str(i) + '.csv')
 
 
 gestures = [gesture, nogesture]
