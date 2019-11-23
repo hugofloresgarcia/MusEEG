@@ -50,7 +50,7 @@ class client:
 
     def stream(self):
         self.q = queue.LifoQueue()
-        def do_stuff(q):
+        def workerjob(q):
             while True:
                 # We read a chunk
                 data = self.s.recv(self.BUFFER_SIZE)
@@ -81,25 +81,13 @@ class client:
                 # Print all channel
                 self.q.put(fields)
 
-        worker = threading.Thread(target=do_stuff, args=(self.q,))
+        worker = threading.Thread(target=workerjob, args=(self.q,))
         worker.setDaemon(True)
         worker.start()
 
-    def getSmallChunk(self):
+    def getChunk(self, chunkSize=eegData.chunkSize):
         chunk = []
-        while len(chunk) < eegData.smallchunkSize:
-            data = self.stream()
-            try:
-                chunk.append(
-                    [data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"],
-                     data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
-            except TypeError:
-                continue
-        return array(chunk) - 4100
-
-    def getdummyBigChunk(self):
-        chunk = []
-        while len(chunk) < eegData.chunkSize:
+        while len(chunk) < chunkSize:
             try:
                 data = self.q.get()
                 print(data)
@@ -108,49 +96,9 @@ class client:
                 continue
         return array(chunk) - 4100
 
-    # def plotStream(self):
-    #     offset = 200
-    #     title = 'eeg stream'
-    #     self.chunk = self.getSmallChunk()
-    #
-    #     tAxis = np.arange(0, len(self.chunk))  # create time axis w same length as the data matrix
-    #     tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
-    #
-    #     def update_line(num, data, line):
-    #         line.set_data(data[..., :num])
-    #         return line,
 
-        # while True:
-        #     window = []
-        #     while len(window) < eegData.chunkSize:
-        #         yAxis = self.chunk + offset * 13
-        #         for i in range(0, len(self.chunk[0, :])):
-        #             yAxis[:, i] -= offset * i
-        #
-        #         window.append(yAxis)
-        #         plt.gca().cla()
-        #         plt.plot(tAxis, yAxis)
-        #         plt.show(block=False)
-        #
-        # plt.ioff()
-        # fig1 = plt.figure()
-        # data = self.chunk
-        # plt.ylim(-300, offset * 20)
-        # plt.xlabel('x')
-        # plt.title(title)
-        # plt.legend(["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
-        #             "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"],
-        #            loc='upper right')
-        # plt.xlabel('time')
-        # l, = plt.plot([], [], 'r-')
-        # line_ani = animation.FuncAnimation(fig1, update_line, 25, fargs=(data, l),
-        #                                    interval=250)
-        # plt.show(block=True)
-        # print('hi')
 
 
 if __name__ == "__main__":
     client = client()
     client.setup()
-    # print(client.getBigChunk())
-    client.plotStream()

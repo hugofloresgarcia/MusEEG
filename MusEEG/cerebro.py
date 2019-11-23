@@ -67,9 +67,12 @@ class cerebro:
         gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
                     'neutral', 'scrunch', 'tongue']
 
-        # load the DNN classifier (bigbrain for whole eeg chunks)
-        self.brain = classifier()
-        self.brain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v2'))
+        # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
+        bigBrain = classifier()
+        bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v2'))
+
+        smallBrain = classifier()
+        smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_v1'))
 
         # define chords and tempo to be used
         music.tempo = 60  # bpm
@@ -85,9 +88,6 @@ class cerebro:
             gestureBeingDefined = self.gestures[index]
             self.mididict[gestureBeingDefined] = chord(notelist=chordlistlist[index], name=gestureBeingDefined)
             print(self.mididict)
-
-    def loadFromClient(self):
-        self.eeg.loadChunkFromClient(self.client)
 
     def loadFromDataSet(self, name):
         # subdirectory where sample chunks are located and load a random chunk from trianing dataset
