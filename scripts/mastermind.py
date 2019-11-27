@@ -13,29 +13,46 @@ client.setup()
 client.stream()
 
 def mainProcessor():
+
+    stopChunkGetter=False
+    def getMoreChunks(chunk):
+        while len(chunk) < eegData.chunkSize:
+            chunk.extend(list(client.getChunk(chunkSize=eegData.smallchunkSize)))
+            if stopChunkGetter:
+                break
+
     while (True):
         try:
-            checkpoint1  = time.time()
+            checkpoint1 = time.time()
             activeGesture = False
             while not activeGesture:
                 eeg = eegData()
                 eeg.chunk = client.getChunk(chunkSize=eegData.smallchunkSize)
+
+                fullchunk = list(eeg.chunk)
+                chunkGetter = threading.Thread(target=getMoreChunks, args=(fullchunk,))
+                chunkGetter.start()
+
                 brainInput = eeg.process()
                 brainOutput = cerebro.smallBrain.classify(brainInput.reshape(1, 350))
                 if brainOutput == 0:
-                    chunk = list(eeg.chunk)
                     print('gesture found')
                     activeGesture = True
-            checkpoint2 = time.time()
+                    stopChunkGetter = False
+                    chunkGetter.join()
+                else:
+                    print('no gesture found')
+                    stopChunkGetter = True
+                    chunkGetter.join()
 
-            while len(chunk) < eegData.chunkSize:
-                chunk.extend(list(client.getChunk(chunkSize=eegData.smallchunkSize)))
+
+            checkpoint2 = time.time()
 
             checkpoint3 = time.time()
             eeg = eegData()
 
-            eeg.chunk = np.array(chunk)
-            # eeg.plotRawEEG()
+            eeg.chunk = np.array(fullchunk)
+            eeg.plotRawEEG()
 
             checkpoint4 = time.time()
 
@@ -51,8 +68,7 @@ def mainProcessor():
 
                 resultingChord = cerebro.mididict[gestureResult]
 
-                musician = threading.Thread(target=resultingChord.playchord())
-                musician.start()
+                resultingChord.playchord()
 
             processor = threading.Thread(target=processAndPlay, args=(eeg,))
             processor.start()

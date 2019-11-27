@@ -101,7 +101,6 @@ class client:
 
         # for items in datakeeper:
         #     print(items)
-
         return array(chunk) - 4100
 
 

@@ -3,11 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/getsocket.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mastermind.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/GUIdemo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mastermind.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -69,7 +66,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.processSmallTrainingData">
+  <component name="RunManager" selected="Python.mastermind">
     <configuration name="CyKIT" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="CyKit-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -177,9 +174,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.processSmallTrainingData" />
         <item itemvalue="Python.mastermind" />
         <item itemvalue="Python.CyKIT" />
+        <item itemvalue="Python.processSmallTrainingData" />
         <item itemvalue="Python.client" />
         <item itemvalue="Python.getsocket" />
       </list>
@@ -563,6 +560,11 @@
           <line>95</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/mastermind.py</url>
+          <line>66</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -572,5 +574,10 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="fullchunk[99]" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>
