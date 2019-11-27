@@ -1,6 +1,6 @@
 # the MusEEG/data directory
 
-this project uses data.
+this project uses a good bit of data.
 
 ### longRawTrainingSamples
 

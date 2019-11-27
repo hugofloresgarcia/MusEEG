@@ -3,8 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusEEG/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/mastermind.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/getsocket.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mastermind.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/GUIdemo.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -43,16 +45,16 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
+      <recent name="$PROJECT_DIR$/scripts" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts" />
       <recent name="C:\Users\hufer\Documents\MusEEG" />
       <recent name="C:\Users\hufer\Documents\MusEEG\s" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/data/savedChunks/smallChunks/hugo_facialgestures" />
-      <recent name="$PROJECT_DIR$/data/savedChunks/bigChunks/hugo_facialgestures" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/docs" />
-      <recent name="$PROJECT_DIR$/scripts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -67,7 +69,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.mastermind">
+  <component name="RunManager" selected="Python.processSmallTrainingData">
     <configuration name="CyKIT" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="CyKit-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -143,7 +145,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mastermind.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/mastermind.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -175,8 +177,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.mastermind" />
         <item itemvalue="Python.processSmallTrainingData" />
+        <item itemvalue="Python.mastermind" />
         <item itemvalue="Python.CyKIT" />
         <item itemvalue="Python.client" />
         <item itemvalue="Python.getsocket" />
@@ -537,14 +539,29 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/getsocket.py</url>
-          <line>50</line>
-          <option name="timeStamp" value="9" />
+          <url>file://$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py</url>
+          <line>16</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/getsocket.py</url>
-          <line>52</line>
-          <option name="timeStamp" value="10" />
+          <url>file://$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py</url>
+          <line>17</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py</url>
+          <line>95</line>
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -555,10 +572,5 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="chunk[16]" />
-      </configuration>
-    </watches-manager>
   </component>
 </project>

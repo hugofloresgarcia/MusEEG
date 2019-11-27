@@ -75,7 +75,6 @@ for i in range(0, len(gestures)):
 targets = createTargetVector(gestures, 'yesgesture', 'nogesture')
 
 ##for smallchunks only. smallchunks are 1/8 of bigChunks (comment if you're working with big chunks)
-
 for i in range(0, len(gestures)):
     gesture[i].cutChunk()
 
