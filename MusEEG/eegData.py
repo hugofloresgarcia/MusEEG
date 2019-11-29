@@ -149,7 +149,6 @@ class eegData:
 
         # plt.pause(0.01)
 
-
     def plotWavelets(self, channel):
         """
         plots wavelet decomposition of a single channel self.chunk
@@ -182,7 +181,7 @@ class eegData:
     def loadChunkFromTraining(self, subdir, filename):
         """
         :param subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
-        :param filename: filename
+        :param filename: filename with .csv at the end
         :return:
         """
         self.filename = filename
@@ -204,8 +203,6 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
-
-
     def cutChunk(self):
         """
         for smallBrain: cut chunk to smallchunkSize
@@ -217,8 +214,6 @@ class eegData:
         self.extractStatsFromWavelets()
         inputVector = self.flattenIntoVector()
         return inputVector
-
-
 
 #todo: this has to work with relative paths
 class TrainingDataMacro(eegData):

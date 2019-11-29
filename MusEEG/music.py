@@ -27,19 +27,6 @@ class chord(music):
         self.pause(qtrnotes)
         self.stop()
 
-    # def playchord(self, vel=64, durationInTicks=300):
-    #     self.midi = mido.MidiFile()
-    #     self.track = mido.MidiTrack()
-    #     self.midi.tracks.append(self.track)
-    #     for notes in self.notelist:
-    #         msg = mido.Message('note_on', note=str2midi(notes), velocity=vel, channel=self.midiChannel, time=0)
-    #         self.track.append(msg)
-    #     for notes in self.notelist:
-    #         msg = mido.Message('note_off', note=str2midi(notes), velocity=vel, channel=self.midiChannel, time=durationInTicks)
-    #         self.track.append(msg)
-    #     for msg in self.midi.play():
-    #         port.send(msg)
-
 
     def play(self, vel=64):
         for notes in self.notelist:
