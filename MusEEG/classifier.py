@@ -4,6 +4,9 @@ import numpy as np
 from tensorflow import keras
 from keras import regularizers
 from MusEEG import parentDir
+from sklearn.metrics import confusion_matrix
+from sklearn.utils.multiclass import unique_labels
+import matplotlib.pyplot as plt
 
 class classifier:
     hiddenNeurons = 20
@@ -89,6 +92,14 @@ class classifier:
         test_loss, test_acc = self.model.evaluate(test_inputs, test_targets, verbose)
         print('\nTest accuracy:', test_acc)
         return test_acc
+
+    def print_confusion(self, test_inputs, test_targets):
+        prediction = self.model.predict(test_inputs)
+        prediction = np.array([np.argmax(row) for row in prediction])
+        cm = confusion_matrix(test_targets, prediction)
+        print(cm)
+        return cm
+
 
     def classify(self, inputVector):
         prediction = self.model.predict(inputVector)

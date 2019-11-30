@@ -3,8 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/cerebro.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/cerebro.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/classifier.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusEEG/music.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/music.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demoApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/demoApp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/saveModels.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/saveModels.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -67,7 +70,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.scratch">
+  <component name="RunManager" selected="Python.demoApp">
     <configuration name="CyKIT" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="CyKit-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -89,7 +92,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="client" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="demoApp" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -97,11 +100,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/MusEEG" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MusEEG/client.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/demoApp.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -131,7 +134,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="processSmallTrainingData" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="saveModels" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -139,11 +142,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/for small chunks" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/saveModels.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -172,11 +175,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.demoApp" />
+        <item itemvalue="Python.saveModels" />
         <item itemvalue="Python.scratch" />
         <item itemvalue="Python.mastermind" />
         <item itemvalue="Python.CyKIT" />
-        <item itemvalue="Python.processSmallTrainingData" />
-        <item itemvalue="Python.client" />
       </list>
     </recent_temporary>
   </component>
@@ -481,7 +484,14 @@
       <option name="project" value="LOCAL" />
       <updated>1574442805824</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="clean">
+      <created>1575039784147</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1575039784147</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -528,7 +538,8 @@
     <MESSAGE value="update README.md" />
     <MESSAGE value="took out ethics" />
     <MESSAGE value="started working on tcp client" />
-    <option name="LAST_COMMIT_MESSAGE" value="started working on tcp client" />
+    <MESSAGE value="clean" />
+    <option name="LAST_COMMIT_MESSAGE" value="clean" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -558,11 +569,6 @@
           <line>95</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/scripts/mastermind.py</url>
-          <line>66</line>
-          <option name="timeStamp" value="17" />
-        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -572,10 +578,5 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="fullchunk[99]" />
-      </configuration>
-    </watches-manager>
   </component>
 </project>

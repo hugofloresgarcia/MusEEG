@@ -102,7 +102,7 @@ class cerebro:
 
         # classify facial gesture in DNN
         brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
-        print('\nthe neural network has taken the brain signal and classified it.')
+        print('the neural network has taken the brain signal and classified it.')
         self.gestureResult = self.gestures[brainOutput]
         print('classification result: ' + self.gestureResult)
 
@@ -115,15 +115,10 @@ class cerebro:
         musicianProcess.start()
 
     def perform(self, musician, arp):
-        if arp == True:
+        if arp:
             print('arpeggiate!')
-            musician.arpeggiate(notelength=self.arpDurationFromGUI, vel=64, numTimes=8)
+            musician.arpeggiate(notelength=self.arpDurationFromGUI, vel=30, numTimes=8)
 
         else:
             musician.panic()
-            musician.playchord(qtrnotes=self.noteDurationFromGUI)
-
-    def mainProcessor(self):
-        """
-        the main processor (where chunks are read and classified and whatnot) should go here. I don't think it should be inside the cerebro.py because cerebro.eeg objects?
-        """
+            musician.playchord(qtrnotes=self.noteDurationFromGUI, vel=30)

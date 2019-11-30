@@ -153,30 +153,39 @@ class eegData:
         """
         plots wavelet decomposition of a single channel self.chunk
         :param channel: (between 0 and 13) eeg channel to be plotted
-        :return:
+        :return: figure
         """
-        fig, axes = plt.subplots(3, 2)
-        fig.suptitle('Wavelet Plot')
-        axes[0, 0].plot(self.chunk[:, channel])
-        axes[0, 0].set_title('Raw EEG')
+        fig = Figure()
+        # fig.suptitle('Wavelet Plot')
+        ax = [0 for i in range(0, 6)]
+        try:
+            ax[0] = fig.add_subplot(321)
+            ax[0].plot(self.chunk[:, channel])
+            ax[0].set_title('Raw EEG')
 
-        axes[0, 1].plot(self.cA4[:][channel])
-        axes[0, 1].set_title('Approximation Coefficients')
+            ax[1] = fig.add_subplot(322)
+            ax[1].plot(self.cA4[:][channel])
+            ax[1].set_title('Approximation Coefficients')
 
-        axes[1, 0].plot(self.cD4[:][channel])
-        axes[1, 0].set_title('Level 4 Detail Coefficients')
+            ax[2] = fig.add_subplot(323)
+            ax[2].plot(self.cD4[:][channel])
+            ax[2].set_title('Level 4 Detail Coefficients')
 
-        axes[1, 1].plot(self.cD3[:][channel])
-        axes[1, 1].set_title('Level 3 Detail Coefficients')
+            ax[3] = fig.add_subplot(324)
+            ax[3].plot(self.cD3[:][channel])
+            ax[3].set_title('Level 3 Detail Coefficients')
 
-        axes[2, 0].plot(self.cD2[:][channel])
-        axes[2, 0].set_title('Level 2 Detail Coefficients')
+            ax[4] = fig.add_subplot(325)
+            ax[4].plot(self.cD2[:][channel])
+            ax[4].set_title('Level 2 Detail Coefficients')
 
-        axes[2, 1].plot(self.cD1[:][channel])
-        axes[2, 1].set_title('Level 1 Detail Coefficients')
+            ax[5] = fig.add_subplot(326)
+            ax[5].plot(self.cD1[:][channel])
+            ax[5].set_title('Level 1 Detail Coefficients')
+        except AttributeError:
+            pass
 
-        fig.show()
-        plt.show(block=True)
+        return fig
 
     def loadChunkFromTraining(self, subdir, filename):
         """

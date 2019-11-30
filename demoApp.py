@@ -21,7 +21,7 @@ class demoApp(tk.Frame):
         self.master = master
         self.pack()
         self.create_widgets()
-        
+
     def welcomeMessage(self):
         self.welcomemsg = tk.Message(self, text=cerebro.demomsg, relief=tk.RIDGE)
         self.welcomemsg.anchor('nw')
@@ -51,7 +51,18 @@ class demoApp(tk.Frame):
             cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
                                    arpDurationFromGUI=float(self.arpegbx.get()),
                                    noteDurationFromGUI=float(self.sustainbx.get()))
-            # self.classificationResultVar.set(cerebro.gestureResult)
+
+            # update plot window todo: make it not have to redefine entire plot window for faster processing
+            self.canvas.flush_events()
+            self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotWavelets(1), self)
+            self.canvas.draw()
+            self.say_hi()
+            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
+            # self.wavcanvas.flush_events()
+            # self.wavcanvas = FigureCanvasTkAgg(cerebro.eeg.plotWavelets(1), self)
+            # self.wavcanvas.draw()
+            # self.say_hi()
+            # self.wavcanvas.get_tk_widget().grid(row=0, column=6, rowspan=11, columnspan=3, padx=5, pady=5)
 
         self.processAndSendBttn = tk.Button(self, command=processFunction)
         self.processAndSendBttn["text"] = "Process and Send to Musician"
@@ -62,12 +73,7 @@ class demoApp(tk.Frame):
             #load from dataset
             cerebro.loadFromDataSet(name=gestureToLoad)
 
-            #update plot window todo: make it not have to redefine entire plot window for faster processing
-            self.canvas.flush_events()
-            self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
-            self.canvas.draw()
-            self.say_hi()
-            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3,  padx=5, pady=5)
+
 
         self.gesturebttn = list()
         for GESTURES in cerebro.gestures:
@@ -76,10 +82,16 @@ class demoApp(tk.Frame):
             self.gesturebttn[index].grid(row=self.gestureButtonStartRow+index, column=0)
 
     def plotWindow(self):
-        self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotRawEEGui(), self)
+        self.canvas = FigureCanvasTkAgg(cerebro.eeg.plotWavelets(1), self)
         self.canvas.draw()
         # self.canvas.get_tk_widget().pack(side="right", expand=True)
         self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
+
+    # def wavPlotWindow(self):
+    #     self.wavcanvas = FigureCanvasTkAgg(cerebro.eeg.plotWavelets(1), self)
+    #     self.wavcanvas.draw()
+    #     # self.canvas.get_tk_widget().pack(side="right", expand=True)
+    #     self.wavcanvas.get_tk_widget().grid(row=0, column=6, rowspan=11, columnspan=3, padx=5, pady=5)
 
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
@@ -110,8 +122,6 @@ class demoApp(tk.Frame):
             self.chordEntrybx.append(tk.Entry(self))
             self.chordEntrybx[index].insert(0, listToString(cerebro.defaultchordlist[index]))
             self.chordEntrybx[index].grid(row=self.gestureButtonStartRow+index, column=1)
-
-
 
         #retrieve chords from list
         def defineChordList():
@@ -145,6 +155,7 @@ class demoApp(tk.Frame):
         self.chordDuration()
         self.gestureButtons()
         self.plotWindow()
+        # self.wavPlotWindow()
         self.checkboxArpeggiate()
         # self.classificationResult()
         self.buttonProcessAndSend()
@@ -153,7 +164,7 @@ class demoApp(tk.Frame):
 
 
     def say_hi(self):
-        print("hi there, everyone!")
+        print("\nhi there, everyone!")
 
 
 cerebro.loadFromDataSet(name=demoApp.defaultGesture)
