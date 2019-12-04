@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusEEG/cerebro.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/cerebro.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/classifier.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demoApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/demoApp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/saveModels.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/saveModels.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -159,6 +155,9 @@
       <module name="MusEEG" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -491,7 +490,14 @@
       <option name="project" value="LOCAL" />
       <updated>1575039784147</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="added wavelet plot to demo">
+      <created>1575130584707</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1575130584707</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -539,7 +545,8 @@
     <MESSAGE value="took out ethics" />
     <MESSAGE value="started working on tcp client" />
     <MESSAGE value="clean" />
-    <option name="LAST_COMMIT_MESSAGE" value="clean" />
+    <MESSAGE value="added wavelet plot to demo" />
+    <option name="LAST_COMMIT_MESSAGE" value="added wavelet plot to demo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

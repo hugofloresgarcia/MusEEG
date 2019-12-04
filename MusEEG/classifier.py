@@ -1,12 +1,12 @@
 import os
+import sys
 import pandas
 import numpy as np
+import tensorflow as tf
 from tensorflow import keras
 from keras import regularizers
 from MusEEG import parentDir
 from sklearn.metrics import confusion_matrix
-from sklearn.utils.multiclass import unique_labels
-import matplotlib.pyplot as plt
 
 class classifier:
     hiddenNeurons = 20
@@ -100,7 +100,6 @@ class classifier:
         print(cm)
         return cm
 
-
     def classify(self, inputVector):
         prediction = self.model.predict(inputVector)
         output = np.argmax(prediction)
@@ -112,5 +111,27 @@ class classifier:
     def savemodel(self, filename, address=os.path.join(parentDir, 'data', 'savedModels')):
         self.model.save(os.path.join(address, filename), save_format='tf')
 
-    def loadmodel(self,  filename, address=os.path.join(parentDir, 'data', 'savedModels')):
+    def loadmodel(self, filename, address=os.path.join(parentDir, 'data', 'savedModels')):
+        """
+        load a saved keras model
+        :param filename: name of the savedModel
+        :param address: address (relative to the parent directory) where your model is stored. defaults to /data/SavedModels
+        :return:
+        """
         self.model = keras.models.load_model(os.path.join(address, filename))
+        if os.uname()[1] == 'raspberrypi':
+            litemodel = self.createLiteModel(self.model)
+            self.model = litemodel
+
+
+    def createLiteModel(self, model):
+        """
+        create tflite model from saved keras model
+        :param filename: name of the savedModel
+        :param address: address (relative to the parent directory) where your model is stored. defaults to /data/SavedModels
+        :return: tensorflow lite model
+        """
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        return converter.convert()
+
+
