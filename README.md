@@ -36,9 +36,9 @@ To run the demo app:
 `python demoApp.py`
 
 ## Code Examples
-Since I am still waiting on departmental funding to obtain a RAW EEG license to access RAW EEG data, there still isn't a way to implement MusEEG in real time. However, the demo.py file showcases how the eegData, classifier, and chord classes are used to create an eegData object, classify it using the classifier, and use it to trigger a MIDI event using chord. To run the file, simply run this command from terminal: 
+Since I am still waiting on departmental funding to obtain a RAW EEG license to access RAW EEG data, there still isn't a way to implement MusEEG in real time. However, the demoApp.py file showcases how the eegData, classifier, and chord classes are used to create an eegData object, classify it using the classifier, and use it to trigger a MIDI event using chord. To run the file, simply run this command from terminal: 
 
-`python example.py`
+`python demoApp.py`
 
 NOTE: because MusEEG creates a virtual MIDI port upon startup, `demoApp.py` and `example.py` must be run BEFORE the virtual instrument/DAW is opened for it to function properly. If not, MIDI drivers must be reset from the DAW prior to operation. 
 
