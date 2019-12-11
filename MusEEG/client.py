@@ -1,7 +1,9 @@
 from MusEEG import eegData
+from MusEEG import TrainingDataMacro
 import numpy as np
 from numpy import array
 import threading
+import time
 # -*- coding: utf8 -*-
 #
 # Cykit Example TCP - Client
@@ -20,6 +22,7 @@ class client:
     host = "127.0.0.1"
     port = 5555
     sampleRate = eegData.sampleRate
+    streamIsSimulated = False
 
     # Named fields according to Warren doc !
     FIELDS = {"COUNTER": 0, "DATA-TYPE": 1, "AF3": 4, "F7": 5, "F3": 2, "FC5": 3, "T7": 6, "P7": 7, "O1": 8, "O2": 9,
@@ -80,9 +83,10 @@ class client:
                     self.buffer = self.n_buffer
 
                     # Print all channel
-                    self.q.put(fields)
-            except Exception as e:
+                    self.q.put(fields, block=False)
+            except Exception:
                 self.q.join()
+                self.s.close()
 
         worker = threading.Thread(target=workerjob, args=())
         worker.setDaemon(True)
@@ -90,20 +94,34 @@ class client:
 
     def getChunk(self, chunkSize=eegData.chunkSize):
         chunk = []
-        datakeeper = []
         while len(chunk) < chunkSize:
             try:
                 data = self.q.get()
-                datakeeper.append(data)
-                chunk.append([data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"], data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+                ## this conditional is to differentiate between a simulated stream and the actual server
+                if not self.streamIsSimulated:
+                    chunk.append([data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"],
+                                  data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+                else:
+                    chunk.append(data + 4100)
             except TypeError:
                 pass
 
-        # for items in datakeeper:
-        #     print(items)
         return array(chunk) - 4100
 
+    def simulateStream(self, gesture):
+        self.streamIsSimulated = True
+        eeg = TrainingDataMacro()
+        eeg.importCSV(subdir='hugo_facialgestures', filename=gesture+'.csv', tag=gesture)
+        self.q = queue.LifoQueue()
+        def worker():
+            for i in range(0,len(eeg.matrix)):
+                packet = eeg.matrix[i][:]
+                self.q.put(item=packet)
+                time.sleep(1/eegData.sampleRate)
 
+        simulationWorker = threading.Thread(target=worker)
+        simulationWorker.setDaemon(True)
+        simulationWorker.start()
 
 
 

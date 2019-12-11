@@ -115,7 +115,7 @@ class eegData:
                    loc='upper right')
         plt.xlabel('time')
         plt.show(block=True)
-        # plt.pause(0.01)
+        plt.pause(.001)
 
     def plotRawEEGui(self, offset=200, plotTitle='eeg'):
         """

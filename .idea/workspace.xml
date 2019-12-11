@@ -4,6 +4,9 @@
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/classifier.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mastermind.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,16 +45,16 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/docs" />
-      <recent name="$PROJECT_DIR$/scripts" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/scripts" />
       <recent name="C:\Users\hufer\Documents\MusEEG" />
       <recent name="C:\Users\hufer\Documents\MusEEG\s" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/data/savedChunks/smallChunks/hugo_facialgestures" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
+      <recent name="$PROJECT_DIR$/scripts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -66,7 +69,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.demoApp">
+  <component name="RunManager" selected="Python.mastermind">
     <configuration name="CyKIT" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="CyKit-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -174,10 +177,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.mastermind" />
         <item itemvalue="Python.demoApp" />
         <item itemvalue="Python.saveModels" />
         <item itemvalue="Python.scratch" />
-        <item itemvalue="Python.mastermind" />
         <item itemvalue="Python.CyKIT" />
       </list>
     </recent_temporary>
@@ -490,14 +493,7 @@
       <option name="project" value="LOCAL" />
       <updated>1575039784147</updated>
     </task>
-    <task id="LOCAL-00043" summary="added wavelet plot to demo">
-      <created>1575130584707</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1575130584707</updated>
-    </task>
-    <option name="localTasksCounter" value="44" />
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -545,8 +541,7 @@
     <MESSAGE value="took out ethics" />
     <MESSAGE value="started working on tcp client" />
     <MESSAGE value="clean" />
-    <MESSAGE value="added wavelet plot to demo" />
-    <option name="LAST_COMMIT_MESSAGE" value="added wavelet plot to demo" />
+    <option name="LAST_COMMIT_MESSAGE" value="clean" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -575,6 +570,11 @@
           <url>file://$PROJECT_DIR$/scripts/for small chunks/processSmallTrainingData.py</url>
           <line>95</line>
           <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/mastermind.py</url>
+          <line>46</line>
+          <option name="timeStamp" value="23" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

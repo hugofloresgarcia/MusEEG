@@ -1,5 +1,5 @@
 import os
-import sys
+import platform
 import pandas
 import numpy as np
 import tensorflow as tf
@@ -119,7 +119,7 @@ class classifier:
         :return:
         """
         self.model = keras.models.load_model(os.path.join(address, filename))
-        if os.uname()[1] == 'raspberrypi':
+        if platform.uname()[1] == 'raspberrypi':
             litemodel = self.createLiteModel(self.model)
             self.model = litemodel
 
