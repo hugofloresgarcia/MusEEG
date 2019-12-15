@@ -1,6 +1,7 @@
 """
 sortTrainingData
-This is meant for u to look through each of the really long CSV files and cut the time series EEG data into chunks that contain the desired gesture
+This is meant for u to look through each of the really long CSV files and cut the time series EEG data into chunks that
+contain the desired gesture
 """
 import os
 from MusEEG import TrainingDataMacro
@@ -14,7 +15,8 @@ def evalAndPrep(obj, chunksubdir=os.path.join('trainbatch2', 'bigChunks')):
 
 #this is where the your training data is stored
 subdir = 'trainbatch2'
-gestures = ['smile', 'bitelowerlip', 'hardblink', 'lookleft', 'lookright', 'neutral', 'scrunch', 'tongue', 'eyebrows']
+gestures = ['smile']
+# gestures = ['smile', 'bitelowerlip', 'hardblink', 'lookleft', 'lookright', 'neutral', 'scrunch', 'tongue', 'eyebrows']
 
 #create TrainingDataMacro objects for each of the gestures
 gestureObjects = [TrainingDataMacro() for gestureItem in gestures]

@@ -11,6 +11,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 plt.ion()
 from matplotlib.figure import Figure
+from matplotlib.pyplot import figure
 
 from MusEEG import parentDir
 
@@ -124,13 +125,14 @@ class eegData:
 
         # plt.pause(0.01)
 
-    def plotWavelets(self, channel):
+    def plotWavelets(self, channel, fig=None):
         """
         plots wavelet decomposition of a single channel self.chunk
         :param channel: (between 0 and 13) eeg channel to be plotted
         :return: figure
         """
-        fig = Figure()
+        if fig is None:
+            fig = Figure()
         # fig.suptitle('Wavelet Plot')
         ax = [0 for i in range(0, 6)]
         try:
@@ -157,7 +159,8 @@ class eegData:
             ax[5] = fig.add_subplot(616)
             ax[5].plot(self.cD1[:][channel])
             ax[5].set_title('Level 1 Detail Coefficients')
-            fig.show()
+            fig.canvas.draw()
+            plt.pause(0.001)
         except AttributeError:
             pass
         #todo: make this work with the UI
@@ -224,6 +227,7 @@ class TrainingDataMacro(eegData):
         self.curatedChunk = []
         self.label = []
         self.trainingChunks = []
+        self.curatedChunkCount = 0
 
     def importCSV(self, subdir, filename, tag):
         """
@@ -309,6 +313,55 @@ class TrainingDataMacro(eegData):
 
         return fig
 
+    def newChunkEvalMethod(self):
+        """
+                creates chunks that meet the threshold and backtrack criteria. Basically, if a certain channel's voltage passes a
+                certain threshold, a chunk of samples will be saved to self.trainingChunks
+                :return:
+                """
+        self.nChunks = 0
+        i = 0
+        fig = figure()
+        while i < len(self.F7):
+            # see if it passes threshold
+            if ((abs(self.F7[i]) >= self.threshold) or (abs(self.AF3[i]) >= self.threshold) or (
+                    abs(self.T7[i]) >= self.threshold)) and (i > eegData.backTrack) and (
+                    i < (len(self.F7) - eegData.chunkSize)):
+                # make sure user evaluates whether threshold was right or not
+                approvedByUser = False
+                chunkStart = i - eegData.backTrack
+                chunkEnd = chunkStart + eegData.chunkSize
+
+                chunkUnderEvaluation = self.matrix[chunkStart:chunkEnd, :]
+                while not approvedByUser:
+                    self.chunk = chunkUnderEvaluation
+                    self.plotRawEEG(fig)
+                    shift = input('enter desired shift (in samples, negative numbers mean shift left) ')
+                    shift = int(shift)
+                    chunkStart = chunkStart + shift
+                    chunkEnd = chunkEnd + shift
+
+                    self.plotRawEEG(fig)
+                    allgood = input('this good? (y/n)')
+                    if allgood == 'y':
+                        approvedByUser = True
+
+                chunkUnderEvaluation = self.matrix[chunkStart:chunkEnd, :]
+                self.chunk = chunkUnderEvaluation
+                self.plotRawEEG(fig)
+                prompt = input('would you like to use sample number ' + str(i) + '? (y/n) ')
+                if prompt == 'y':
+                    self.curatedChunk.append(self.trainingChunks[i])
+                    self.curatedChunkCount += 1
+
+
+
+                self.trainingChunks.append(
+                    pandas.DataFrame(self.matrix[chunkStart:chunkEnd, :], columns=self.emotivChannels))
+                self.nChunks = self.nChunks + 1
+                i = chunkEnd + 1
+            i += 1
+
     def evalChunk(self):
         """
                 evaluates chunks
@@ -336,7 +389,7 @@ class TrainingDataMacro(eegData):
         for i in range(len(self.curatedChunk)):
             self.curatedChunk[i].to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, self.tag + '_' + str(i) + '.csv'))
 
-    def plotRawEEG(self, matrix, offset=200):
+    def plotRawCSV(self, matrix, offset=200):
         """
         note: the only difference between this and the parent method is that this one displays the title of the thing
         being plotted

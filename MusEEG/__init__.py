@@ -21,9 +21,6 @@ np.set_printoptions(threshold=sys.maxsize)
 fileDir = os.path.dirname(os.path.abspath(__file__)) #should be the parent MusEEG directory
 parentDir = os.path.dirname(fileDir)
 
-backend = 'Qt4Agg'
-
-#todo: make the plot windows non blocking and non stupid too
 
 
 from .classifier import *
@@ -31,4 +28,5 @@ from .music import *
 from .eegData import *
 from .cerebro import *
 from .client import *
+from .Processor import *
 

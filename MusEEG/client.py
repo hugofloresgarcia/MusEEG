@@ -174,7 +174,11 @@ class client:
         return array(chunk) - 4100
 
 
-    def plotClientStream(self, streamfigure, chunkfigure, offset=400):
+    def plotClientStream(self, streamfigure=None, chunkfigure=None, offset=400):
+        if streamfigure is None:
+            streamfigure = plt.Figure()
+        if chunkfigure is None:
+            chunkfigure = plt.Figure()
         while not self.plotq.empty():
             appendedChunk = []
             while len(appendedChunk) < self.windowSize/8:
@@ -197,7 +201,7 @@ class client:
             if not self.chunkq.empty():
                 eeg = eegData()
                 eeg.chunk = self.chunkq.get()
-                eeg.plotRawEEG(chunkfigure)
+                chunkfigure = eeg.plotRawEEG(chunkfigure)
 
 
             streamfigure.canvas.flush_events()
@@ -210,3 +214,4 @@ class client:
             streamfigure.canvas.draw()
             plt.pause(0.001)
 
+        return streamfigure, chunkfigure
