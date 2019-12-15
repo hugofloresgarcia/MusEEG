@@ -14,7 +14,7 @@ class classifier:
     inputShape = 350
 
     def __init__(self):
-        print('welcome')
+        print('classifier says hi')
 
     def loadTrainingData(self, percentTrain=0.75,
                          address=os.path.join(parentDir, 'data', 'training'),
@@ -42,7 +42,8 @@ class classifier:
 
     # build the model
     def build_model(self, inputShape, hiddenNeurons, numberOfTargets, hiddenActivation='relu',
-                    outputActivation='softmax', regularization='l2_l2', optimizer='adam', loss='sparse_categorical_crossentropy'):
+                    outputActivation='softmax', regularization='l2_l2', optimizer='adam',
+                    loss='sparse_categorical_crossentropy'):
         if regularization == 'l1':
             reg = regularizers.l1(0.001)
             self.model = keras.Sequential([
@@ -122,7 +123,6 @@ class classifier:
         if platform.uname()[1] == 'raspberrypi':
             litemodel = self.createLiteModel(self.model)
             self.model = litemodel
-
 
     def createLiteModel(self, model):
         """

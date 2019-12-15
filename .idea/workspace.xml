@@ -3,16 +3,24 @@
   <component name="ChangeListManager">
     <list default="true" id="75356cb8-c4de-4640-860b-28d04427eda9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/MusEEG/classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/classifier.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mastermind.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mastermind.py" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/MusEEG/eegData.py" beforeDir="false" afterPath="$PROJECT_DIR$/MusEEG/eegData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example.py" beforeDir="false" afterPath="$PROJECT_DIR$/example.py" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="MusEEG" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -42,7 +50,7 @@
     <property name="full.screen.before.presentation.mode" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -493,7 +501,25 @@
       <option name="project" value="LOCAL" />
       <updated>1575039784147</updated>
     </task>
+<<<<<<< Updated upstream
     <option name="localTasksCounter" value="43" />
+=======
+    <task id="LOCAL-00043" summary="added wavelet plot to demo">
+      <created>1575130584707</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1575130584707</updated>
+    </task>
+    <task id="LOCAL-00044" summary="added tf.lite patch for rpi">
+      <created>1575492188749</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1575492188749</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
+>>>>>>> Stashed changes
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -541,7 +567,13 @@
     <MESSAGE value="took out ethics" />
     <MESSAGE value="started working on tcp client" />
     <MESSAGE value="clean" />
+<<<<<<< Updated upstream
     <option name="LAST_COMMIT_MESSAGE" value="clean" />
+=======
+    <MESSAGE value="added wavelet plot to demo" />
+    <MESSAGE value="added tf.lite patch for rpi" />
+    <option name="LAST_COMMIT_MESSAGE" value="added tf.lite patch for rpi" />
+>>>>>>> Stashed changes
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

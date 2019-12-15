@@ -56,10 +56,10 @@ mididict = {'smile': cmaj7sharp11add13,
 
 mididictstr = dict(zip(gestures, chordlist))
 
-def dothething(eeg, verbose=True, arp=None):
+def dothething(eeg, verbose=True):
     if verbose:
         # plot raw eeg data
-        eeg.plotRawEEG(title=eeg.filename)
+        eeg.plotRawEEG(plotTitle=eeg.filename)
 
         # process eegdata: wavelet transform, statistical extraction
         print('performing wavelet transform')
@@ -77,7 +77,7 @@ def dothething(eeg, verbose=True, arp=None):
         # refer classification to midi dictionary and refer chord object to musician
         musician = mididict[gestureResult]
 
-        t1 = threading.Thread(target=perform, args=[musician, arp])
+        t1 = threading.Thread(target=musician.playchord(), args=[])
         t1.start()
 
 
@@ -94,7 +94,7 @@ def dothething(eeg, verbose=True, arp=None):
         # refer classification to midi dictionary and refer chord object to musician
         musician = mididict[gestureResult]
 
-        t1 = threading.Thread(target=musician.perform, args=[musician, arp])
+        t1 = threading.Thread(target=musician.playchord)
         t1.start()
 
 
@@ -120,13 +120,12 @@ def demoComponent():
                 continue
 
             # subdirectory where sample chunks are located and load a random chunk from trianing dataset
-            SUBDIR = os.path.join('bigChunks', 'hugo_facialgestures')
+            SUBDIR = os.path.join('trainbatch1', 'bigChunks')
             eeg.loadChunkFromTraining(subdir=SUBDIR, filename=name + '_' + str(np.random.randint(0, 60)) + '.csv')
 
             # only show the verbose version once
             if firstTime == True:
-                arp = input('play the chords straight or arpeggiate?')
-                dothething(eeg, verbose=True, arp=arp)
+                dothething(eeg, verbose=True)
                 firstTime = False
             else:
                 dothething(eeg, verbose=False)

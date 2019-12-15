@@ -24,10 +24,12 @@ class cerebro:
     gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
                 'neutral', 'scrunch', 'tongue']
 
+
     """
     chord objects are defined here. the chord() class takes any set of notes as an input.
     """
-    cmaj7sharp11add13 = chord(['C4', 'E4', 'G4', 'B4', 'D5', 'F#4', 'A5'], name='cmaj7sharp11add13')
+    cmaj7sharp11add13 = chord(['C4', 'E4', 'G4', 'B4', 'D5', 'F#4', 'A5'],
+                              name='cmaj7sharp11add13')
     fminmaj7 = chord(['F4', 'Ab4', 'C5', 'E5'], name='fminmaj7')
     fmaj7 = chord(['F4', 'A4', 'C5', 'E5', 'G5'], name='fmaj7')
     ab69 = chord(['Ab4', 'C5', 'F5', 'Bb5', 'C6'], name='ab69')
@@ -40,7 +42,8 @@ class cerebro:
     dbmaj7 = chord(['Db4', 'F4', 'Ab4', 'C5', 'Eb5'], name='dbmaj7')
     margaretsmagicchord = chord(['D4', 'F4', 'A#4'], name='margschord')
 
-    defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist, fmaj7.notelist, ab69.notelist, dmin7b5.notelist,
+    defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist,
+                        fmaj7.notelist, ab69.notelist, dmin7b5.notelist,
                         c5.notelist, noChord.notelist,
                         polychordcde.notelist, dbmaj7.notelist]
 
@@ -90,7 +93,7 @@ class cerebro:
 
     def loadFromDataSet(self, name):
         # subdirectory where sample chunks are located and load a random chunk from trianing dataset
-        SUBDIR = os.path.join('bigChunks', 'hugo_facialgestures')
+        SUBDIR = os.path.join('trainbatch1', 'bigChunks')
         self.eeg.loadChunkFromTraining(subdir=SUBDIR, filename=name + '_' + str(np.random.randint(0, 60)) + '.csv')
 
     def processAndPlay(self, arp, tempo, arpDurationFromGUI, noteDurationFromGUI):

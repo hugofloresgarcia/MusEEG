@@ -1,15 +1,10 @@
 import os
-import sys
-import time
-
 import pandas
 import numpy as np
 from pywt import wavedec
 
 import pickle
 from scipy.stats import kurtosis, skew
-
-from keras import regularizers
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -20,7 +15,7 @@ from matplotlib.figure import Figure
 from MusEEG import parentDir
 
 class eegData:
-    threshold = 1000
+    threshold = 350
     sampleRate = 256
     chunkSize = int(256*1.5)
     smallchunkSize = int(chunkSize/6)
@@ -28,7 +23,8 @@ class eegData:
     nchannels = 14
     emotivChannels = ["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
                            "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"]
-    thresholdChannel = 'F7'
+    eegChannels = [channel[4:] for channel in emotivChannels]
+    thresholdChannels = ['F7', 'AF4', 'T7']
 
     def wavelet(self):
         """"
@@ -88,62 +84,41 @@ class eegData:
         self.inputVector = self.inputVector.flatten()
         return self.inputVector
 
-    def plotRawEEG(self, offset=200, title='eeg'):
-        """
-        :param title: title of the figure
-        :param offset: DC offset between eeg channels
-        :return: plot with all 14 eeg channels
-        """
-        # define time axis
-        tAxis = np.arange(0, len(self.chunk))  # create time axis w same length as the data matrix
-        tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
-
-        # use eeg matrix as y axis
-        yAxis = self.chunk + offset * 13
-
-        # add offset to display all channels
-        for i in range(0, len(self.chunk[0, :])):
-            yAxis[:, i] -= offset * i
-
-        # plot figure
-        plt.figure()
-        plt.plot(tAxis, yAxis)
-        plt.title(title)
-        plt.ylim(-300, offset * 20)
-        plt.legend(["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
-                    "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"],
-                   loc='upper right')
-        plt.xlabel('time')
-        plt.show(block=True)
-        plt.pause(.001)
-
-    def plotRawEEGui(self, offset=200, plotTitle='eeg'):
+    def plotRawEEG(self, figure=None, chunk=None, offset=200, plotTitle='eeg'):
         """
         this version spits out a figure window for use in the UI
         :param title: title of the figure
         :param offset: DC offset between eeg channels
         :return: plot with all 14 eeg channels
         """
+        if chunk is None:
+            chunk = self.chunk
         # define time axis
-        tAxis = np.arange(0, len(self.chunk))  # create time axis w same length as the data matrix
+        tAxis = np.arange(0, len(chunk))  # create time axis w same length as the data matrix
         tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
 
         # use eeg matrix as y axis
-        yAxis = self.chunk + offset * 13
+        yAxis = chunk + offset * 13
 
         # add offset to display all channels
-        for i in range(0, len(self.chunk[0, :])):
+        for i in range(0, len(chunk[0, :])):
             yAxis[:, i] -= offset * i
 
         # plot figure
-        figure = Figure()
+        if figure is None:
+            figure = Figure()
+
+        figure.canvas.flush_events()
         ax = figure.add_subplot(111)
+        ax.clear()
         ax.set_title(plotTitle)
         ax.set_ylim(-300, offset * 20)
         ax.legend(["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
                    "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"])
         ax.set_xlabel('time')
         ax.plot(tAxis, yAxis)
+        figure.canvas.draw()
+        plt.pause(0.001)
 
         return figure
 
@@ -159,32 +134,33 @@ class eegData:
         # fig.suptitle('Wavelet Plot')
         ax = [0 for i in range(0, 6)]
         try:
-            ax[0] = fig.add_subplot(321)
+            ax[0] = fig.add_subplot(611)
             ax[0].plot(self.chunk[:, channel])
             ax[0].set_title('Raw EEG')
 
-            ax[1] = fig.add_subplot(322)
+            ax[1] = fig.add_subplot(612)
             ax[1].plot(self.cA4[:][channel])
             ax[1].set_title('Approximation Coefficients')
 
-            ax[2] = fig.add_subplot(323)
+            ax[2] = fig.add_subplot(613)
             ax[2].plot(self.cD4[:][channel])
             ax[2].set_title('Level 4 Detail Coefficients')
 
-            ax[3] = fig.add_subplot(324)
+            ax[3] = fig.add_subplot(614)
             ax[3].plot(self.cD3[:][channel])
             ax[3].set_title('Level 3 Detail Coefficients')
 
-            ax[4] = fig.add_subplot(325)
+            ax[4] = fig.add_subplot(615)
             ax[4].plot(self.cD2[:][channel])
             ax[4].set_title('Level 2 Detail Coefficients')
 
-            ax[5] = fig.add_subplot(326)
+            ax[5] = fig.add_subplot(616)
             ax[5].plot(self.cD1[:][channel])
             ax[5].set_title('Level 1 Detail Coefficients')
+            fig.show()
         except AttributeError:
             pass
-
+        #todo: make this work with the UI
         return fig
 
     def loadChunkFromTraining(self, subdir, filename):
@@ -224,6 +200,16 @@ class eegData:
         inputVector = self.flattenIntoVector()
         return inputVector
 
+    @classmethod
+    def checkThreshold(cls, packetdict):
+        thresholdActive = False
+        for channel in cls.thresholdChannels:
+            if abs(packetdict[channel]) >= cls.threshold:
+                thresholdActive = True
+        return thresholdActive
+
+
+
 #todo: this has to work with relative paths
 class TrainingDataMacro(eegData):
     """
@@ -237,6 +223,7 @@ class TrainingDataMacro(eegData):
         super().__init__()
         self.curatedChunk = []
         self.label = []
+        self.trainingChunks = []
 
     def importCSV(self, subdir, filename, tag):
         """
@@ -348,16 +335,6 @@ class TrainingDataMacro(eegData):
         """
         for i in range(len(self.curatedChunk)):
             self.curatedChunk[i].to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, self.tag + '_' + str(i) + '.csv'))
-
-    def saveTrainingObject(self, filename, address=os.path.join(parentDir, 'data', 'savedTrainingObjects')):
-        filehandle = open(os.path.join(address, filename), 'w')
-        pickle.dump(self, filehandle)
-
-    @staticmethod
-    def loadFromTrainingObject(filename, address=os.path.join(parentDir, 'data', 'savedTrainingObjects')):
-        file = open(os.path.join(address, filename), 'r')
-        object = pickle.load(file)
-        return object
 
     def plotRawEEG(self, matrix, offset=200):
         """

@@ -7,7 +7,7 @@ train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(
 
 #define the different parameters to be tried
 results = []
-hiddenActivations = ['relu', 'sigmoid', 'tanh', 'elu' ]
+hiddenActivations = ['relu', 'sigmoid', 'tanh', 'elu']
 outputActivations = ['softmax']
 hiddenNeurons = range(50, 250, 25)
 regularizers = ['l1', 'l2', 'l1_l2', 'no']

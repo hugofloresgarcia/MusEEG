@@ -10,9 +10,10 @@ import time
 # author: Icannos
 # modified for MusEEG by: hugo flores garcia
 import matplotlib
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+from matplotlib.figure import Figure
+from collections import deque
+
 
 import socket
 import queue
@@ -23,10 +24,18 @@ class client:
     port = 5555
     sampleRate = eegData.sampleRate
     streamIsSimulated = False
+    done = False
+
+    windowSize = eegData.chunkSize * 2
+    line = deque([[0 for channels in range(0, eegData.nchannels)] for packets in range(0, windowSize)])
 
     # Named fields according to Warren doc !
     FIELDS = {"COUNTER": 0, "DATA-TYPE": 1, "AF3": 4, "F7": 5, "F3": 2, "FC5": 3, "T7": 6, "P7": 7, "O1": 8, "O2": 9,
               "P8": 10, "T8": 11, "FC6": 14, "F4": 15, "F8": 12, "AF4": 13, "DATALINE_1": 16, "DATALINE_2": 17}
+
+    def getCounter(self, packet):
+        counter = packet["COUNTER"]
+        return counter
 
     def data2dic(self, data):
         field_list = data.split(b',')
@@ -35,6 +44,11 @@ class client:
             return {field: float(field_list[index]) for field, index in self.FIELDS.items()}
         else:
             return -1
+
+    def dict2list(self, data):
+        list = [data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"],
+                data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]]
+        return list
 
     def setup(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,33 +112,101 @@ class client:
             try:
                 data = self.q.get()
                 ## this conditional is to differentiate between a simulated stream and the actual server
+                chunk.append(self.dict2list(data))
                 if not self.streamIsSimulated:
-                    chunk.append([data["AF3"], data["F7"], data["F3"], data["FC5"], data["T7"], data["P7"], data["O1"],
-                                  data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]])
+                    pass
                 else:
-                    chunk.append(data + 4100)
+                    chunk = array(chunk) + 4100
             except TypeError:
                 pass
 
         return array(chunk) - 4100
 
-    def simulateStream(self, gesture):
+    def simulateStream(self, gesture, subdir='hugo_facialgestures', streamSpeed=1):
         self.streamIsSimulated = True
         eeg = TrainingDataMacro()
-        eeg.importCSV(subdir='hugo_facialgestures', filename=gesture+'.csv', tag=gesture)
-        self.q = queue.LifoQueue()
+        eeg.importCSV(subdir=subdir, filename=gesture+'.csv', tag=gesture)
+        self.q = queue.Queue()
+        self.plotq = queue.Queue()
+        self.streamSpeed = streamSpeed
         def worker():
             for i in range(0,len(eeg.matrix)):
-                packet = eeg.matrix[i][:]
+                packet = {eeg.eegChannels[j]: eeg.matrix[i][j] for j in range(len(eeg.emotivChannels))}
+                packet["COUNTER"] = i
                 self.q.put(item=packet)
-                time.sleep(1/eegData.sampleRate)
+                self.plotq.put(item=packet)
+                time.sleep(1/eegData.sampleRate/streamSpeed)
 
         simulationWorker = threading.Thread(target=worker)
         simulationWorker.setDaemon(True)
         simulationWorker.start()
 
 
+    def getChunkWithBackTrack(self):
+        bufferchunk = []
+        chunk = []
+        self.chunkq = queue.Queue()
+        while len(chunk) < eegData.chunkSize:
+            try:
+                ## get packets until u find one that passes the threshold
+                data = self.q.get()
+                # print(data["COUNTER"])
+                formattedData = self.dict2list(data)
+                # self.plotClientStream(formattedData=formattedData, figure=self.figure)
+                bufferchunk.append(formattedData)
 
-if __name__ == "__main__":
-    client = client()
-    client.setup()
+
+                ## backtrack a couple samples to get all the transient info, then finish getting the chunk
+                if eegData.checkThreshold(data):
+                    chunk.extend(bufferchunk[(-1-eegData.backTrack):-1])
+                    while len(chunk) <eegData.chunkSize:
+                        data = self.q.get()
+                        formattedData = self.dict2list(data)
+                        chunk.append(formattedData)
+            except TypeError:
+                pass
+
+        self.chunkq.put(array(chunk))
+
+        if self.streamIsSimulated:
+            chunk = array(chunk) + 4100
+
+        return array(chunk) - 4100
+
+
+    def plotClientStream(self, streamfigure, chunkfigure, offset=400):
+        while not self.plotq.empty():
+            appendedChunk = []
+            while len(appendedChunk) < self.windowSize/8:
+                self.line.popleft()
+                packet = self.plotq.get()
+                self.line.append(self.dict2list(packet))
+                appendedChunk.append(packet)
+
+            # define time axis
+            tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
+            tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
+
+            plotBuffer = array(self.line)
+            yAxis = plotBuffer + offset * 13
+
+            # add offset to display all channels
+            for i in range(0, len(plotBuffer[0, :])):
+                yAxis[:, i] -= offset * i
+
+            if not self.chunkq.empty():
+                eeg = eegData()
+                eeg.chunk = self.chunkq.get()
+                eeg.plotRawEEG(chunkfigure)
+
+
+            streamfigure.canvas.flush_events()
+            ax = streamfigure.add_subplot(111)
+            ax.clear()
+            ax.set_ylim(-300, offset * 20)
+            ax.legend(eegData.eegChannels)
+            ax.set_xlabel('time')
+            ax.plot(tAxis, yAxis)
+            streamfigure.canvas.draw()
+            plt.pause(0.001)
+

@@ -43,7 +43,6 @@ class chord(music):
             msg = mido.Message('note_off', note=notes, channel=self.midiChannel)
             port.send(msg)
 
-
     def arpeggiate(self, notelength, vel, numTimes):
         for i in range(numTimes):
             for notes in self.notelist:
