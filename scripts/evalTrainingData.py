@@ -7,11 +7,10 @@ import os
 from MusEEG import TrainingDataMacro
 
 # #sort through the data and cut chunks whenever it reaches the threshold
-def evalAndPrep(obj, chunksubdir=os.path.join('trainbatch2', 'bigChunks')):
-    obj.plotRawEEG(obj.matrix, 400)
-    obj.createChunks()
-    obj.evalChunk()
-    obj.saveChunksToCSV(subdir=chunksubdir)
+def evalAndPrep(obj, chunksubdir=os.path.join('trainbatch2_improved', 'bigChunks')):
+    obj.plotRawEEG(chunk=obj.matrix, offset=400)
+    obj.newChunkEvalMethod(chunkSubdir=chunksubdir)
+    # obj.saveChunksToCSV(subdir=chunksubdir, append=True)
 
 #this is where the your training data is stored
 subdir = 'trainbatch2'
