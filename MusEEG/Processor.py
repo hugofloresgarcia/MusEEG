@@ -1,4 +1,4 @@
-from MusEEG import eegData, client, cerebro
+from MusEEG import eegData, client, classifier, cerebro
 from MusEEG import parentDir
 import os
 import matplotlib.pyplot as plt
@@ -11,7 +11,9 @@ class Processor:
         this is set up rn to simulate an eeg stream, instead of getting data from the client
         """
         self.cerebro = cerebro()
-        self.cerebro.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v3'))
+        self.bigBrain = classifier()
+        self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v3'))
+
         self.client = client()
 
         if simulation:
@@ -32,7 +34,7 @@ class Processor:
 
     def processAndPlay(self, eeg):
         brainInput = eeg.process()
-        brainOutput = self.cerebro.bigBrain.classify(brainInput.reshape(1, 350))
+        brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
         gestureResult = self.cerebro.gestures[brainOutput]
 
         print('classification result: ' + gestureResult)
@@ -115,5 +117,5 @@ class Processor:
 
 if __name__ == "__main__":
     processor = Processor()
-    processorThread = threading.Thread(target=processor.mainProcessorWithBackTrack).start()
+    processor.runProcessorThread()
     processor.client.plotClientStream(processor.streamPlotFigure, processor.chunkFigure)
