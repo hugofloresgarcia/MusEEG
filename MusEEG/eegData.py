@@ -175,14 +175,17 @@ class eegData:
         # todo: make this work with the UI
         return fig
 
-    def loadChunkFromTraining(self, subdir, filename):
+    def loadChunkFromTraining(self, subdir, filename,labelcols=False):
         """
         :param subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
         :param filename: filename with .csv at the end
         :return:
         """
         self.filename = filename
-        self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename),
+        if not labelcols:
+            self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename))
+        else:
+            self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename),
                                      usecols=self.emotivChannels)
         self.chunk = self.chunk.values
         self.AF3 = self.chunk[:, 0]
@@ -201,11 +204,11 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
-    def cutChunk(self):
+    def cutChunk(self, newChunkSize):
         """
-        for smallBrain: cut chunk to smallchunkSize
+        for smallBrain: cut chunk to a new ChunkSize
         """
-        self.chunk = self.chunk[0:(self.smallchunkSize - 1), :]
+        self.chunk = self.chunk[0:(newChunkSize - 1), :]
 
     def process(self):
         self.wavelet()
@@ -220,6 +223,24 @@ class eegData:
             if abs(packetdict[channel]) >= cls.threshold:
                 thresholdActive = True
         return thresholdActive
+
+    def saveChunkToCSV(self, subdir, gesturename):
+        """
+        saves self.chunk to csv
+        :param subdir: sudirectory under /data/savedChunks
+        :return:
+        """
+        workingDir = os.path.join(parentDir, 'data', 'savedChunks', subdir)
+        idx = 0
+        filesInFolder = [file for file in os.listdir(workingDir) if os.path.isfile(os.path.join(workingDir, file))]
+
+        chunkFilename = gesturename + '_' + str(idx) + '.csv'
+        while chunkFilename in filesInFolder:
+            idx += 1
+            chunkFilename = gesturename + '_' + str(idx) + '.csv'
+
+        chunkDataFrame = pandas.DataFrame(self.chunk)
+        chunkDataFrame.to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, chunkFilename))
 
 
 class TrainingDataMacro(eegData):
