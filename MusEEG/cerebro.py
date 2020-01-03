@@ -67,8 +67,10 @@ class cerebro:
         resetPort()
 
         # list of gestures to be used in classifier
-        self.gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-                    'neutral', 'scrunch', 'tongue']
+        # self.gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
+        #             'neutral', 'scrunch', 'tongue']
+        self.gestures = ['smile', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
+                             'neutral', 'scrunch']
 
         # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
         self.bigBrain = classifier()

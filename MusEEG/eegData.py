@@ -21,9 +21,10 @@ from MusEEG import parentDir
 class eegData:
     threshold = 350
     sampleRate = 256
-    chunkSize = int(256 * 1.5)
-    smallchunkSize = int(chunkSize / 6)
-    backTrack = 35
+    ####note: these used to be 384 samples and 64 samples.
+    chunkSize = int(256 * 1.25)
+    smallchunkSize = int(chunkSize / 4)
+    backTrack = 50  ##backtrack used to be 35
     nchannels = 14
     emotivChannels = ["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
                       "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"]
@@ -175,19 +176,28 @@ class eegData:
         # todo: make this work with the UI
         return fig
 
-    def loadChunkFromTraining(self, subdir, filename,labelcols=False):
+    def loadChunkFromTraining(self, subdir, filename, labelcols=True):
         """
         :param subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
         :param filename: filename with .csv at the end
+        :param labelcols: do the .csv files have the EEG.CHANNEL headers in them?
         :return:
         """
         self.filename = filename
         if not labelcols:
-            self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename))
+            self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename)).values
+            print(len(self.chunk[0,:]))
+            if len(self.chunk[0, :]) == 15:
+                self.chunk = self.chunk[:, 1:15]
+                print(self.chunk[:, 13])
+            if len(self.chunk[0, :]) == 16:
+                self.chunk = self.chunk[:, 2:16]
+
+
         else:
             self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename),
-                                     usecols=self.emotivChannels)
-        self.chunk = self.chunk.values
+                                     usecols=self.emotivChannels).values
+
         self.AF3 = self.chunk[:, 0]
         self.F7 = self.chunk[:, 1]
         self.F3 = self.chunk[:, 2]
@@ -381,7 +391,7 @@ class TrainingDataMacro(eegData):
                     try:
                         shift = input('enter desired shift (in samples, negative numbers mean shift left) ')
                         shift = int(shift)
-                    except TypeError or ValueError:
+                    except (TypeError, ValueError):
                         print('uh thats not an integer, shift set to 0')
                         shift = 0
 
@@ -444,23 +454,22 @@ class TrainingDataMacro(eegData):
             self.curatedChunk[i].to_csv(
                 os.path.join(parentDir, 'data', 'savedChunks', subdir, self.tag + '_' + str(i) + '.csv'))
 
-    def plotRawCSV(self, matrix, offset=200):
+    def plotRawCSV(self, offset=200):
         """
-        note: the only difference between this and the parent method is that this one displays the title of the thing
-        being plotted
+        plot the whole csv
         :param matrix:
         :param offset: DC offset between eeg channels
         :return: plot with all 14
         """
         # define time axis
-        tAxis = np.arange(0, len(matrix))  # create time axis w same length as the data matrix
+        tAxis = np.arange(0, len(self.matrix))  # create time axis w same length as the data matrix
         tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
 
-        # use eeg matrix as y axis
-        yAxis = matrix + offset * 13
+        # use eeg self.matrix as y axis
+        yAxis = self.matrix + offset * 13
 
         # add offset to display all channels
-        for i in range(0, len(matrix[0, :])):
+        for i in range(0, len(self.matrix[0, :])):
             yAxis[:, i] -= offset * i
 
         # plot figure

@@ -12,7 +12,7 @@ class Processor:
         """
         self.cerebro = cerebro()
         self.bigBrain = classifier()
-        self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v3'))
+        self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_batch2_320samples'))
 
         self.client = client()
 
@@ -23,7 +23,8 @@ class Processor:
             eyebrows and scrunch are wrong
             lookleft gets confused with lookright sometimes
             """
-            self.client.simulateStream('eyebrows', subdir='trainbatch2', streamSpeed=1)
+            # self.client.simulateStream('smile', subdir='trainbatch2', streamSpeed=4)
+            self.client.simulateStream('hardblink', subdir='trainbatch1', streamSpeed=2)
         else:
             self.client.setup()
             self.client.stream()
@@ -101,7 +102,7 @@ class Processor:
                 # self.client.plotClientStream(figure)
                 eeg.chunk = self.client.getChunkWithBackTrack()
                 if len(eeg.chunk) != eeg.chunkSize:
-                    raise RuntimeError('this chunk wasn\'t 384 samples. something went wrong')
+                    raise RuntimeError('this chunk did not have the required number of samples. something went wrong')
 
                 self.processAndPlay(eeg)
 

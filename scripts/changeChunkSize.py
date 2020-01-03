@@ -2,9 +2,9 @@ from MusEEG import TrainingDataMacro, eegData
 from MusEEG import parentDir
 import os
 
-oldsubdir = os.path.join('trainbatch2_improved', 'bigChunks')
-newsubdir = os.path.join('trainbatch2_improved_320samples','bigChunks')
-gestures = ['hardblink']
+oldsubdir = os.path.join('trainbatch1', 'bigChunks')
+newsubdir = os.path.join('trainbatch2_improved_320samples', 'bigChunks')
+gestures = ['neutral']
 gestureobjs = []
 
 for gestItem in gestures:
