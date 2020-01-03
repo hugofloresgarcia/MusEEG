@@ -107,18 +107,25 @@ class client:
         worker.start()
 
     def getChunk(self, chunkSize=eegData.chunkSize):
+        bufferchunk = []
         chunk = []
+        self.chunkq = queue.Queue()
         while len(chunk) < chunkSize:
             try:
+                ## get packets until u find one that passes the threshold
                 data = self.q.get()
-                ## this conditional is to differentiate between a simulated stream and the actual server
-                chunk.append(self.dict2list(data))
-                if not self.streamIsSimulated:
-                    pass
-                else:
-                    chunk = array(chunk) + 4100
+                # print(data["COUNTER"])
+                formattedData = self.dict2list(data)
+                # self.plotClientStream(formattedData=formattedData, figure=self.figure)
+                chunk.append(formattedData)
+
             except TypeError:
                 pass
+
+        self.chunkq.put(array(chunk))
+
+        if self.streamIsSimulated:
+            chunk = array(chunk) + 4100
 
         return array(chunk) - 4100
 

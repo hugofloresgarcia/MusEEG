@@ -24,7 +24,7 @@ class Processor:
             lookleft gets confused with lookright sometimes
             """
             # self.client.simulateStream('smile', subdir='trainbatch2', streamSpeed=4)
-            self.client.simulateStream('hardblink', subdir='trainbatch1', streamSpeed=2)
+            self.client.simulateStream('smile', subdir='trainbatch2', streamSpeed=1)
         else:
             self.client.setup()
             self.client.stream()
@@ -58,8 +58,6 @@ class Processor:
                     eeg = eegData()
                     eeg.chunk = self.client.getChunk(chunkSize=eegData.smallchunkSize)
 
-                    eeg.plotRawEEG(figure=self.chunkFigure)
-
                     fullchunk = list(eeg.chunk)
                     chunkGetter = threading.Thread(target=self.getMoreChunks, args=(fullchunk,))
                     chunkGetter.start()
@@ -81,7 +79,6 @@ class Processor:
                 eeg = eegData()
 
                 eeg.chunk = np.array(fullchunk)
-                eeg.plotRawEEG(figure=self.chunkFigure)
 
                 # if len(eeg.chunk) != eeg.chunkSize:
                 # raise RuntimeError('this chunk wasn\'t 384 samples. something went wrong')
@@ -113,7 +110,7 @@ class Processor:
         """
         run the processor in a separate thread
         """
-        processorThread = threading.Thread(target=self.mainProcessorWithBackTrack)
+        processorThread = threading.Thread(target=self.mainProcessorWithoutBackTrack)
         processorThread.start()
 
 if __name__ == "__main__":
