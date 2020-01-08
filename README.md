@@ -19,8 +19,11 @@ The MusEEG module uses the following libraries
 - audiolazy
 - matplotlib
 - pandas
+- osc4py3
 
-## Installation (Python 3.7)
+see requirements.txt for the full list of dependencies
+
+## Installation (Python 3.6)
 [Install Python](https://realpython.com/installing-python/)
 
 [Install pip](https://www.makeuseof.com/tag/install-pip-for-python/)
@@ -33,12 +36,10 @@ install requirements.txt:
 The demo app provides a demo of MusEEG in action. It is able to load a random sample from the dataset, process w/ wavelet transform and classify using an ANN, and create a midi object off of it. 
 To run the demo app: 
 
-`python demoApp.py`
+`python3 demoApp.py`
 
 ## Code Examples
-Since I am still waiting on departmental funding to obtain a RAW EEG license to access RAW EEG data, there still isn't a way to implement MusEEG in real time. However, the demoApp.py file showcases how the eegData, classifier, and chord classes are used to create an eegData object, classify it using the classifier, and use it to trigger a MIDI event using chord. To run the file, simply run this command from terminal: 
-
-`python demoApp.py`
+the Processor.py module contains real-time processing methods. Running the Processor.py module with `python3 Processor.py` starts an EEG client and connects to a CyKit server (github.com/CymatiCorp/CyKit to run the EEG stream server), picks up raw EEG data, processes it, displays the classification result in the command line, and plays its respective MIDI event from the expression-MIDI dictionary. 
 
 NOTE: because MusEEG creates a virtual MIDI port upon startup, `demoApp.py` and `example.py` must be run BEFORE the virtual instrument/DAW is opened for it to function properly. If not, MIDI drivers must be reset from the DAW prior to operation. 
 
@@ -48,6 +49,8 @@ Currently, the MusEEG package contains four main modules:
 - `classifier.py` (build, train, save keras models easily)
 - `eegData.py` (import, process, plot, save EEG data). 
 - `cerebro.py` (methods to use music, classifier, and eegData together)
+- `client.py` (TCP client to receive real-time raw EEG stream form [CyKit](https://github.com/CymatiCorp/CyKit))
+- `processor.py` (real-time processing methods)
 
 ## Acknowledgments
 Special thanks to Dr. Fernando Ríos and Dr. John Thompson for being awesome faculty mentors!
