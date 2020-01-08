@@ -4,6 +4,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import threading
+from osc4py3.as_allthreads import *
+from osc4py3 import oscmethod as osm
 
 class Processor:
     def __init__(self, simulation=True):
@@ -32,6 +34,24 @@ class Processor:
         self.chunkFigure = plt.figure()
         self.streamPlotFigure = plt.figure()
 
+    def OSCstart(self, address="192.168.0.0", port=3721, clientName = "MusEEGosc"):
+        self.clientNameOSC = clientName
+
+        osc_startup()
+        osc_udp_client(address, port, clientName)
+
+    def OSCclose(self):
+        osc_terminate()
+
+    def processAndSendOSC(self, eeg, message):
+        brainInput = eeg.process()
+        brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
+        gestureResult = self.cerebro.gestures[brainOutput]
+
+        print('classification result: ' + gestureResult)
+
+        osc_send(message, self.clientNameOSC)
+        osc_process()
 
     def processAndPlay(self, eeg):
         brainInput = eeg.process()
@@ -42,6 +62,7 @@ class Processor:
 
         resultingChord = self.cerebro.mididict[gestureResult]
         resultingChord.playchord()
+
 
     def getMoreChunks(self, chunk):
         while len(chunk) < eegData.chunkSize:
@@ -113,7 +134,13 @@ class Processor:
         processorThread = threading.Thread(target=self.mainProcessorWithoutBackTrack)
         processorThread.start()
 
+    def processorShutDown(self):
+        self.OSCclose()
+
+
+
 if __name__ == "__main__":
     processor = Processor()
     processor.runProcessorThread()
     processor.client.plotClientStream(processor.streamPlotFigure, processor.chunkFigure)
+    processor.processorShutDown()

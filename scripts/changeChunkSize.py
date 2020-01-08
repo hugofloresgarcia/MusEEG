@@ -3,8 +3,8 @@ from MusEEG import parentDir
 import os
 
 oldsubdir = os.path.join('trainbatch1', 'bigChunks')
-newsubdir = os.path.join('trainbatch2_improved_320samples', 'bigChunks')
-gestures = ['neutral']
+newsubdir = os.path.join('trainbatch1_320samples', 'bigChunks')
+gestures = ['neutral', 'smile', 'lookleft', 'lookright', 'hardblink', 'scrunch']
 gestureobjs = []
 
 for gestItem in gestures:

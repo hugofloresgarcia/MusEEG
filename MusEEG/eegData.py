@@ -135,40 +135,43 @@ class eegData:
 
         # plt.pause(0.01)
 
-    def plotWavelets(self, channel, fig=None):
+    def plotWavelets(self, channel, figure=None):
         """
         plots wavelet decomposition of a single channel self.chunk
         :param channel: (between 0 and 13) eeg channel to be plotted
         :return: figure
         """
-        if fig is None:
+        if figure is None:
             fig = Figure()
+        else:
+            fig = figure
         # fig.suptitle('Wavelet Plot')
         ax = [0 for i in range(0, 6)]
         try:
             ax[0] = fig.add_subplot(611)
             ax[0].plot(self.chunk[:, channel])
-            ax[0].set_title('Raw EEG')
+            ax[0].set_title('Raw EEG', pad=1)
 
             ax[1] = fig.add_subplot(612)
             ax[1].plot(self.cA4[:][channel])
-            ax[1].set_title('Approximation Coefficients')
+            ax[1].set_title('Approximation Coefficients', pad=1)
 
             ax[2] = fig.add_subplot(613)
             ax[2].plot(self.cD4[:][channel])
-            ax[2].set_title('Level 4 Detail Coefficients')
+            ax[2].set_title('Level 4 Detail Coefficients', pad=1)
 
             ax[3] = fig.add_subplot(614)
             ax[3].plot(self.cD3[:][channel])
-            ax[3].set_title('Level 3 Detail Coefficients')
+            ax[3].set_title('Level 3 Detail Coefficients', pad=1)
 
             ax[4] = fig.add_subplot(615)
             ax[4].plot(self.cD2[:][channel])
-            ax[4].set_title('Level 2 Detail Coefficients')
+            ax[4].set_title('Level 2 Detail Coefficients', pad=1)
 
             ax[5] = fig.add_subplot(616)
             ax[5].plot(self.cD1[:][channel])
-            ax[5].set_title('Level 1 Detail Coefficients')
+            ax[5].set_title('Level 1 Detail Coefficients', pad=1)
+            fig.tight_layout(pad=0.75)
             fig.canvas.draw()
             plt.pause(0.001)
         except AttributeError:

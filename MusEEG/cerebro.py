@@ -6,6 +6,10 @@ from .client import *
 from MusEEG import parentDir, resetPort, closePort
 import threading
 
+"""
+this is the processor used to run the demo app
+"""
+
 
 class cerebro:
     """
