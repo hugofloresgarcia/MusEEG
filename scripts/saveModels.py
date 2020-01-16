@@ -3,10 +3,12 @@ import pandas
 import os
 import numpy as np
 
-save = False
+save = True
 
 brain = MusEEG.classifier()
-train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(subdir=os.path.join('batch2_improved_320samples', 'bigChunks'), percentTrain=0.7)
+train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(subdir=os.path.join('batch1_batch2_320samples', 'bigChunks'),
+                                                                                percentTrain=0.5,
+                                                                                normalize=True)
 brain.build_model(inputShape=brain.inputShape,
                   hiddenNeurons=100,
                   hiddenActivation='elu',

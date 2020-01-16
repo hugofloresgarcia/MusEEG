@@ -6,6 +6,7 @@ from pywt import wavedec
 import pickle
 from scipy.stats import kurtosis, skew
 
+
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -16,6 +17,8 @@ from matplotlib.figure import Figure
 from matplotlib.pyplot import figure
 
 from MusEEG import parentDir
+
+from scipy import signal
 
 
 class eegData:
@@ -181,7 +184,7 @@ class eegData:
 
     def loadChunkFromTraining(self, subdir, filename, labelcols=True):
         """
-        :param subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
+        :rtype: objectram subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
         :param filename: filename with .csv at the end
         :param labelcols: do the .csv files have the EEG.CHANNEL headers in them?
         :return:
@@ -189,10 +192,10 @@ class eegData:
         self.filename = filename
         if not labelcols:
             self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename)).values
-            print(len(self.chunk[0,:]))
+            # print(len(self.chunk[0,:]))
             if len(self.chunk[0, :]) == 15:
                 self.chunk = self.chunk[:, 1:15]
-                print(self.chunk[:, 13])
+                # print(self.chunk[:, 13])
             if len(self.chunk[0, :]) == 16:
                 self.chunk = self.chunk[:, 2:16]
 

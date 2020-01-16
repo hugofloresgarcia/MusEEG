@@ -13,6 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from collections import deque
+from scipy import signal
 
 
 import socket
@@ -67,6 +68,7 @@ class client:
 
     def stream(self):
         self.q = queue.LifoQueue()
+        self.psdq = queue.LifoQueue()
         def workerjob():
             try:
                 while True:
@@ -96,6 +98,7 @@ class client:
                     # We setup the buffer for next step
                     self.buffer = self.n_buffer
 
+                    self.psdq.put(fields,block=False)
                     # Print all channel
                     self.q.put(fields, block=False)
             except Exception:
@@ -105,6 +108,52 @@ class client:
         worker = threading.Thread(target=workerjob, args=())
         worker.setDaemon(True)
         worker.start()
+
+    def initPSDThread(self):
+        psdThread = threading.Thread(target=self.computePSD)
+        psdThread.start()
+
+    def computePSD(self):
+        self.freqsQueue = queue.LifoQueue()
+        self.psdQueue = queue.LifoQueue()
+        while not self.psdq.empty():
+            windowSize = eegData.chunkSize * 4
+            buffer = []
+            while len(buffer) < windowSize:
+                packet = self.psdq.get()
+                buffer.append(self.dict2list(packet))
+
+            buffer = np.array(buffer).transpose()
+
+            # highpass at 4Hz
+            filter = signal.butter(10, 4, 'hp', fs=eegData.sampleRate, output='sos')
+            buffer = signal.sosfilt(filter, buffer)
+
+            freqs, psd = signal.welch(buffer, self.sampleRate, nperseg=eegData.chunkSize)
+            self.freqsQueue.put(freqs)
+            self.psdQueue.put(psd)
+            time.sleep(0.0001)
+            print('ok i puc buffer in q')
+
+
+    def plotPSD(self, figure):
+        print('ok im here')
+        time.sleep(3)
+        while True:
+            print('ok i try to plot buffer')
+            freqs = self.freqsQueue.get(block=True)
+            psd = self.psdQueue.get(block=True)
+            figure.canvas.flush_events()
+            ax = figure.add_subplot(111)
+            ax.clear()
+            ax.set_title("PSD")
+            # ax.set_ylim([0.5e-3, 1])
+            ax.set_xlim([0, 64])
+            ax.set_xlabel('freq')
+            ax.semilogy(freqs, psd.transpose())
+            figure.canvas.draw()
+            plt.pause(0.1)
+
 
     def getChunk(self, chunkSize=eegData.chunkSize):
         bufferchunk = []
@@ -135,6 +184,7 @@ class client:
         eeg.importCSV(subdir=subdir, filename=gesture+'.csv', tag=gesture)
         self.q = queue.Queue()
         self.plotq = queue.Queue()
+        self.psdq = queue.Queue()
         self.streamSpeed = streamSpeed
         def worker():
             for i in range(0,len(eeg.matrix)):
@@ -142,6 +192,7 @@ class client:
                 packet["COUNTER"] = i
                 self.q.put(item=packet)
                 self.plotq.put(item=packet)
+                self.psdq.put(item=packet)
                 time.sleep(1/eegData.sampleRate/streamSpeed)
 
         simulationWorker = threading.Thread(target=worker)
@@ -181,11 +232,9 @@ class client:
         return array(chunk) - 4100
 
 
-    def plotClientStream(self, streamfigure=None, chunkfigure=None, offset=400):
+    def plotClientStream(self, streamfigure=None, plotChunks=False,  chunkfigure=None, offset=400):
         if streamfigure is None:
             streamfigure = plt.Figure()
-        if chunkfigure is None:
-            chunkfigure = plt.Figure()
         while not self.plotq.empty():
             appendedChunk = []
             while len(appendedChunk) < self.windowSize/8:
@@ -205,10 +254,13 @@ class client:
             for i in range(0, len(plotBuffer[0, :])):
                 yAxis[:, i] -= offset * i
 
-            if not self.chunkq.empty():
-                eeg = eegData()
-                eeg.chunk = self.chunkq.get()
-                chunkfigure = eeg.plotRawEEG(chunkfigure)
+            if plotChunks:
+                if chunkfigure is None:
+                    chunkfigure = plt.Figure()
+                if not self.chunkq.empty():
+                    eeg = eegData()
+                    eeg.chunk = self.chunkq.get()
+                    chunkfigure = eeg.plotRawEEG(chunkfigure)
 
 
             streamfigure.canvas.flush_events()
@@ -222,3 +274,8 @@ class client:
             plt.pause(0.001)
 
         return streamfigure, chunkfigure
+
+if __name__ == '__main__':
+    client.setup()
+    client.stream()
+

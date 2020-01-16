@@ -4,7 +4,7 @@ import os
 
 oldsubdir = os.path.join('trainbatch1', 'bigChunks')
 newsubdir = os.path.join('trainbatch1_320samples', 'bigChunks')
-gestures = ['neutral', 'smile', 'lookleft', 'lookright', 'hardblink', 'scrunch']
+gestures = ['eyebrows']
 gestureobjs = []
 
 for gestItem in gestures:

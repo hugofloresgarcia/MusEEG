@@ -25,9 +25,10 @@ class cerebro:
         '- to change a chord, press the "update chord dictionary" button after youve changed the notes\n')
     eeg = eegData()
 
-    gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-                'neutral', 'scrunch', 'tongue']
-
+    oldgestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
+                     'neutral', 'scrunch', 'tongue']
+    gestures = ['smile', 'hardblink', 'lookleft', 'lookright',
+                     'neutral', 'scrunch']
 
     """
     chord objects are defined here. the chord() class takes any set of notes as an input.
@@ -70,11 +71,7 @@ class cerebro:
         # open and reset midiport
         resetPort()
 
-        # list of gestures to be used in classifier
-        # self.gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-        #             'neutral', 'scrunch', 'tongue']
-        self.gestures = ['smile', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-                             'neutral', 'scrunch']
+
 
         # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
         self.bigBrain = classifier()
