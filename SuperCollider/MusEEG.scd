@@ -25,12 +25,21 @@ SynthDef(\pulseTest, {
 	Out.ar(1, sig2);
 }).add;
 
-~weirdPulseSynth = Synth.new(\pulseTest);
+SynthDef(\mouseThing, {
+	var sin;
+	sin = SinOsc.ar(
+		mul: 1,
+	    freq: 440);
+	Out.ar(0, sin);
+}).add;
+Synth.new(\mouseThing);
+
+~weirdPulseSynth = Synth.new(\pulseTest);≥
 ~weirdPulseSynth.set(\width, 0.25, \fund, 20);
 ~weirdPulseSynth.set(\maxPartial, 20);
 ~weirdPulseSynth.set(\ampHz, 1);
 
-SynthDef(\playback, { arg buffer, startPos, envRelease = 0.5;
+SynthDef(\playback, { arg buffer, startPos, envRelease = 1;
 	var player, env;
 	player = PlayBuf.ar(
 		numChannels: 1,
@@ -44,6 +53,8 @@ SynthDef(\playback, { arg buffer, startPos, envRelease = 0.5;
 
 /* Buffers for sound files */
 ~buffer = Buffer.read(s, "/Users/hugoffg/Documents/SuperCollider/DSG/gamelan_wav/BonangBarung/BonangBarungPl1.wav");
+~glockBuffer = Buffer.read(s, "/Users/hugoffg/Documents/MusEEG/SuperCollider/glock.R.wav");
+
 
 /* buses for setting control values */
 ~freqBus = Bus.control(s, 1);
@@ -54,6 +65,7 @@ SynthDef(\playback, { arg buffer, startPos, envRelease = 0.5;
 
 ~smileFunc = {
 	arg val;
+	val.postln;
 	~freqBus.setSynchronous(val[1]);
 	~waitBus.setSynchronous(val[2]);
 };
@@ -72,7 +84,7 @@ Synth("sine", [\freq, 440]);
 
 /*​ this is what python would send */
 // 127.0.0.1 port 57120
-
+m = NetAddr("localhost", 57120);
 /* Routine({
  	inf.do({ arg i;
  		m.sendMsg("/smile", (60 + 12.rand).midicps, 0.1 + 0.2.rand);
@@ -81,20 +93,21 @@ Synth("sine", [\freq, 440]);
  }).play;*/
 
 ~dsgSynth = Synth.new(\playback, [\buffer, ~buffer, \startPos, ~freqBus.asMap]);
+~glockSynth = Synth.new(\playback, [\buffer, ~glockBuffer, \startPos, ~freqBus.asMap]);
+
 
  /* this is the supercollider routine */
 Routine({
  	inf.do({
- 		Synth(\playback, [\buffer, ~buffer, \startPos, ~buffer.numFrames.rand]);
+ 		Synth(\playback, [\buffer, ~glockBuffer, \startPos, ~freqBus.asMap]);
  		(~waitBus.getSynchronous).wait;
 	});
 }).play;
 
 
-
 Routine({
  	inf.do({ arg i;
- 		m.sendMsg("/smile", ~buffer.numFrames.rand, 0.01 + 0.02.rand);
+ 		m.sendMsg("/smile", ~glockBuffer.numFrames.rand, 0.01 + 0.5.rand);
  		0.3.wait;
 	});
 }).play;
@@ -107,6 +120,8 @@ Routine({
 		0.3.wait;
 	});
 }).play;
+
+
 
 
 

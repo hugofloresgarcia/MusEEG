@@ -4,16 +4,12 @@ import numpy as np
 from numpy import array
 import threading
 import time
-# -*- coding: utf8 -*-
-#
-# Cykit Example TCP - Client
-# author: Icannos
-# modified for MusEEG by: hugo flores garcia
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from collections import deque
 from scipy import signal
+from numpy.fft import fft
+import numpy as np
 
 
 import socket
@@ -72,6 +68,12 @@ class client:
         def workerjob():
             try:
                 while True:
+                    # -*- coding: utf8 -*-
+                    #
+                    # Cykit Example TCP - Client
+                    # author: Icannos
+                    # modified for MusEEG by: hugo flores garcia
+                    import matplotlib
                     # We read a chunk
                     data = self.s.recv(self.BUFFER_SIZE)
 
@@ -109,51 +111,17 @@ class client:
         worker.setDaemon(True)
         worker.start()
 
-    def initPSDThread(self):
-        psdThread = threading.Thread(target=self.computePSD)
-        psdThread.start()
-
-    def computePSD(self):
-        self.freqsQueue = queue.LifoQueue()
-        self.psdQueue = queue.LifoQueue()
-        while not self.psdq.empty():
-            windowSize = eegData.chunkSize * 4
-            buffer = []
-            while len(buffer) < windowSize:
-                packet = self.psdq.get()
-                buffer.append(self.dict2list(packet))
-
-            buffer = np.array(buffer).transpose()
-
+    def getBuffer(self, bufferSize=eegData.chunkSize/1.25*4, highpass=True):
+        buffer = []
+        while len(buffer) < bufferSize:
+            packet = self.psdq.get()
+            buffer.append(self.dict2list(packet))
+        buffer = np.array(buffer).transpose()
+        if highpass:
             # highpass at 4Hz
             filter = signal.butter(10, 4, 'hp', fs=eegData.sampleRate, output='sos')
             buffer = signal.sosfilt(filter, buffer)
-
-            freqs, psd = signal.welch(buffer, self.sampleRate, nperseg=eegData.chunkSize)
-            self.freqsQueue.put(freqs)
-            self.psdQueue.put(psd)
-            time.sleep(0.0001)
-            print('ok i puc buffer in q')
-
-
-    def plotPSD(self, figure):
-        print('ok im here')
-        time.sleep(3)
-        while True:
-            print('ok i try to plot buffer')
-            freqs = self.freqsQueue.get(block=True)
-            psd = self.psdQueue.get(block=True)
-            figure.canvas.flush_events()
-            ax = figure.add_subplot(111)
-            ax.clear()
-            ax.set_title("PSD")
-            # ax.set_ylim([0.5e-3, 1])
-            ax.set_xlim([0, 64])
-            ax.set_xlabel('freq')
-            ax.semilogy(freqs, psd.transpose())
-            figure.canvas.draw()
-            plt.pause(0.1)
-
+        return buffer
 
     def getChunk(self, chunkSize=eegData.chunkSize):
         bufferchunk = []
@@ -199,7 +167,6 @@ class client:
         simulationWorker.setDaemon(True)
         simulationWorker.start()
 
-
     def getChunkWithBackTrack(self):
         bufferchunk = []
         chunk = []
@@ -230,7 +197,6 @@ class client:
             chunk = array(chunk) + 4100
 
         return array(chunk) - 4100
-
 
     def plotClientStream(self, streamfigure=None, plotChunks=False,  chunkfigure=None, offset=400):
         if streamfigure is None:

@@ -5,6 +5,8 @@ from pywt import wavedec
 
 import pickle
 from scipy.stats import kurtosis, skew
+from scipy.signal import welch
+from scipy.integrate import simps
 
 
 import matplotlib
@@ -56,6 +58,36 @@ class eegData:
 
         self.wavelets = [np.asarray(self.cA4), np.asarray(self.cD4), np.asarray(self.cD3), np.asarray(self.cD2),
                          np.asarray(self.cD1)]
+
+    @classmethod
+    def bandPower(cls, buffer, band, window_sec=None):
+        band = np.asarray(band)
+        low, high = band
+
+        if window_sec is not None:
+            nperseg = window_sec*eegData.sampleRate
+        else:
+            nperseg = (2/low)*eegData.sampleRate
+
+        freqs, psd = welch(buffer, eegData.sampleRate, nperseg=nperseg)
+
+        freqRes = freqs[1] - freqs[0]
+        idxBand = np.logical_and(freqs >= low, freqs <= high)
+
+        bp = simps(psd[:, idxBand], dx=freqRes)
+        return bp
+
+    @classmethod
+    def bandPowerHistogram(cls, df, figure):
+        figure.canvas.flush_events()
+        ax = figure.add_subplot(111)
+        ax.clear()
+        ax.plot(df)
+        ax.set_title('Band Power')
+        ax.set_ylim([0, 500])
+        figure.canvas.draw()
+        plt.pause(0.001)
+
 
     def extractStatsFromWavelets(self):
         """
