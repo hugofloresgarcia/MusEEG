@@ -65,6 +65,7 @@ class client:
     def stream(self):
         self.q = queue.LifoQueue()
         self.psdq = queue.LifoQueue()
+        self.plotq = queue.LifoQueue()
         def workerjob():
             try:
                 while True:
@@ -99,7 +100,7 @@ class client:
 
                     # We setup the buffer for next step
                     self.buffer = self.n_buffer
-
+                    self.plotq.put(fields, block=False)
                     self.psdq.put(fields,block=False)
                     # Print all channel
                     self.q.put(fields, block=False)
@@ -114,8 +115,12 @@ class client:
     def getBuffer(self, bufferSize=eegData.chunkSize/1.25*4, highpass=True):
         buffer = []
         while len(buffer) < bufferSize:
-            packet = self.psdq.get()
-            buffer.append(self.dict2list(packet))
+            try:
+                packet = self.psdq.get()
+                buffer.append(self.dict2list(packet))
+            except TypeError:
+                pass
+
         buffer = np.array(buffer).transpose()
         if highpass:
             # highpass at 4Hz
@@ -213,7 +218,7 @@ class client:
             tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
             tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
 
-            plotBuffer = array(self.line)
+            plotBuffer = array(self.line) - 4100
             yAxis = plotBuffer + offset * 13
 
             # add offset to display all channels
@@ -241,7 +246,4 @@ class client:
 
         return streamfigure, chunkfigure
 
-if __name__ == '__main__':
-    client.setup()
-    client.stream()
 

@@ -4,6 +4,12 @@ m = NetAddr("localhost", 57120);
 	val.postln;
 };
 
+
+~stressFunc = {
+	arg val;
+	~stressBus = val[1];
+};
+
 /* OSCdefs for each different message we want */
 OSCdef.new(\deltaDef, ~smileFunc, '/delta').add;
 OSCdef.new(\thetaDef, ~smileFunc, '/theta').add;

@@ -27,14 +27,14 @@ class Processor:
             hardblink and scrunch are wrong
             lookleft gets confused with smile sometimes
             """
-            # self.client.simulateStream('testrec_blink', subdir='testfiles', streamSpeed=8)
-            self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=1)
+            self.client.simulateStream('vid', subdir='testfiles', streamSpeed=1)
+            # self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=1)
         else:
             self.client.setup()
             self.client.stream()
 
         # self.chunkFigure = plt.figure()
-        # self.streamPlotFigure = plt.figure()
+        self.streamPlotFigure = plt.figure()
         # self.PSDFigure = plt.figure()
         self.bandPowerFigure = plt.figure()
 
@@ -165,7 +165,7 @@ class Processor:
             # print(message)
 
         #plot histogram
-        # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
+        eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
 
     def bandPowerThread(self, asThread=True):
         def bandPowerLoop():
@@ -208,7 +208,7 @@ class Processor:
                 eeg = eegData()
 
                 eeg.chunk = np.array(fullchunk)
-                # eeg.plotRawEEG(figure=self.streamPlotFigure)
+                eeg.plotRawEEG(figure=self.streamPlotFigure)
                 if len(eeg.chunk) != eeg.chunkSize:
                     raise RuntimeWarning('this chunk wasn\'t 384 samples. something went wrong')
 
@@ -245,11 +245,12 @@ class Processor:
 
 
 if __name__ == "__main__":
-    processor = Processor(simulation=True)
+    processor = Processor(simulation=False)
     processor.OSCstart()
     processor.defineOSCMessages()
     processor.bandPowerThread(asThread=False)
-    processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
+    # processor.mainProcessorWithoutBackTrack()
+    # processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
     # while True:
     #     processor.sendOSCMessage(processor.discreteOSCdict['smile'])
     #     time.sleep(0.3)
