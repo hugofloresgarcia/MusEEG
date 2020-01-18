@@ -4,7 +4,6 @@ m = NetAddr("localhost", 57120);
 	val.postln;
 };
 
-
 ~stressFunc = {
 	arg val;
 	~stressBus = val[1];

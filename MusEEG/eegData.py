@@ -78,13 +78,19 @@ class eegData:
         return bp
 
     @classmethod
+    def dbBandPower(cls, buffer, band, window_sec=None):
+        bp = cls.bandPower(buffer, band, window_sec)
+        bpdb = 10 * np.log10(bp)
+        return bpdb
+
+    @classmethod
     def bandPowerHistogram(cls, df, figure):
         figure.canvas.flush_events()
         ax = figure.add_subplot(111)
         ax.clear()
         ax.plot(df)
-        ax.set_title('Band Power')
-        ax.set_ylim([0, 500])
+        ax.set_title('Band Power (dB)')
+        ax.set_ylim([0, 80])
         figure.canvas.draw()
         plt.pause(0.001)
 

@@ -217,8 +217,11 @@ class client:
             # define time axis
             tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
             tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
+            if self.streamIsSimulated:
+                plotBuffer = array(self.line)
+            else:
+                plotBuffer = array(self.line) - 4100
 
-            plotBuffer = array(self.line) - 4100
             yAxis = plotBuffer + offset * 13
 
             # add offset to display all channels

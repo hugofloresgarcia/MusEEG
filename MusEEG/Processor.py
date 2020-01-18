@@ -20,6 +20,10 @@ class Processor:
 
         self.client = client()
 
+        ##these are just some average bandpower values from the neutral track
+        self.baseline = [78.72624375770606, 310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565]
+        self.baselinedB = np.log10(self.baseline)
+
         if simulation:
             #### TEST TEST
             """
@@ -27,14 +31,14 @@ class Processor:
             hardblink and scrunch are wrong
             lookleft gets confused with smile sometimes
             """
-            self.client.simulateStream('vid', subdir='testfiles', streamSpeed=1)
-            # self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=1)
+            # self.client.simulateStream('vid', subdir='testfiles', streamSpeed=1)
+            self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=4)
         else:
             self.client.setup()
             self.client.stream()
 
         # self.chunkFigure = plt.figure()
-        self.streamPlotFigure = plt.figure()
+        # self.streamPlotFigure = plt.figure()
         # self.PSDFigure = plt.figure()
         self.bandPowerFigure = plt.figure()
 
@@ -42,6 +46,10 @@ class Processor:
         self.clientNameOSC = clientName
         osc_startup()
         osc_udp_client(address, port, clientName)
+
+        baselinemsg = oscbuildparse.OSCMessage('/baseline', None, self.baselinedB)
+        osc_send(baselinemsg, self.clientNameOSC)
+        osc_process()
 
     def OSCclose(self):
         osc_terminate()
@@ -100,11 +108,11 @@ class Processor:
         freqBins = [0.5, 4, 8, 12, 30, 60]
 
         # compute delta, theta, alpha, beta, bands
-        delta = eegData.bandPower(buffer=buffer, band=freqBins[0:2])
-        theta = eegData.bandPower(buffer=buffer, band=freqBins[1:3])
-        alpha = eegData.bandPower(buffer=buffer, band=freqBins[2:4])
-        beta = eegData.bandPower(buffer=buffer, band=freqBins[3:5])
-        gamma = eegData.bandPower(buffer=buffer, band=freqBins[4:6])
+        delta = eegData.dbBandPower(buffer=buffer, band=freqBins[0:2])
+        theta = eegData.dbBandPower(buffer=buffer, band=freqBins[1:3])
+        alpha = eegData.dbBandPower(buffer=buffer, band=freqBins[2:4])
+        beta = eegData.dbBandPower(buffer=buffer, band=freqBins[3:5])
+        gamma = eegData.dbBandPower(buffer=buffer, band=freqBins[4:6])
 
         deltaAvg = float(np.mean(delta))
         thetaAvg = float(np.mean(theta))
@@ -113,16 +121,25 @@ class Processor:
         gammaAvg = float(np.mean(gamma))
 
         bandPowerArray = np.array([delta, theta, alpha, beta, gamma])
+
+        # calculate averages
+        # self.baseDelta = (1/2*self.baseDelta + deltaAvg)
+        # self.baseTheta = (1/2*self.baseTheta + thetaAvg)
+        # self.baseAlpha = (1/2*self.baseAlpha + alphaAvg)
+        # self.baseBeta = (1/2*self.baseBeta + betaAvg)
+        # self.baseGamma = (1/2*self.baseGamma + gammaAvg)
+        #
+        # print(self.baseDelta, self.baseTheta, self.baseAlpha, self.baseBeta, self.baseGamma)
         bandPowerStr = ['delta', 'theta', 'alpha', 'beta', 'gamma']
         # put these in a dataframe
         bandPowers = pd.DataFrame(bandPowerArray, index=bandPowerStr)
         bandPowers.columns = eegData.eegChannels
         #send OSC messages
-        deltaOSC = oscbuildparse.OSCMessage('/delta', None, [0, deltaAvg])
-        thetaOSC = oscbuildparse.OSCMessage('/theta', None, [0, thetaAvg])
-        alphaOSC = oscbuildparse.OSCMessage('/alpha', None, [0, alphaAvg])
-        betaOSC = oscbuildparse.OSCMessage('/beta', None, [0, betaAvg])
-        gammaOSC = oscbuildparse.OSCMessage('/beta', None, [0, gammaAvg])
+        deltaOSC = oscbuildparse.OSCMessage('/delta', None, [deltaAvg])
+        thetaOSC = oscbuildparse.OSCMessage('/theta', None, [thetaAvg])
+        alphaOSC = oscbuildparse.OSCMessage('/alpha', None, [alphaAvg])
+        betaOSC = oscbuildparse.OSCMessage('/beta', None, [betaAvg])
+        gammaOSC = oscbuildparse.OSCMessage('/gamma', None, [gammaAvg])
 
         OSCmsglist = [deltaOSC, thetaOSC, alphaOSC, betaOSC, gammaOSC]
 
@@ -130,7 +147,7 @@ class Processor:
             osc_send(message, self.clientNameOSC)
             osc_process()
 
-        # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
+        eegData.bandPowerHistogram(bandPowers, figure=self.bandPowerFigure)
 
     def bandPowerProcessor(self):
         buffer = self.client.getBuffer(bufferSize=128)
@@ -208,13 +225,12 @@ class Processor:
                 eeg = eegData()
 
                 eeg.chunk = np.array(fullchunk)
-                eeg.plotRawEEG(figure=self.streamPlotFigure)
+                # eeg.plotRawEEG(figure=self.streamPlotFigure)
                 if len(eeg.chunk) != eeg.chunkSize:
                     raise RuntimeWarning('this chunk wasn\'t 384 samples. something went wrong')
 
                 processor = threading.Thread(target=self.processAndPlay, args=(eeg,))
                 processor.start()
-
             except KeyboardInterrupt:
                 break
 
@@ -245,12 +261,13 @@ class Processor:
 
 
 if __name__ == "__main__":
-    processor = Processor(simulation=False)
+    processor = Processor(simulation=True)
     processor.OSCstart()
     processor.defineOSCMessages()
+    processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
     processor.bandPowerThread(asThread=False)
     # processor.mainProcessorWithoutBackTrack()
-    # processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
+
     # while True:
     #     processor.sendOSCMessage(processor.discreteOSCdict['smile'])
     #     time.sleep(0.3)
@@ -264,5 +281,5 @@ if __name__ == "__main__":
 
 
     # processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
-    # processor.client.plotClientStream(processor.streamPlotFigure, plotChunks=False)
+    processor.client.plotClientStream(processor.streamPlotFigure, plotChunks=False)
     # processor.processorShutDown()
