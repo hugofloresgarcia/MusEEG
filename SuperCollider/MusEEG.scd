@@ -53,8 +53,8 @@ SynthDef(\playback, { arg buffer, startPos, envRelease = 1;
 
 /* Buffers for sound files */
 ~buffer = Buffer.read(s, "/Users/hugoffg/Documents/SuperCollider/DSG/gamelan_wav/BonangBarung/BonangBarungPl1.wav");
-~glockBuffer = Buffer.read(s, "/Users/hugoffg/Documents/MusEEG/SuperCollider/glock.R.wav");
-
+~glockBuffer = Buffer.read(s, "C:/Users/hufer/Documents/MusEEG/SuperCollider/glock.L.wav");
+"C:/Users/hufer/Documents/MusEEG/SuperCollider/glock.L.wav"
 
 /* buses for setting control values */
 ~freqBus = Bus.control(s, 1);

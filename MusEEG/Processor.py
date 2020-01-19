@@ -261,7 +261,7 @@ class Processor:
 
 
 if __name__ == "__main__":
-    processor = Processor(simulation=True)
+    processor = Processor(simulation=False)
     processor.OSCstart()
     processor.defineOSCMessages()
     processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
@@ -281,5 +281,5 @@ if __name__ == "__main__":
 
 
     # processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
-    processor.client.plotClientStream(processor.streamPlotFigure, plotChunks=False)
+    # processor.client.plotClientStream(processor.streamPlotFigure, plotChunks=False)
     # processor.processorShutDown()

@@ -17,6 +17,7 @@ SynthDef(\playback, { arg buffer, startPos = 0, envRelease = 1;
 ~glockBuffer = Buffer.read(s, "/Users/hugoffg/Documents/MusEEG/SuperCollider/glock.R.wav");
 )
 (
+
 //localhost
 m = NetAddr("localhost", 57120);
 
