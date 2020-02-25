@@ -43,6 +43,7 @@ the Processor.py module contains real-time processing methods. Running the Proce
 
 NOTE: because MusEEG creates a virtual MIDI port upon startup, `demoApp.py` and `example.py` must be run BEFORE the virtual instrument/DAW is opened for it to function properly. If not, MIDI drivers must be reset from the DAW prior to operation. 
 
+
 ## The MusEEG Module
 Currently, the MusEEG package contains four main modules: 
 - `music.py` (MIDI objects, chords, and melodies)
