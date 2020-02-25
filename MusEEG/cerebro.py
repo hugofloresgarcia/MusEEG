@@ -6,6 +6,10 @@ from .client import *
 from MusEEG import parentDir, resetPort, closePort
 import threading
 
+"""
+this is the processor used to run the demo app
+"""
+
 
 class cerebro:
     """
@@ -21,9 +25,10 @@ class cerebro:
         '- to change a chord, press the "update chord dictionary" button after youve changed the notes\n')
     eeg = eegData()
 
-    gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-                'neutral', 'scrunch', 'tongue']
-
+    oldgestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
+                     'neutral', 'scrunch', 'tongue']
+    gestures = ['smile', 'hardblink', 'lookleft', 'lookright',
+                     'neutral', 'scrunch']
 
     """
     chord objects are defined here. the chord() class takes any set of notes as an input.
@@ -33,6 +38,8 @@ class cerebro:
     fminmaj7 = chord(['F4', 'Ab4', 'C5', 'E5'], name='fminmaj7')
     fmaj7 = chord(['F4', 'A4', 'C5', 'E5', 'G5'], name='fmaj7')
     ab69 = chord(['Ab4', 'C5', 'F5', 'Bb5', 'C6'], name='ab69')
+    bb69 = chord(['Bb4', 'D5', 'G5', 'C5', 'D6'], name='bb69')
+    g69 = chord(['G4', 'B5', 'E5', 'A5','D6'], name='gb69')
     dmin7b5 = chord(['D4', 'F4', 'Ab4', 'C5', 'E5'], name='dmin7b5')
     g7b9 = chord(['G4', 'B4', 'D5', 'F5', 'Ab5'], name='g7b9')
     c5 = chord(['C3', 'G3'], name='c5')
@@ -56,19 +63,17 @@ class cerebro:
         self.mididict = {'smile': self.cmaj7sharp11add13,
                          'bitelowerlip': self.fmaj7,
                          'hardblink': self.fminmaj7,
-                         'eyebrows': self.ab69,
-                         'lookleft': self.g7b9,
-                         'lookright': self.c5,
+                         'eyebrows': self.dbmaj7,
+                         'lookleft': self.ab69,
+                         'lookright': self.polychordcde,
                          'neutral': self.noChord,
-                         'scrunch': self.polychordcde,
+                         'scrunch': self.c5,
                          'tongue': self.dbmaj7}
 
         # open and reset midiport
         resetPort()
 
-        # list of gestures to be used in classifier
-        self.gestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-                    'neutral', 'scrunch', 'tongue']
+
 
         # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
         self.bigBrain = classifier()

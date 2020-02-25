@@ -5,25 +5,34 @@ from pywt import wavedec
 
 import pickle
 from scipy.stats import kurtosis, skew
+from scipy.signal import welch
+from scipy.integrate import simps
+
 
 import matplotlib
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+
 plt.ion()
 from matplotlib.figure import Figure
 from matplotlib.pyplot import figure
 
 from MusEEG import parentDir
 
+from scipy import signal
+
+
 class eegData:
     threshold = 350
     sampleRate = 256
-    chunkSize = int(256*1.5)
-    smallchunkSize = int(chunkSize/6)
-    backTrack = 35
+    ####note: these used to be 384 samples and 64 samples.
+    chunkSize = int(256 * 1.25)
+    smallchunkSize = int(chunkSize / 4)
+    backTrack = 50  ##backtrack used to be 35
     nchannels = 14
     emotivChannels = ["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
-                           "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"]
+                      "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"]
     eegChannels = [channel[4:] for channel in emotivChannels]
     thresholdChannels = ['F7', 'AF4', 'T7']
 
@@ -47,7 +56,44 @@ class eegData:
             self.cD2.append(cD2)
             self.cD1.append(cD1)
 
-        self.wavelets = [np.asarray(self.cA4), np.asarray(self.cD4), np.asarray(self.cD3), np.asarray(self.cD2), np.asarray(self.cD1)]
+        self.wavelets = [np.asarray(self.cA4), np.asarray(self.cD4), np.asarray(self.cD3), np.asarray(self.cD2),
+                         np.asarray(self.cD1)]
+
+    @classmethod
+    def bandPower(cls, buffer, band, window_sec=None):
+        band = np.asarray(band)
+        low, high = band
+
+        if window_sec is not None:
+            nperseg = window_sec*eegData.sampleRate
+        else:
+            nperseg = (2/low)*eegData.sampleRate
+
+        freqs, psd = welch(buffer, eegData.sampleRate, nperseg=nperseg)
+
+        freqRes = freqs[1] - freqs[0]
+        idxBand = np.logical_and(freqs >= low, freqs <= high)
+
+        bp = simps(psd[:, idxBand], dx=freqRes)
+        return bp
+
+    @classmethod
+    def dbBandPower(cls, buffer, band, window_sec=None):
+        bp = cls.bandPower(buffer, band, window_sec)
+        bpdb = 10 * np.log10(bp)
+        return bpdb
+
+    @classmethod
+    def bandPowerHistogram(cls, df, figure):
+        figure.canvas.flush_events()
+        ax = figure.add_subplot(111)
+        ax.clear()
+        ax.plot(df)
+        ax.set_title('Band Power (dB)')
+        ax.set_ylim([0, 80])
+        figure.canvas.draw()
+        plt.pause(0.001)
+
 
     def extractStatsFromWavelets(self):
         """
@@ -62,11 +108,16 @@ class eegData:
         self.skew = np.ndarray((self.nchannels, 5))
         ## ojo, dimensions are transposed here
         for i in range(0, self.nchannels):
-            self.mean[i, :] = [np.mean(self.cA4[i]), np.mean(self.cD4[i]), np.mean(self.cD3[i]), np.mean(self.cD2[i]), np.mean(self.cD1[i])]
-            self.var[i, :] = [np.var(self.cA4[i]), np.var(self.cD4[i]), np.var(self.cD3[i]), np.var(self.cD2[i]), np.var(self.cD1[i])]
-            self.std[i, :] = [np.std(self.cA4[i]), np.std(self.cD4[i]), np.std(self.cD3[i]), np.std(self.cD2[i]), np.std(self.cD1[i])]
-            self.kurtosis[i, :] = [kurtosis(self.cA4[i]), kurtosis(self.cD4[i]), kurtosis(self.cD3[i]), kurtosis(self.cD2[i]), kurtosis(self.cD1[i])]
-            self.skew[i, :] = [skew(self.cA4[i]), skew(self.cD4[i]), skew(self.cD3[i]), skew(self.cD2[i]), skew(self.cD1[i])]
+            self.mean[i, :] = [np.mean(self.cA4[i]), np.mean(self.cD4[i]), np.mean(self.cD3[i]), np.mean(self.cD2[i]),
+                               np.mean(self.cD1[i])]
+            self.var[i, :] = [np.var(self.cA4[i]), np.var(self.cD4[i]), np.var(self.cD3[i]), np.var(self.cD2[i]),
+                              np.var(self.cD1[i])]
+            self.std[i, :] = [np.std(self.cA4[i]), np.std(self.cD4[i]), np.std(self.cD3[i]), np.std(self.cD2[i]),
+                              np.std(self.cD1[i])]
+            self.kurtosis[i, :] = [kurtosis(self.cA4[i]), kurtosis(self.cD4[i]), kurtosis(self.cD3[i]),
+                                   kurtosis(self.cD2[i]), kurtosis(self.cD1[i])]
+            self.skew[i, :] = [skew(self.cA4[i]), skew(self.cD4[i]), skew(self.cD3[i]), skew(self.cD2[i]),
+                               skew(self.cD1[i])]
 
     def flattenIntoVector(self):
         """
@@ -125,56 +176,72 @@ class eegData:
 
         # plt.pause(0.01)
 
-    def plotWavelets(self, channel, fig=None):
+    def plotWavelets(self, channel, figure=None):
         """
         plots wavelet decomposition of a single channel self.chunk
         :param channel: (between 0 and 13) eeg channel to be plotted
         :return: figure
         """
-        if fig is None:
+        if figure is None:
             fig = Figure()
+        else:
+            fig = figure
         # fig.suptitle('Wavelet Plot')
         ax = [0 for i in range(0, 6)]
         try:
             ax[0] = fig.add_subplot(611)
             ax[0].plot(self.chunk[:, channel])
-            ax[0].set_title('Raw EEG')
+            ax[0].set_title('Raw EEG', pad=1)
 
             ax[1] = fig.add_subplot(612)
             ax[1].plot(self.cA4[:][channel])
-            ax[1].set_title('Approximation Coefficients')
+            ax[1].set_title('Approximation Coefficients', pad=1)
 
             ax[2] = fig.add_subplot(613)
             ax[2].plot(self.cD4[:][channel])
-            ax[2].set_title('Level 4 Detail Coefficients')
+            ax[2].set_title('Level 4 Detail Coefficients', pad=1)
 
             ax[3] = fig.add_subplot(614)
             ax[3].plot(self.cD3[:][channel])
-            ax[3].set_title('Level 3 Detail Coefficients')
+            ax[3].set_title('Level 3 Detail Coefficients', pad=1)
 
             ax[4] = fig.add_subplot(615)
             ax[4].plot(self.cD2[:][channel])
-            ax[4].set_title('Level 2 Detail Coefficients')
+            ax[4].set_title('Level 2 Detail Coefficients', pad=1)
 
             ax[5] = fig.add_subplot(616)
             ax[5].plot(self.cD1[:][channel])
-            ax[5].set_title('Level 1 Detail Coefficients')
+            ax[5].set_title('Level 1 Detail Coefficients', pad=1)
+            fig.tight_layout(pad=0.75)
             fig.canvas.draw()
             plt.pause(0.001)
         except AttributeError:
             pass
-        #todo: make this work with the UI
+        # todo: make this work with the UI
         return fig
 
-    def loadChunkFromTraining(self, subdir, filename):
+    def loadChunkFromTraining(self, subdir, filename, labelcols=True):
         """
-        :param subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
+        :rtype: objectram subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
         :param filename: filename with .csv at the end
+        :param labelcols: do the .csv files have the EEG.CHANNEL headers in them?
         :return:
         """
         self.filename = filename
-        self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename), usecols=self.emotivChannels)
-        self.chunk = self.chunk.values
+        if not labelcols:
+            self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename)).values
+            # print(len(self.chunk[0,:]))
+            if len(self.chunk[0, :]) == 15:
+                self.chunk = self.chunk[:, 1:15]
+                # print(self.chunk[:, 13])
+            if len(self.chunk[0, :]) == 16:
+                self.chunk = self.chunk[:, 2:16]
+
+
+        else:
+            self.chunk = pandas.read_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, filename),
+                                     usecols=self.emotivChannels).values
+
         self.AF3 = self.chunk[:, 0]
         self.F7 = self.chunk[:, 1]
         self.F3 = self.chunk[:, 2]
@@ -191,11 +258,11 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
-    def cutChunk(self):
+    def cutChunk(self, newChunkSize):
         """
-        for smallBrain: cut chunk to smallchunkSize
+        for smallBrain: cut chunk to a new ChunkSize
         """
-        self.chunk = self.chunk[0:(self.smallchunkSize-1), :]
+        self.chunk = self.chunk[0:(newChunkSize - 1), :]
 
     def process(self):
         self.wavelet()
@@ -211,9 +278,25 @@ class eegData:
                 thresholdActive = True
         return thresholdActive
 
+    def saveChunkToCSV(self, subdir, gesturename):
+        """
+        saves self.chunk to csv
+        :param subdir: sudirectory under /data/savedChunks
+        :return:
+        """
+        workingDir = os.path.join(parentDir, 'data', 'savedChunks', subdir)
+        idx = 0
+        filesInFolder = [file for file in os.listdir(workingDir) if os.path.isfile(os.path.join(workingDir, file))]
+
+        chunkFilename = gesturename + '_' + str(idx) + '.csv'
+        while chunkFilename in filesInFolder:
+            idx += 1
+            chunkFilename = gesturename + '_' + str(idx) + '.csv'
+
+        chunkDataFrame = pandas.DataFrame(self.chunk)
+        chunkDataFrame.to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, chunkFilename))
 
 
-#todo: this has to work with relative paths
 class TrainingDataMacro(eegData):
     """
     child eegData class meant for user to evaluate a long .csv file with multiple training samples in it
@@ -222,6 +305,7 @@ class TrainingDataMacro(eegData):
     self.matrix contains only numbers w DC offset removed
 
     """
+
     def __init__(self):
         super().__init__()
         self.curatedChunk = []
@@ -236,9 +320,11 @@ class TrainingDataMacro(eegData):
         :param tag: the label you would like to associate the file with. typically the same as filename.
         :return:
         """
-        self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename), skiprows=1, dtype=float, header=0,
+        self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
+                                       skiprows=1, dtype=float, header=0,
                                        usecols=self.emotivChannels)
-        self.markers = pandas.read_csv(os.path.join(parentDir, 'data','longRawTrainingSamples', subdir, filename), skiprows=1, usecols=['EEG.MarkerHardware'])
+        self.markers = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
+                                       skiprows=1, usecols=['EEG.MarkerHardware'])
         self.address = subdir
         self.filename = filename
         self.tag = tag
@@ -266,7 +352,7 @@ class TrainingDataMacro(eegData):
         :param stop: (in seconds) where in the recording to stop plotting
         :return:
         """
-        channel = channel[start*self.sampleRate:stop*self.sampleRate]
+        channel = channel[start * self.sampleRate:stop * self.sampleRate]
 
         # define time axis
         tAxis = np.arange(0, len(channel))  # create time axis w same length as the data matrix
@@ -291,12 +377,15 @@ class TrainingDataMacro(eegData):
         x, y = self.matrix.shape
         i = 0
         while i < len(self.F7):
-            if ((abs(self.F7[i]) >= self.threshold) or (abs(self.AF3[i]) >= self.threshold) or (abs(self.T7[i]) >= self.threshold)) and (i > eegData.backTrack) and (i < (len(self.F7) - eegData.chunkSize)):
+            if ((abs(self.F7[i]) >= self.threshold) or (abs(self.AF3[i]) >= self.threshold) or (
+                    abs(self.T7[i]) >= self.threshold)) and (i > eegData.backTrack) and (
+                    i < (len(self.F7) - eegData.chunkSize)):
                 chunkStart = i - eegData.backTrack
                 chunkEnd = chunkStart + eegData.chunkSize
                 # print(self.matrix[chunkStart:chunkEnd,:])
                 # print(self.emotivChannels)
-                self.trainingChunks.append(pandas.DataFrame(self.matrix[chunkStart:chunkEnd, :], columns=self.emotivChannels))
+                self.trainingChunks.append(
+                    pandas.DataFrame(self.matrix[chunkStart:chunkEnd, :], columns=self.emotivChannels))
                 self.nChunks = self.nChunks + 1
                 i = chunkEnd + 1
             i += 1
@@ -307,21 +396,23 @@ class TrainingDataMacro(eegData):
         """
         fig = plt.figure(num)
         plt.plot(self.trainingChunks[num].values)
-        plt.xlabel('sample number ' + str(num) )
+        plt.xlabel('sample number ' + str(num))
         plt.ylim(-1500, 1500)
         plt.pause(0.001)
 
         return fig
 
-    def newChunkEvalMethod(self):
+    def newChunkEvalMethod(self, chunkSubdir):
         """
                 creates chunks that meet the threshold and backtrack criteria. Basically, if a certain channel's voltage passes a
                 certain threshold, a chunk of samples will be saved to self.trainingChunks
                 :return:
-                """
+        """
         self.nChunks = 0
         i = 0
         fig = figure()
+        i = input('enter starting sample: ')
+        i = int(i)
         while i < len(self.F7):
             # see if it passes threshold
             if ((abs(self.F7[i]) >= self.threshold) or (abs(self.AF3[i]) >= self.threshold) or (
@@ -334,33 +425,49 @@ class TrainingDataMacro(eegData):
 
                 chunkUnderEvaluation = self.matrix[chunkStart:chunkEnd, :]
                 while not approvedByUser:
+                    shift = 0
                     self.chunk = chunkUnderEvaluation
                     self.plotRawEEG(fig)
-                    shift = input('enter desired shift (in samples, negative numbers mean shift left) ')
-                    shift = int(shift)
+                    print('current sample is ' + str(chunkStart))
+                    keep = input('keep this? y/n')
+                    if keep == 'n':
+                        break
+                    try:
+                        shift = input('enter desired shift (in samples, negative numbers mean shift left) ')
+                        shift = int(shift)
+                    except (TypeError, ValueError):
+                        print('uh thats not an integer, shift set to 0')
+                        shift = 0
+
                     chunkStart = chunkStart + shift
                     chunkEnd = chunkEnd + shift
 
+                    self.chunk = self.matrix[chunkStart:chunkEnd, :]
                     self.plotRawEEG(fig)
-                    allgood = input('this good? (y/n)')
+                    allgood = input('save this chunk? (y/n)')
+                    print('\n')
                     if allgood == 'y':
                         approvedByUser = True
+                        self.curatedChunk.append(self.chunk)
+                        self.curatedChunkCount += 1
+                        self.nChunks += 1
+                        self.saveSingleChunkToCSV(chunk=self.chunk, subdir=chunkSubdir)
 
-                chunkUnderEvaluation = self.matrix[chunkStart:chunkEnd, :]
-                self.chunk = chunkUnderEvaluation
-                self.plotRawEEG(fig)
-                prompt = input('would you like to use sample number ' + str(i) + '? (y/n) ')
-                if prompt == 'y':
-                    self.curatedChunk.append(self.trainingChunks[i])
-                    self.curatedChunkCount += 1
-
-
-
-                self.trainingChunks.append(
-                    pandas.DataFrame(self.matrix[chunkStart:chunkEnd, :], columns=self.emotivChannels))
-                self.nChunks = self.nChunks + 1
                 i = chunkEnd + 1
             i += 1
+
+    def saveSingleChunkToCSV(self, chunk, subdir):
+        workingDir = os.path.join(parentDir, 'data', 'savedChunks', subdir)
+        idx = 0
+        filesInFolder = [file for file in os.listdir(workingDir) if os.path.isfile(os.path.join(workingDir, file))]
+
+        chunkFilename = self.tag + '_' + str(idx) + '.csv'
+        while chunkFilename in filesInFolder:
+            idx += 1
+            chunkFilename = self.tag + '_' + str(idx) + '.csv'
+
+        chunkDataFrame = pandas.DataFrame(chunk)
+        chunkDataFrame.to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, chunkFilename))
 
     def evalChunk(self):
         """
@@ -380,32 +487,33 @@ class TrainingDataMacro(eegData):
 
             plt.close(fig)
 
-    def saveChunksToCSV(self, subdir='smallChunks'):
+    def saveChunksToCSV(self, subdir='smallChunks', append=True):
         """
         saves curated chunks to csv
-        :param obj:
+        :param subdir: subdirectory where chunks will be stored
+        :param append: append new chunks or overwrite old ones
         :return:
         """
         for i in range(len(self.curatedChunk)):
-            self.curatedChunk[i].to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, self.tag + '_' + str(i) + '.csv'))
+            self.curatedChunk[i].to_csv(
+                os.path.join(parentDir, 'data', 'savedChunks', subdir, self.tag + '_' + str(i) + '.csv'))
 
-    def plotRawCSV(self, matrix, offset=200):
+    def plotRawCSV(self, offset=200):
         """
-        note: the only difference between this and the parent method is that this one displays the title of the thing
-        being plotted
+        plot the whole csv
         :param matrix:
         :param offset: DC offset between eeg channels
         :return: plot with all 14
         """
         # define time axis
-        tAxis = np.arange(0, len(matrix))  # create time axis w same length as the data matrix
+        tAxis = np.arange(0, len(self.matrix))  # create time axis w same length as the data matrix
         tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
 
-        # use eeg matrix as y axis
-        yAxis = matrix + offset * 13
+        # use eeg self.matrix as y axis
+        yAxis = self.matrix + offset * 13
 
         # add offset to display all channels
-        for i in range(0, len(matrix[0, :])):
+        for i in range(0, len(self.matrix[0, :])):
             yAxis[:, i] -= offset * i
 
         # plot figure

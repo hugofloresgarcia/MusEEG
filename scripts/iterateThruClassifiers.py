@@ -32,7 +32,7 @@ print(results)
 
 #save results
 results = pd.DataFrame(results)
-results.to_csv(os.path.join(MusEEG.parentDir, 'data', 'ClassifierOptimizations', 'forSmallChunks.csv'))
+results.to_csv(os.path.join(MusEEG.parentDir, 'data', 'ClassifierResults', 'forSmallChunks.csv'))
 results.plot()
 print('hi')
 

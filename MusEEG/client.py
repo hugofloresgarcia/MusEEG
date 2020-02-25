@@ -4,15 +4,12 @@ import numpy as np
 from numpy import array
 import threading
 import time
-# -*- coding: utf8 -*-
-#
-# Cykit Example TCP - Client
-# author: Icannos
-# modified for MusEEG by: hugo flores garcia
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from collections import deque
+from scipy import signal
+from numpy.fft import fft
+import numpy as np
 
 
 import socket
@@ -67,9 +64,17 @@ class client:
 
     def stream(self):
         self.q = queue.LifoQueue()
+        self.psdq = queue.LifoQueue()
+        self.plotq = queue.LifoQueue()
         def workerjob():
             try:
                 while True:
+                    # -*- coding: utf8 -*-
+                    #
+                    # Cykit Example TCP - Client
+                    # author: Icannos
+                    # modified for MusEEG by: hugo flores garcia
+                    import matplotlib
                     # We read a chunk
                     data = self.s.recv(self.BUFFER_SIZE)
 
@@ -95,7 +100,8 @@ class client:
 
                     # We setup the buffer for next step
                     self.buffer = self.n_buffer
-
+                    self.plotq.put(fields, block=False)
+                    self.psdq.put(fields,block=False)
                     # Print all channel
                     self.q.put(fields, block=False)
             except Exception:
@@ -106,19 +112,42 @@ class client:
         worker.setDaemon(True)
         worker.start()
 
-    def getChunk(self, chunkSize=eegData.chunkSize):
-        chunk = []
-        while len(chunk) < chunkSize:
+    def getBuffer(self, bufferSize=eegData.chunkSize/1.25*4, highpass=True):
+        buffer = []
+        while len(buffer) < bufferSize:
             try:
-                data = self.q.get()
-                ## this conditional is to differentiate between a simulated stream and the actual server
-                chunk.append(self.dict2list(data))
-                if not self.streamIsSimulated:
-                    pass
-                else:
-                    chunk = array(chunk) + 4100
+                packet = self.psdq.get()
+                buffer.append(self.dict2list(packet))
             except TypeError:
                 pass
+
+        buffer = np.array(buffer).transpose()
+        if highpass:
+            # highpass at 4Hz
+            filter = signal.butter(10, 4, 'hp', fs=eegData.sampleRate, output='sos')
+            buffer = signal.sosfilt(filter, buffer)
+        return buffer
+
+    def getChunk(self, chunkSize=eegData.chunkSize):
+        bufferchunk = []
+        chunk = []
+        self.chunkq = queue.Queue()
+        while len(chunk) < chunkSize:
+            try:
+                ## get packets until u find one that passes the threshold
+                data = self.q.get()
+                # print(data["COUNTER"])
+                formattedData = self.dict2list(data)
+                # self.plotClientStream(formattedData=formattedData, figure=self.figure)
+                chunk.append(formattedData)
+
+            except TypeError:
+                pass
+
+        self.chunkq.put(array(chunk))
+
+        if self.streamIsSimulated:
+            chunk = array(chunk) + 4100
 
         return array(chunk) - 4100
 
@@ -128,6 +157,7 @@ class client:
         eeg.importCSV(subdir=subdir, filename=gesture+'.csv', tag=gesture)
         self.q = queue.Queue()
         self.plotq = queue.Queue()
+        self.psdq = queue.Queue()
         self.streamSpeed = streamSpeed
         def worker():
             for i in range(0,len(eeg.matrix)):
@@ -135,12 +165,12 @@ class client:
                 packet["COUNTER"] = i
                 self.q.put(item=packet)
                 self.plotq.put(item=packet)
+                self.psdq.put(item=packet)
                 time.sleep(1/eegData.sampleRate/streamSpeed)
 
         simulationWorker = threading.Thread(target=worker)
         simulationWorker.setDaemon(True)
         simulationWorker.start()
-
 
     def getChunkWithBackTrack(self):
         bufferchunk = []
@@ -173,12 +203,9 @@ class client:
 
         return array(chunk) - 4100
 
-
-    def plotClientStream(self, streamfigure=None, chunkfigure=None, offset=400):
+    def plotClientStream(self, streamfigure=None, plotChunks=False,  chunkfigure=None, offset=400):
         if streamfigure is None:
             streamfigure = plt.Figure()
-        if chunkfigure is None:
-            chunkfigure = plt.Figure()
         while not self.plotq.empty():
             appendedChunk = []
             while len(appendedChunk) < self.windowSize/8:
@@ -190,18 +217,24 @@ class client:
             # define time axis
             tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
             tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
+            if self.streamIsSimulated:
+                plotBuffer = array(self.line)
+            else:
+                plotBuffer = array(self.line) - 4100
 
-            plotBuffer = array(self.line)
             yAxis = plotBuffer + offset * 13
 
             # add offset to display all channels
             for i in range(0, len(plotBuffer[0, :])):
                 yAxis[:, i] -= offset * i
 
-            if not self.chunkq.empty():
-                eeg = eegData()
-                eeg.chunk = self.chunkq.get()
-                chunkfigure = eeg.plotRawEEG(chunkfigure)
+            if plotChunks:
+                if chunkfigure is None:
+                    chunkfigure = plt.Figure()
+                if not self.chunkq.empty():
+                    eeg = eegData()
+                    eeg.chunk = self.chunkq.get()
+                    chunkfigure = eeg.plotRawEEG(chunkfigure)
 
 
             streamfigure.canvas.flush_events()
@@ -215,3 +248,5 @@ class client:
             plt.pause(0.001)
 
         return streamfigure, chunkfigure
+
+

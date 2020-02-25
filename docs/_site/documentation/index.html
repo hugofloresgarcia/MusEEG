@@ -152,13 +152,55 @@
 
 
   <h2>
+      <li><a href="/documentation/classification">classification</a></li>
+  </h2>
+  <!-- <p><p>A three-layer Artificial Neural Network (ANN) architecture was used for the classification of the EEG signals. Two models were created: a small model designed to analyze 64-sample chunks and determine whether the chunk contains a facial expression or not (smallBrain), and a large model designed to analyze 320-sample chunks to determine what facial expression is present in the chunk (bigBrain).</p>
+
+<p>The smallBrain model is meant to perform a quick classification of whether a facial expression is present in a 64-sample chunk. The smallBrain model was designed with the intent of having an always-on processor for real-time implementation. By analyzing a chunk with a duration of 250ms, the smallBrain model returns a result fairly quickly, allowing for continuous real-time classification with little latency.</p>
+
+<p>The smallBrain model consists of a three-layer ANN with L1 regularization methods and a sparse categorical cross entropy loss function. During testing, the model exhibited 98.75% accuracy. Its test confusion matrix can be observed below.</p>
+
+<p><img src="../img/smallBrainConfusion.png" alt="smallBrainConfusion" /></p>
+
+<p>The bigBrain model consists of a three-layer ANN with L1_L2 regularization methods and a sparse categorical cross entropy loss function.  During testing, the model exhibited 87.04% accuracy. Its test confusion matrix can be observed below.</p>
+
+<p><img src="../img/bigBrainConfusion.png" alt="bigBrainConfusion" /></p>
+</p> -->
+
+  <h2>
+      <li><a href="/documentation/feature-extraction">feature extraction</a></li>
+  </h2>
+  <!-- <p><p>A 4-level wavelet decomposition using Daubechies order-2 (db2) mother wavelet is performed on all 14 channels of the chunk of EEG data.</p>
+
+<p><img src="../img/smileWavelets.png" alt="img" /></p>
+
+<p>One advantage of wavelet analysis over other time-frequency distribution methods (e.g. STFT) is that wavelet analysis varies the time-frequency aspect ratio, producing good frequency localization at low frequencies (long time windows), and good time localization at high frequencies (short time windows). This results in a segmentation of the time-frequency plane that will reveal transient features of the signal, which are typically not obvious during Fourier analysis.</p>
+
+<p>Following the wavelet decomposition, the first four statistical moments (mean, variance, skewness, kurtosis) are calculated for each wavelet vector. Since four moments are calculated for each of the 5 wavelet decomposition vector per EEG channel, a total of 14 x 4 x 5 (280) features are calculated. These features are used as an input for the classification models.</p>
+</p> -->
+
+  <h2>
       <li><a href="/documentation/previous-work">previous work</a></li>
   </h2>
-  <!-- <p><p>MusEEG builds upon my research on the recognition of facial gestures using EEG signals. The gesture recognition process consisted of three phases: filtering, feature extraction, and classification. For more information, take a look at the poster shown below.</p>
+  <!-- <p><p>MusEEG builds upon my research on the recognition of facial expressions using EEG signals. The facial expression recognition process consisted of three phases: filtering, feature extraction, and classification. For more information, take a look at the poster shown below.</p>
 
 <p><img src="../img/GURC_FloresGarcia_v2.png" alt="previous work" /></p>
 
 <p><img src="" alt="" /></p>
+</p> -->
+
+  <h2>
+      <li><a href="/documentation/real-time">real-time processing</a></li>
+  </h2>
+  <!-- <p><p>The current iteration of the real-time application consists of a multithreaded process. A flowchart describing the real-time processing work flow is described below.</p>
+
+<p><img src="../img/realTimeFlowChart.png" alt="img" /></p>
+
+<p>In the client thread, a TCP client receives single EEG data packets from a live EEG stream using the EPOC+. Each packet is placed into a python queue, waiting to be retrieved by the main processing thread when requested.</p>
+
+<p>In the main processing thread, a helper chunkGetter thread takes care of receiving EEG packets from the client thread and placing them into smallChunks and bigChunks for processing by smallBrain and bigBrain, respectively. Once the smallChunk array is full (250ms, 64 samples), the chunk is sent through preprocessing and feature extraction, and is classified into either a facial expression/no facial expression. While the smallChunk array goes through preprocessing and feature extraction, the chunkGetter thread takes care of filling up the bigChunk array, in case the smallBrain classifier indicates that a facial expression is present and a 320-sample chunk is needed for complete facial expression classification.</p>
+
+<p>If the smallChunk classification indicates that a facial expression was just performed, the main thread waits for the chunkGetter thread to finish collecting all 320 samples into a bigChunk, and sends the bigChunk to be processed and classified using bigBrain. The classification result is sent to a musician thread, which in turn performs the predefined MIDI event indicated by the facial expression-MIDI dictionary.</p>
 </p> -->
 
   <h2>
@@ -293,7 +335,7 @@ As an output, the <code class="language-plaintext highlighter-rouge">wavelet</co
   
 
         <footer>
-  &copy; 2019 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
+  &copy; 2020 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
 </footer>
 
       </div>

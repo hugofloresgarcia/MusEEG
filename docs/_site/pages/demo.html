@@ -151,10 +151,10 @@
 
 <p><img src="/img/demoapp_v2.png" alt="demo app" /></p>
 
-<h5 id="the-gesture-buttons-and-chord-dictionary">the gesture buttons and chord dictionary</h5>
-<p>The top left corner allows you to load a random sample from the existing facial gesture dataset by pressing on one of the facial gesture buttons. Once loaded, the 14-channel raw EEG signal will be plotted in the plot box.</p>
+<h5 id="the-facial-expression-buttons-and-chord-dictionary">the facial expression buttons and chord dictionary</h5>
+<p>The top left corner allows you to load a random sample from the existing facial expression dataset by pressing on one of the facial expression buttons. Once loaded, the 14-channel raw EEG signal will be plotted in the plot box.</p>
 
-<p>Next to each facial gesture button is a text entry field that allows you to define the set of notes that will be played when the facial gesture is sent to the main processor. Note: whenever the user changes notes in the chord dictionary, the <code class="language-plaintext highlighter-rouge">update chord dictionary</code> button must be pressed in order for the changes to take effect.</p>
+<p>Next to each facial expression button is a text entry field that allows you to define the set of notes that will be played when the facial expression is sent to the main processor. Note: whenever the user changes notes in the chord dictionary, the <code class="language-plaintext highlighter-rouge">update chord dictionary</code> button must be pressed in order for the changes to take effect.</p>
 
 <h5 id="process-and-send-to-musician-button">process and send to musician button</h5>
 <p>The <code class="language-plaintext highlighter-rouge">process and send to musician</code> button performs the following actions:</p>
@@ -162,8 +162,8 @@
   <li>wavelet transform of raw eeg signal</li>
   <li>statistical moment calculations of wavelet decomposition signals</li>
   <li>creates DNN input array from extracted stat moments</li>
-  <li>the DNN classifies the signal into either of the available gestures</li>
-  <li>the gesture is referred to its matching chord in the chord dictionary, and a <code class="language-plaintext highlighter-rouge">chord</code> object is created from the matching chord</li>
+  <li>the DNN classifies the signal into either of the available facial expressions</li>
+  <li>the facial expression is referred to its matching chord in the chord dictionary, and a <code class="language-plaintext highlighter-rouge">chord</code> object is created from the matching chord</li>
   <li>the <code class="language-plaintext highlighter-rouge">playchord</code> method is called on the <code class="language-plaintext highlighter-rouge">chord</code> object, sending a midi message according to the additional control parameters</li>
 </ol>
 
@@ -186,7 +186,7 @@
   
 
         <footer>
-  &copy; 2019 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
+  &copy; 2020 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
 </footer>
 
       </div>
