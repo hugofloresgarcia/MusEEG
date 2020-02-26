@@ -6,7 +6,6 @@ import numpy as np
 import threading
 from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
-import time
 import pandas as pd
 
 class Processor:
@@ -14,6 +13,7 @@ class Processor:
         """
         this is set up rn to simulate an eeg stream, instead of getting data from the client
         """
+        self.simulation = simulation
         self.cerebro = cerebro()
         self.bigBrain = classifier()
         self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'), loadScaler=True)
@@ -21,26 +21,17 @@ class Processor:
         self.client = client()
 
         ##these are just some average bandpower values from the neutral track
-        self.baseline = [78.72624375770606, 310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565]
+        self.baseline = [78.72624375770606, 310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
         self.baselinedB = np.log10(self.baseline)
 
-        if simulation:
-            #### TEST TEST
-            """
-            lookright works fine
-            hardblink and scrunch are wrong
-            lookleft gets confused with smile sometimes
-            """
-            # self.client.simulateStream('vid', subdir='testfiles', streamSpeed=1)
+
+    def startStream(self):
+        if self.simulation:
             self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=4)
         else:
             self.client.setup()
             self.client.stream()
 
-        # self.chunkFigure = plt.figure()
-        # self.streamPlotFigure = plt.figure()
-        # self.PSDFigure = plt.figure()
-        self.bandPowerFigure = plt.figure()
 
     def OSCstart(self, address="127.0.0.1", port=57120, clientName = "MusEEGosc"):
         self.clientNameOSC = clientName
@@ -117,19 +108,11 @@ class Processor:
         deltaAvg = float(np.mean(delta))
         thetaAvg = float(np.mean(theta))
         alphaAvg = float(np.mean(alpha))
-        betaAvg = float(np.mean(beta))
+        betaAvg  = float(np.mean(beta))
         gammaAvg = float(np.mean(gamma))
 
         bandPowerArray = np.array([delta, theta, alpha, beta, gamma])
 
-        # calculate averages
-        # self.baseDelta = (1/2*self.baseDelta + deltaAvg)
-        # self.baseTheta = (1/2*self.baseTheta + thetaAvg)
-        # self.baseAlpha = (1/2*self.baseAlpha + alphaAvg)
-        # self.baseBeta = (1/2*self.baseBeta + betaAvg)
-        # self.baseGamma = (1/2*self.baseGamma + gammaAvg)
-        #
-        # print(self.baseDelta, self.baseTheta, self.baseAlpha, self.baseBeta, self.baseGamma)
         bandPowerStr = ['delta', 'theta', 'alpha', 'beta', 'gamma']
         # put these in a dataframe
         bandPowers = pd.DataFrame(bandPowerArray, index=bandPowerStr)
@@ -138,7 +121,7 @@ class Processor:
         deltaOSC = oscbuildparse.OSCMessage('/delta', None, [deltaAvg])
         thetaOSC = oscbuildparse.OSCMessage('/theta', None, [thetaAvg])
         alphaOSC = oscbuildparse.OSCMessage('/alpha', None, [alphaAvg])
-        betaOSC = oscbuildparse.OSCMessage('/beta', None, [betaAvg])
+        betaOSC  = oscbuildparse.OSCMessage('/beta', None, [betaAvg])
         gammaOSC = oscbuildparse.OSCMessage('/gamma', None, [gammaAvg])
 
         OSCmsglist = [deltaOSC, thetaOSC, alphaOSC, betaOSC, gammaOSC]
@@ -147,7 +130,7 @@ class Processor:
             osc_send(message, self.clientNameOSC)
             osc_process()
 
-        eegData.bandPowerHistogram(bandPowers, figure=self.bandPowerFigure)
+        # eegData.bandPowerHistogram(bandPowers, figure=self.bandPowerFigure)
 
     def bandPowerProcessor(self):
         buffer = self.client.getBuffer(bufferSize=128)
@@ -178,11 +161,9 @@ class Processor:
 
         for message in OSCmsglist:
             osc_send(message, self.clientNameOSC)
-            # osc_process()
-            # print(message)
 
         #plot histogram
-        eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
+        # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
 
     def bandPowerThread(self, asThread=True):
         def bandPowerLoop():
@@ -243,7 +224,6 @@ class Processor:
                 eeg.chunk = self.client.getChunkWithBackTrack()
                 if len(eeg.chunk) != eeg.chunkSize:
                     raise RuntimeError('this chunk did not have the required number of samples. something went wrong')
-                # eeg.plotRawEEG(figure=self.streamPlotFigure)
                 self.processAndSendOSC(eeg)
 
             except KeyboardInterrupt:
@@ -261,25 +241,7 @@ class Processor:
 
 
 if __name__ == "__main__":
-    processor = Processor(simulation=False)
+    processor = Processor(simulation=True)
     processor.OSCstart()
     processor.defineOSCMessages()
     processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
-    processor.bandPowerThread(asThread=False)
-    # processor.mainProcessorWithoutBackTrack()
-
-    # while True:
-    #     processor.sendOSCMessage(processor.discreteOSCdict['smile'])
-    #     time.sleep(0.3)
-    #     processor.sendOSCMessage(processor.discreteOSCdict['eyebrows'])
-    #     time.sleep(0.3)
-    #     processor.sendOSCMessage(processor.discreteOSCdict['lookleft'])
-    #     time.sleep(0.3)
-    #     processor.sendOSCMessage(processor.discreteOSCdict['scrunch'])
-    #     print('sent')
-    #     time.sleep(0.3)
-
-
-    # processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
-    # processor.client.plotClientStream(processor.streamPlotFigure, plotChunks=False)
-    # processor.processorShutDown()
