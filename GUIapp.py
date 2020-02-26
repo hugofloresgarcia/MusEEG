@@ -25,12 +25,6 @@ class demoApp(tk.Frame):
         self.pack()
         self.create_widgets()
 
-    def welcomeMessage(self):
-        self.welcomemsg = tk.Message(self, text=processor.cerebro.demomsg, relief=tk.RIDGE)
-        self.welcomemsg.anchor('nw')
-        # self.welcomemsg.pack(side="left")
-        self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=2, padx=5, pady=5)
-
     def tempoBox(self):
         self.templbl = tk.Label(self, text='tempo (bpm)').grid(row=self.buttonRow+1, column=2)
         self.tempobx = tk.Entry(self)
@@ -99,6 +93,10 @@ class demoApp(tk.Frame):
     #     self.wavcanvas.draw()
     #     # self.canvas.get_tk_widget().pack(side="right", expand=True)
     #     self.wavcanvas.get_tk_widget().grid(row=0, column=6, rowspan=11, columnspan=3, padx=5, pady=5)
+    # def welcomeMessage(self):
+    #     self.welcomemsg = tk.Message(self, text=processor.cerebro.demomsg, relief=tk.RIDGE)
+    #     self.welcomemsg.anchor('nw')
+    #     self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=2, padx=5, pady=5)
 
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
@@ -168,16 +166,12 @@ class demoApp(tk.Frame):
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG")
 
-        # self.welcomeMessage()
         self.tempoBox()
         self.arpeggioDuration()
         self.chordDuration()
         self.gestureButtons()
-        # self.plotWindow()
 
-        # self.wavPlotWindow()
         self.checkboxArpeggiate()
-        # self.classificationResult()
 
         self.buttonProcessAndSend()
         self.buttonStartProcessor()

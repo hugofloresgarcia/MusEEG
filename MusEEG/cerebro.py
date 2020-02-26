@@ -28,38 +28,8 @@ class cerebro:
         '- to change a chord, press the "update chord dictionary" button after youve changed the notes\n')
     eeg = eegData()
 
-    oldgestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
-                     'neutral', 'scrunch', 'tongue']
     gestures = ['smile', 'hardblink', 'lookleft', 'lookright',
                      'neutral', 'scrunch']
-
-    """
-    chord objects are defined here. the chord() class takes any set of notes as an input.
-    """
-    cmaj7sharp11add13 = chord(['C4', 'E4', 'G4', 'B4', 'D5', 'F#4', 'A5'],
-                              name='cmaj7sharp11add13')
-    fminmaj7 = chord(['F4', 'Ab4', 'C5', 'E5'], name='fminmaj7')
-    fmaj7 = chord(['F4', 'A4', 'C5', 'E5', 'G5'], name='fmaj7')
-    ab69 = chord(['Ab4', 'C5', 'F5', 'Bb5', 'C6'], name='ab69')
-    bb69 = chord(['Bb4', 'D5', 'G5', 'C5', 'D6'], name='bb69')
-    g69 = chord(['G4', 'B5', 'E5', 'A5','D6'], name='gb69')
-    dmin7b5 = chord(['D4', 'F4', 'Ab4', 'C5', 'E5'], name='dmin7b5')
-    g7b9 = chord(['G4', 'B4', 'D5', 'F5', 'Ab5'], name='g7b9')
-    c5 = chord(['C3', 'G3'], name='c5')
-    noChord = chord([], name='nochord')
-    polychordcde = chord(
-        ['C3', 'E3', 'G3', 'D4', 'F#4', 'A4', 'E5', 'G#5', 'B5'], name='E/D/C')  # todo: add a polychord(chord) method
-    dbmaj7 = chord(['Db4', 'F4', 'Ab4', 'C5', 'Eb5'], name='dbmaj7')
-    margaretsmagicchord = chord(['D4', 'F4', 'A#4'], name='margschord')
-
-    defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist,
-                        fmaj7.notelist, ab69.notelist, dmin7b5.notelist,
-                        c5.notelist, noChord.notelist,
-                        polychordcde.notelist, dbmaj7.notelist]
-
-    """
-    this dictionary is where chords are referenced to facial gestures.
-    """
 
     def __init__(self):
         #default mididict. it will be updated everytime the user presses the update chord button
@@ -136,3 +106,37 @@ class cerebro:
         else:
             musician.panic()
             musician.playchord(qtrnotes=self.noteDurationFromGUI, vel=30)
+
+
+    #
+    # """
+    # chord objects are defined here. the chord() class takes any set of notes as an input.
+    # """
+    #
+    # oldgestures = ['smile', 'bitelowerlip', 'eyebrows', 'hardblink', 'lookleft', 'lookright',
+    #                  'neutral', 'scrunch', 'tongue']
+    #
+    # cmaj7sharp11add13 = chord(['C4', 'E4', 'G4', 'B4', 'D5', 'F#4', 'A5'],
+    #                           name='cmaj7sharp11add13')
+    # fminmaj7 = chord(['F4', 'Ab4', 'C5', 'E5'], name='fminmaj7')
+    # fmaj7 = chord(['F4', 'A4', 'C5', 'E5', 'G5'], name='fmaj7')
+    # ab69 = chord(['Ab4', 'C5', 'F5', 'Bb5', 'C6'], name='ab69')
+    # bb69 = chord(['Bb4', 'D5', 'G5', 'C5', 'D6'], name='bb69')
+    # g69 = chord(['G4', 'B5', 'E5', 'A5','D6'], name='gb69')
+    # dmin7b5 = chord(['D4', 'F4', 'Ab4', 'C5', 'E5'], name='dmin7b5')
+    # g7b9 = chord(['G4', 'B4', 'D5', 'F5', 'Ab5'], name='g7b9')
+    # c5 = chord(['C3', 'G3'], name='c5')
+    # noChord = chord([], name='nochord')
+    # polychordcde = chord(
+    #     ['C3', 'E3', 'G3', 'D4', 'F#4', 'A4', 'E5', 'G#5', 'B5'], name='E/D/C')  # todo: add a polychord(chord) method
+    # dbmaj7 = chord(['Db4', 'F4', 'Ab4', 'C5', 'Eb5'], name='dbmaj7')
+    # margaretsmagicchord = chord(['D4', 'F4', 'A#4'], name='margschord')
+    #
+    # defaultchordlist = [cmaj7sharp11add13.notelist, fminmaj7.notelist,
+    #                     fmaj7.notelist, ab69.notelist, dmin7b5.notelist,
+    #                     c5.notelist, noChord.notelist,
+    #                     polychordcde.notelist, dbmaj7.notelist]
+    #
+    # """
+    # this dictionary is where chords are referenced to facial gestures.
+    # """

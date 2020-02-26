@@ -9,24 +9,36 @@ from osc4py3 import oscbuildparse
 import pandas as pd
 
 class Processor:
-    def __init__(self, simulation=True):
-        """
-        this is set up rn to simulate an eeg stream, instead of getting data from the client
-        """
-        self.simulation = simulation
+    def __init__(self, device=None):
         self.cerebro = cerebro()
         self.bigBrain = classifier()
-        self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'), loadScaler=True)
 
-        self.client = client()
+        self.client = client(device=device)
 
-        self.sendOSC = True
-        self.sendMIDI = True
+        if device is None:
+            self.simulation = True
+
+        elif device == 'emotiv':
+            eegData.device = device
+            eegData.sampleRate = 256
+            eegData.chunkSize = 256*1.25
+            eegData.nchannels = 14
+            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
+                                    loadScaler=True)
+
+        elif device == 'openBCI':
+            eegData.device = device
+            eegData.sampleRate = 125
+            eegData.chunkSize = eegData.chunkSize/2
+            eegData.nchannels = 16
+
+
+        self.sendOSC = True #send OSC messages for facial expressions
+        self.sendMIDI = True #send midi messages for facial expressions
 
         ##these are just some average bandpower values from the neutral track
         self.baseline = [78.72624375770606, 310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
         self.baselinedB = np.log10(self.baseline)
-
 
     def startStream(self):
         if self.simulation:
@@ -152,7 +164,7 @@ class Processor:
                     brainOutput = self.cerebro.smallBrain.classify(brainInput.reshape(1, 350))
 
                     if brainOutput == 0:
-                        print('gesture found')
+                        print('facial expression found!')
                         activeGesture = True
                         self.stopChunkGetter = False
                         chunkGetter.join()
@@ -167,7 +179,7 @@ class Processor:
                 eeg.chunk = np.array(fullchunk)
                 # eeg.plotRawEEG(figure=self.streamPlotFigure)
                 if len(eeg.chunk) != eeg.chunkSize:
-                    raise RuntimeWarning('this chunk wasn\'t 384 samples. something went wrong')
+                    raise RuntimeWarning('chunk size error')
 
                 processor = threading.Thread(target=self.processAndPlay, args=(eeg,))
                 processor.start()
@@ -249,9 +261,8 @@ class Processor:
     # plot histogram
     # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
 
-
 if __name__ == "__main__":
-    processor = Processor(simulation=True)
+    processor = Processor(device=None)
     processor.OSCstart()
     processor.defineOSCMessages()
     processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)

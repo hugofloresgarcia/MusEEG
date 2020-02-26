@@ -3,7 +3,6 @@ import pandas
 import numpy as np
 from pywt import wavedec
 
-import pickle
 from scipy.stats import kurtosis, skew
 from scipy.signal import welch
 from scipy.integrate import simps
@@ -20,12 +19,13 @@ from matplotlib.pyplot import figure
 
 from MusEEG import parentDir
 
-from scipy import signal
+
 
 
 class eegData:
     threshold = 350
     sampleRate = 256
+    device = 'emotiv'
     ####note: these used to be 384 samples and 64 samples.
     chunkSize = int(256 * 1.25)
     smallchunkSize = int(chunkSize / 4)
@@ -95,7 +95,6 @@ class eegData:
         figure.canvas.draw()
         plt.pause(0.001)
 
-
     def extractStatsFromWavelets(self):
         """
         calculates mean, standard deviation, variance, kurtosis, and skewness from self.wavelets object.
@@ -151,7 +150,7 @@ class eegData:
         tAxis = tAxis / self.sampleRate  # adjust time axis to 256 sample rate
 
         # use eeg matrix as y axis
-        yAxis = chunk + offset * 13
+        yAxis = chunk + offset * (self.nchannels-1)
 
         # add offset to display all channels
         for i in range(0, len(chunk[0, :])):
@@ -166,8 +165,7 @@ class eegData:
         ax.clear()
         ax.set_title(plotTitle)
         ax.set_ylim(-300, offset * 20)
-        ax.legend(["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
-                   "EEG.O2", "EEG.P8", "EEG.T8", "EEG.FC6", "EEG.F4", "EEG.F8", "EEG.AF4"])
+        ax.legend(self.eegChannels)
         ax.set_xlabel('time')
         ax.plot(tAxis, yAxis)
         figure.canvas.draw()
@@ -221,6 +219,7 @@ class eegData:
         # todo: make this work with the UI
         return fig
 
+    #todo: needs openBCI fix
     def loadChunkFromTraining(self, subdir, filename, labelcols=True):
         """
         :rtype: objectram subdir: subdirectory where chunk is located from MusEEG/data/savedChunks
@@ -259,6 +258,7 @@ class eegData:
         self.AF4 = self.chunk[:, 13]
         return self.chunk
 
+    #todo: needs openBCI fix
     def cutChunk(self, newChunkSize):
         """
         for smallBrain: cut chunk to a new ChunkSize
@@ -279,6 +279,7 @@ class eegData:
                 thresholdActive = True
         return thresholdActive
 
+    #todo: needs openBCI fix
     def saveChunkToCSV(self, subdir, gesturename):
         """
         saves self.chunk to csv
@@ -297,7 +298,7 @@ class eegData:
         chunkDataFrame = pandas.DataFrame(self.chunk)
         chunkDataFrame.to_csv(os.path.join(parentDir, 'data', 'savedChunks', subdir, chunkFilename))
 
-
+ #todo: needs openBCI fix
 class TrainingDataMacro(eegData):
     """
     child eegData class meant for user to evaluate a long .csv file with multiple training samples in it
@@ -314,36 +315,39 @@ class TrainingDataMacro(eegData):
         self.trainingChunks = []
         self.curatedChunkCount = 0
 
+    #todo: needs openBCI fix
     def importCSV(self, subdir, filename, tag):
-        """
-        :param subdir: subdirectory under MusEEG/data/longRawTrainingSamples where the .csv files are located
-        :param filename: filename of the .csv file
-        :param tag: the label you would like to associate the file with. typically the same as filename.
-        :return:
-        """
-        self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
-                                       skiprows=1, dtype=float, header=0,
-                                       usecols=self.emotivChannels)
-        self.markers = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
-                                       skiprows=1, usecols=['EEG.MarkerHardware'])
-        self.address = subdir
-        self.filename = filename
-        self.tag = tag
-        self.matrix = np.array(self.rawData.values - 4100)
-        self.AF3 = self.matrix[:, 0]
-        self.F7 = self.matrix[:, 1]
-        self.F3 = self.matrix[:, 2]
-        self.FC5 = self.matrix[:, 3]
-        self.T7 = self.matrix[:, 4]
-        self.P7 = self.matrix[:, 5]
-        self.O1 = self.matrix[:, 6]
-        self.O2 = self.matrix[:, 7]
-        self.P8 = self.matrix[:, 8]
-        self.T8 = self.matrix[:, 9]
-        self.FC6 = self.matrix[:, 10]
-        self.F4 = self.matrix[:, 11]
-        self.F8 = self.matrix[:, 12]
-        self.AF4 = self.matrix[:, 13]
+        if self.device == 'emotiv':
+            """
+            :param subdir: subdirectory under MusEEG/data/longRawTrainingSamples where the .csv files are located
+            :param filename: filename of the .csv file
+            :param tag: the label you would like to associate the file with. typically the same as filename.
+            :return:
+            """
+
+            self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
+                                           skiprows=1, dtype=float, header=0,
+                                           usecols=self.emotivChannels)
+            self.markers = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
+                                           skiprows=1, usecols=['EEG.MarkerHardware'])
+            self.address = subdir
+            self.filename = filename
+            self.tag = tag
+            self.matrix = np.array(self.rawData.values - 4100)
+            self.AF3 = self.matrix[:, 0]
+            self.F7 = self.matrix[:, 1]
+            self.F3 = self.matrix[:, 2]
+            self.FC5 = self.matrix[:, 3]
+            self.T7 = self.matrix[:, 4]
+            self.P7 = self.matrix[:, 5]
+            self.O1 = self.matrix[:, 6]
+            self.O2 = self.matrix[:, 7]
+            self.P8 = self.matrix[:, 8]
+            self.T8 = self.matrix[:, 9]
+            self.FC6 = self.matrix[:, 10]
+            self.F4 = self.matrix[:, 11]
+            self.F8 = self.matrix[:, 12]
+            self.AF4 = self.matrix[:, 13]
 
     def plotRawChannel(self, channel, start, stop):
         """
