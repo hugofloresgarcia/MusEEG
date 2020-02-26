@@ -20,6 +20,9 @@ class Processor:
 
         self.client = client()
 
+        self.sendOSC = True
+        self.sendMIDI = True
+
         ##these are just some average bandpower values from the neutral track
         self.baseline = [78.72624375770606, 310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
         self.baselinedB = np.log10(self.baseline)
@@ -31,7 +34,6 @@ class Processor:
         else:
             self.client.setup()
             self.client.stream()
-
 
     def OSCstart(self, address="127.0.0.1", port=57120, clientName = "MusEEGosc"):
         self.clientNameOSC = clientName
@@ -62,22 +64,6 @@ class Processor:
                            'lookright': lookrightOSC,
                            'neutral': neutralOSC}
 
-    def sendOSCMessage(self, message):
-        print(message)
-        osc_send(message, self.clientNameOSC)
-        osc_process()
-
-    def processAndSendOSC(self, eeg):
-        brainInput = eeg.process()
-        brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
-        gestureResult = self.cerebro.gestures[brainOutput]
-
-        print('classification result: ' + gestureResult)
-
-        message = self.discreteOSCdict[gestureResult]
-        osc_send(message, self.clientNameOSC)
-        osc_process()
-
     def processAndPlay(self, eeg):
         brainInput = eeg.process()
         brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
@@ -85,8 +71,14 @@ class Processor:
 
         print('classification result: ' + gestureResult)
 
-        resultingChord = self.cerebro.mididict[gestureResult]
-        resultingChord.playchord()
+        if self.sendOSC:
+            message = self.discreteOSCdict[gestureResult]
+            osc_send(message, self.clientNameOSC)
+            osc_process()
+
+        if self.sendMIDI:
+            resultingChord = self.cerebro.mididict[gestureResult]
+            resultingChord.playchord()
 
     def getMoreChunks(self, chunk):
         while len(chunk) < eegData.chunkSize:
@@ -131,39 +123,6 @@ class Processor:
             osc_process()
 
         # eegData.bandPowerHistogram(bandPowers, figure=self.bandPowerFigure)
-
-    def bandPowerProcessor(self):
-        buffer = self.client.getBuffer(bufferSize=128)
-        freqBins = {'delta': [0.5, 4],
-                    'theta': [4, 8],
-                    'alpha': [8, 12],
-                    'beta': [12, 30],
-                    'gamma': [30, 60]}
-        bandPowerArray = []
-        bandPowerAvg = []
-        for key in freqBins:
-            band = eegData.bandPower(buffer=buffer, band=freqBins[key])
-            bandPowerArray.append(np.array(band))
-            bandPowerAvg.append(float(np.mean(band)))
-
-        fBinKeys = list(freqBins.keys())
-        dfBandPower = pd.DataFrame(bandPowerArray, index=fBinKeys)
-        dfBandPower.columns = eegData.eegChannels
-
-        bandPowerDict = dict(zip(fBinKeys, bandPowerAvg))
-
-        OSCmsglist = []
-        for key in bandPowerDict:
-            thing = bandPowerDict[key]
-            tag = '/' + key
-            msg = oscbuildparse.OSCMessage(tag, None, float(thing))
-            OSCmsglist.append(msg)
-
-        for message in OSCmsglist:
-            osc_send(message, self.clientNameOSC)
-
-        #plot histogram
-        # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
 
     def bandPowerThread(self, asThread=True):
         def bandPowerLoop():
@@ -238,6 +197,57 @@ class Processor:
 
     def processorShutDown(self):
         self.OSCclose()
+
+    """
+    old methods I'm not ready to let go of yet
+    """
+    # def sendOSCMessage(self, message):
+    #     print(message)
+    #     osc_send(message, self.clientNameOSC)
+    #     osc_process()
+
+    # def processAndSendOSC(self, eeg):
+    #     brainInput = eeg.process()
+    #     brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
+    #     gestureResult = self.cerebro.gestures[brainOutput]
+    #
+    #     print('classification result: ' + gestureResult)
+    #
+    #     message = self.discreteOSCdict[gestureResult]
+    #     osc_send(message, self.clientNameOSC)
+    #     osc_process()
+    # def bandPowerProcessor(self):
+    #     buffer = self.client.getBuffer(bufferSize=128)
+    #     freqBins = {'delta': [0.5, 4],
+    #                 'theta': [4, 8],
+    #                 'alpha': [8, 12],
+    #                 'beta': [12, 30],
+    #                 'gamma': [30, 60]}
+    #     bandPowerArray = []
+    #     bandPowerAvg = []
+    #     for key in freqBins:
+    #         band = eegData.bandPower(buffer=buffer, band=freqBins[key])
+    #         bandPowerArray.append(np.array(band))
+    #         bandPowerAvg.append(float(np.mean(band)))
+    #
+    #     fBinKeys = list(freqBins.keys())
+    #     dfBandPower = pd.DataFrame(bandPowerArray, index=fBinKeys)
+    #     dfBandPower.columns = eegData.eegChannels
+    #
+    #     bandPowerDict = dict(zip(fBinKeys, bandPowerAvg))
+    #
+    #     OSCmsglist = []
+    #     for key in bandPowerDict:
+    #         thing = bandPowerDict[key]
+    #         tag = '/' + key
+    #         msg = oscbuildparse.OSCMessage(tag, None, float(thing))
+    #         OSCmsglist.append(msg)
+    #
+    #     for message in OSCmsglist:
+    #         osc_send(message, self.clientNameOSC)
+
+    # plot histogram
+    # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
 
 
 if __name__ == "__main__":
