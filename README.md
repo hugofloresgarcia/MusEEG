@@ -3,8 +3,6 @@ website: [hugofloresgarcia/museeg](https://hugofloresgarcia.github.io/MusEEG/)
 
 MusEEG is a python package designed to function as the software component for a music-oriented Brain-Computer Interface. The code is currently designed for the 14-Channel Emotiv EPOC+ (that's the only headset I have available at the moment), but it should be easily modifiable, provided that you have a means of obtaining a RAW EEG stream from your device. Although the main application is still in progres, the main MusEEG module is ready, and performs preprocessing and classification tasks on EEG data well. To view an example on how to use the MusEEG module, see the `demo.py` file. 
 
-Disclaimer: I am still waiting on departmental funding to have access to a raw EEG stream, so this is a work in progress. The demo app provides a good example of its functionality but the main application is still in progress. 
-
 ## Motivation
 The primary goal of MusEEG is to expand the creative capabilities of musicians past any bodily limitations by creating a direct interface between the human brain and a musical instrument. By cutting the medium between the brain and music, MusEEG results in an instrument that is highly accessible to people with motor disabilities. This interdisciplinary project consists of multiple technical and creative modules nested in the fields of computer science, electrical engineering, music performance and composition, concluding with the performance of a piece composed for guitar and EEG.
 
