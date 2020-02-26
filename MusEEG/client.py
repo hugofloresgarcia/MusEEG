@@ -249,4 +249,3 @@ class client:
 
         return streamfigure, chunkfigure
 
-

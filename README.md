@@ -23,7 +23,7 @@ The MusEEG module uses the following libraries
 
 see requirements.txt for the full list of dependencies
 
-## Installation (Python 3.6)
+## Installation (Python 3.7)
 [Install Python](https://realpython.com/installing-python/)
 
 [Install pip](https://www.makeuseof.com/tag/install-pip-for-python/)

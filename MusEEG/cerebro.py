@@ -2,8 +2,11 @@ from .classifier import *
 from .eegData import *
 from .music import *
 from .client import *
+import json
 
 from MusEEG import parentDir, resetPort, closePort
+
+import pickle
 import threading
 
 """
@@ -61,19 +64,14 @@ class cerebro:
     def __init__(self):
         #default mididict. it will be updated everytime the user presses the update chord button
         self.mididict = {'smile': self.cmaj7sharp11add13,
-                         'bitelowerlip': self.fmaj7,
                          'hardblink': self.fminmaj7,
-                         'eyebrows': self.dbmaj7,
                          'lookleft': self.ab69,
                          'lookright': self.polychordcde,
                          'neutral': self.noChord,
-                         'scrunch': self.c5,
-                         'tongue': self.dbmaj7}
+                         'scrunch': self.c5}
 
         # open and reset midiport
         resetPort()
-
-
 
         # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
         self.bigBrain = classifier()
@@ -95,6 +93,14 @@ class cerebro:
             gestureBeingDefined = self.gestures[index]
             self.mididict[gestureBeingDefined] = chord(notelist=chordlistlist[index], name=gestureBeingDefined)
             print(self.mididict)
+
+    def saveMIDIdict(self, addressPath):
+        with open(os.path.join(addressPath), 'wb') as handle:
+            pickle.dump(self.mididict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def loadMIDIdict(self, addressPath):
+        with open(addressPath, 'rb') as handle:
+            self.mididict = pickle.load(handle)
 
     def loadFromDataSet(self, name):
         # subdirectory where sample chunks are located and load a random chunk from trianing dataset

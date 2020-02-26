@@ -19,7 +19,6 @@ class classifier:
 
     def __init__(self):
         self.scaler = None
-        print('classifier says hi')
 
     def loadTrainingData(self, percentTrain=0.75,
                          address=os.path.join(parentDir, 'data', 'training'),

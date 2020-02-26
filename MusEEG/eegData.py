@@ -67,7 +67,8 @@ class eegData:
         if window_sec is not None:
             nperseg = window_sec*eegData.sampleRate
         else:
-            nperseg = (2/low)*eegData.sampleRate
+            # nperseg = (2/low)*eegData.sampleRate
+            nperseg = 128
 
         freqs, psd = welch(buffer, eegData.sampleRate, nperseg=nperseg)
 
