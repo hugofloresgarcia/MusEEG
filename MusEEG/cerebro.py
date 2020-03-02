@@ -33,12 +33,7 @@ class cerebro:
 
     def __init__(self):
         #default mididict. it will be updated everytime the user presses the update chord button
-        self.mididict = {'smile': self.cmaj7sharp11add13,
-                         'hardblink': self.fminmaj7,
-                         'lookleft': self.ab69,
-                         'lookright': self.polychordcde,
-                         'neutral': self.noChord,
-                         'scrunch': self.c5}
+        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data',  'MIDIdicts', 'simpleCmajor.pickle'))
 
         # open and reset midiport
         resetPort()
@@ -71,6 +66,7 @@ class cerebro:
     def loadMIDIdict(self, addressPath):
         with open(addressPath, 'rb') as handle:
             self.mididict = pickle.load(handle)
+            return self.mididict
 
     def loadFromDataSet(self, name):
         # subdirectory where sample chunks are located and load a random chunk from trianing dataset

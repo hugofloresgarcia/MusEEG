@@ -32,31 +32,37 @@
 ~daisyIndex = PatternProxy(Pwhite(0, 0, inf));
 ~daisyRatio = PatternProxy(Pexprand(1, 1, inf).round);
 
-(~daisypat = Pbind(
-	\instrument, \fmsynth,
-	//try different permutations of this
-	\dur, ~daisyRhythm,
-	\midinote,~daisyChord,
-	\harmonic, ~daisyHarmonic,
-	\atk, ~daisyAtk,
-	\rel, ~daisyRel,
-	\amp, ~daisyAmp,
-	\pan, Pwhite(-0.8, 0.8, inf),
 
-	\index, ~daisyIndex,
-	\ratio, ~daisyRatio,
 
-	\bla, Pfunc {
-		arg in;
-		if(in[\ratio].round - in[\ratio] != 0,{
-			m.sendMsg("/lily", in[\harmonic], in[\amp], in[\pan], in[\index], in[\ratio]);
+(Pdef(
+	\daisy,
+	Pbind(
+		\instrument, \fmsynth,
+		//try different permutations of this
+		\dur, ~daisyRhythm,
+		\midinote,~daisyChord,
+		\harmonic, ~daisyHarmonic,
+		\atk, ~daisyAtk,
+		\rel, ~daisyRel,
+		\amp, ~daisyAmp,
+		\pan, Pwhite(-0.8, 0.8, inf),
+
+		\index, ~daisyIndex,
+		\ratio, ~daisyRatio,
+
+		\bla, Pfunc {
+			arg in;
+			if(in[\ratio].round - in[\ratio] != 0,{
+				m.sendMsg("/lily", in[\harmonic], in[\amp], in[\pan], in[\index], in[\ratio]);
+			},
+			{
+				m.sendMsg("/daisy", in[\harmonic], in[\amp], in[\pan], in[\index], in[\ratio]);
+			});
 		},
-		{
-			m.sendMsg("/daisy", in[\harmonic], in[\amp], in[\pan], in[\index], in[\ratio]);
-		});
-	},
+	);
 );
 );
+
 );
 );
 
@@ -76,7 +82,7 @@
 	arg val;
 	val.postln;
 	~maxHarmonic = ~maxHarmonic * 2;
-	f(~maxHarmonic.round > 50){~maxHarmonic = 50};
+	if(~maxHarmonic.round > 50){~maxHarmonic = 50};
 	("max Harmonic " + ~maxHarmonic.asString).postln;
 	~daisyHarmonic.source = Pexprand(1, ~maxHarmonic, inf).round;
 };
@@ -131,3 +137,10 @@ OSCdef.new(\hardblinkDef, ~hardblinkFunc,'/hardblink').add;
 
 OSCFunc.trace(true, true);
 );
+
+///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////   GUI    /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+g = PdefGui();
+g.object = Pdef(\daisy);

@@ -17,6 +17,8 @@ class Processor:
 
         if device is None:
             self.simulation = True
+            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
+                                    loadScaler=True)
 
         elif device == 'emotiv':
             eegData.device = device

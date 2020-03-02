@@ -174,7 +174,7 @@ class client:
 		while len(chunk) < chunkSize:
 			try:
 				data = self.q.get()
-				if self.device == 'emotiv':
+				if self.device == 'emotiv' or self.device is None:
 					formattedData = self.dict2list(data)
 				elif self.device == 'openBCI':
 					formattedData = data

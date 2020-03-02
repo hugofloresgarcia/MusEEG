@@ -9,7 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 buttonRow = 2
 
-processor = Processor(simulation=True)
+processor = Processor(device=None)
 processor.OSCstart()
 processor.defineOSCMessages()
 
@@ -42,23 +42,6 @@ class demoApp(tk.Frame):
         self.sustainbx = tk.Entry(self)
         self.sustainbx.insert(10, '8')
         self.sustainbx.grid(row=self.buttonRow+2, column=3)
-
-    def buttonProcessAndSend(self):
-        def processFunction():
-            processor.cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
-                                   arpDurationFromGUI=float(self.arpegbx.get()),
-                                   noteDurationFromGUI=float(self.sustainbx.get()))
-
-            # update plot window todo: make it not have to redefine entire plot window for faster processing
-            self.canvas.flush_events()
-            self.canvas = FigureCanvasTkAgg(processor.cerebro.eeg.plotWavelets(1), self)
-            self.canvas.draw()
-            self.say_hi()
-            self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
-
-        self.processAndSendBttn = tk.Button(self, command=processFunction)
-        self.processAndSendBttn["text"] = "Process and Send to Musician"
-        self.processAndSendBttn.grid(row=self.buttonRow+3, column=2, padx=5, pady=5)
 
     def buttonStartProcessor(self):
         def startProcessor():
@@ -173,7 +156,6 @@ class demoApp(tk.Frame):
 
         self.checkboxArpeggiate()
 
-        self.buttonProcessAndSend()
         self.buttonStartProcessor()
 
         self.defineChordEntry()
@@ -191,3 +173,25 @@ while True:
         break
     except UnicodeDecodeError:
         pass
+
+
+
+    """
+    no longer needed (from demoApp)
+    """
+    # def buttonProcessAndSend(self):
+    #     def processFunction():
+    #         processor.cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
+    #                                arpDurationFromGUI=float(self.arpegbx.get()),
+    #                                noteDurationFromGUI=float(self.sustainbx.get()))
+    #
+    #         # update plot window todo: make it not have to redefine entire plot window for faster processing
+    #         self.canvas.flush_events()
+    #         self.canvas = FigureCanvasTkAgg(processor.cerebro.eeg.plotWavelets(1), self)
+    #         self.canvas.draw()
+    #         self.say_hi()
+    #         self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
+    #
+    #     self.processAndSendBttn = tk.Button(self, command=processFunction)
+    #     self.processAndSendBttn["text"] = "Process and Send to Musician"
+    #     self.processAndSendBttn.grid(row=self.buttonRow+3, column=2, padx=5, pady=5)
