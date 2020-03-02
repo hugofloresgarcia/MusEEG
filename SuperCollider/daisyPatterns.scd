@@ -124,7 +124,7 @@ m = NetAddr("localhost", 57120);
 // Band power parameters
 OSCdef.new(\thetaDef, ~thetaFunc, '/theta').add;
 OSCdef.new(\alphaDef, ~alphaFunc, '/alpha').add;
-OSCdef.new(\betaDef , ~betaFunc, '/beta').add;
+OSCdef.new(\betaDef, ~betaFunc, '/beta').add;
 OSCdef.new(\gammaDef, ~gammaFunc, '/gamma').add;
 
 // Facial Expressions
