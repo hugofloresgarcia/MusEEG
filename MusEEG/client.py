@@ -1,14 +1,12 @@
 from MusEEG import eegData
 from MusEEG import TrainingDataMacro
-import numpy as np
 from numpy import array
 import threading
 import time
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from collections import deque
 from scipy import signal
-from numpy.fft import fft
 import numpy as np
 
 
@@ -36,6 +34,8 @@ class client:
 
 		self.windowSize = eegData.chunkSize * 2
 		self.line = deque([[0 for channels in range(0, eegData.nchannels)] for packets in range(0, self.windowSize)])
+
+		self.plotLine = Line2D([0], [0])
 
 		# Named fields according to Warren doc !
 		self.FIELDS = {"COUNTER": 0, "DATA-TYPE": 1, "AF3": 4, "F7": 5, "F3": 2, "FC5": 3, "T7": 6, "P7": 7, "O1": 8, "O2": 9,
@@ -247,6 +247,38 @@ class client:
 			chunk = array(chunk) + 4100
 
 		return array(chunk) - 4100
+
+	"""
+	emotiv
+	"""
+	def animatePlot(self, subplot, offset=400):
+		while not self.plotq.empty():
+			appendedChunk = []
+			while len(appendedChunk) < self.windowSize / 8:
+				self.line.popleft()
+				packet = self.plotq.get()
+				self.line.append(self.dict2list(packet))
+				appendedChunk.append(packet)
+
+		tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
+		tAxis = tAxis / eegData.sampleRate  # adjust time axis to 256 sample rate
+		if self.streamIsSimulated:
+			plotBuffer = array(self.line)
+		else:
+			plotBuffer = array(self.line) - 4100
+
+		yAxis = plotBuffer + offset * 13
+
+
+
+		# add offset to display all channels
+		for i in range(0, len(plotBuffer[0, :])):
+			yAxis[:, i] -= offset * i
+
+		self.plotLine.set_data(tAxis, yAxis)
+
+		return self.plotLine
+
 
 	"""
 	only works with emotiv

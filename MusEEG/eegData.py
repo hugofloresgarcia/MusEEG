@@ -94,6 +94,7 @@ class eegData:
         ax.set_ylim([0, 80])
         figure.canvas.draw()
         plt.pause(0.001)
+        plt.show()
 
     def extractStatsFromWavelets(self):
         """

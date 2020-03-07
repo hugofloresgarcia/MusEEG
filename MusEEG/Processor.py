@@ -1,12 +1,12 @@
 from MusEEG import eegData, client, classifier, cerebro
 from MusEEG import parentDir
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 import threading
 from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
 import pandas as pd
+
 
 class Processor:
     def __init__(self, device=None):
@@ -105,37 +105,39 @@ class Processor:
         freqBins = [0.5, 4, 8, 12, 30, 60]
 
         # compute delta, theta, alpha, beta, bands
-        delta = eegData.dbBandPower(buffer=buffer, band=freqBins[0:2])
+        # delta = eegData.dbBandPower(buffer=buffer, band=freqBins[0:2])
         theta = eegData.dbBandPower(buffer=buffer, band=freqBins[1:3])
         alpha = eegData.dbBandPower(buffer=buffer, band=freqBins[2:4])
         beta = eegData.dbBandPower(buffer=buffer, band=freqBins[3:5])
         gamma = eegData.dbBandPower(buffer=buffer, band=freqBins[4:6])
 
-        deltaAvg = float(np.mean(delta))
+        # deltaAvg = float(np.mean(delta))
         thetaAvg = float(np.mean(theta))
         alphaAvg = float(np.mean(alpha))
         betaAvg  = float(np.mean(beta))
         gammaAvg = float(np.mean(gamma))
 
-        bandPowerArray = np.array([delta, theta, alpha, beta, gamma])
+        bandPowerArray = np.array([ theta, alpha, beta, gamma])
+        print(bandPowerArray)
 
-        bandPowerStr = ['delta', 'theta', 'alpha', 'beta', 'gamma']
+        bandPowerStr = ['theta', 'alpha', 'beta', 'gamma']
         # put these in a dataframe
         bandPowers = pd.DataFrame(bandPowerArray, index=bandPowerStr)
         bandPowers.columns = eegData.eegChannels
         #send OSC messages
-        deltaOSC = oscbuildparse.OSCMessage('/delta', None, [deltaAvg])
+        # deltaOSC = oscbuildparse.OSCMessage('/delta', None, [deltaAvg])
         thetaOSC = oscbuildparse.OSCMessage('/theta', None, [thetaAvg])
         alphaOSC = oscbuildparse.OSCMessage('/alpha', None, [alphaAvg])
-        betaOSC  = oscbuildparse.OSCMessage('/beta', None, [betaAvg])
+        betaOSC = oscbuildparse.OSCMessage('/beta', None, [betaAvg])
         gammaOSC = oscbuildparse.OSCMessage('/gamma', None, [gammaAvg])
 
-        OSCmsglist = [deltaOSC, thetaOSC, alphaOSC, betaOSC, gammaOSC]
+        OSCmsglist = [  thetaOSC, alphaOSC, betaOSC, gammaOSC]
 
         for message in OSCmsglist:
             osc_send(message, self.clientNameOSC)
             osc_process()
 
+        # self.bandPowerFigure = Figure()
         # eegData.bandPowerHistogram(bandPowers, figure=self.bandPowerFigure)
 
     def bandPowerThread(self, asThread=True):
@@ -149,7 +151,7 @@ class Processor:
         else:
             bandPowerLoop()
 
-    def mainProcessorWithoutBackTrack(self):
+    def mainProcessorWithSmallBrain(self):
         self.stopChunkGetter = False
         while (True):
             try:
@@ -196,7 +198,8 @@ class Processor:
                 eeg = eegData()
                 eeg.chunk = self.client.getChunkWithBackTrack()
                 if len(eeg.chunk) != eeg.chunkSize:
-                    raise RuntimeError('this chunk did not have the required number of samples. something went wrong')
+                    raise RuntimeError('this chunk did not have the '
+                                       'required number of samples. something went wrong')
                 self.processAndSendOSC(eeg)
 
             except KeyboardInterrupt:
@@ -267,4 +270,6 @@ if __name__ == "__main__":
     processor = Processor(device=None)
     processor.OSCstart()
     processor.defineOSCMessages()
-    processor.runProcessorThread(target=processor.mainProcessorWithoutBackTrack)
+    # processor.runProcessorThread(target=processor.mainProcessorWithSmallBrain)
+    processor.startStream()
+    processor.bandPowerThread(asThread=False)

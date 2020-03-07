@@ -1,8 +1,6 @@
 import os
-import platform
 import pandas
 import numpy as np
-import tensorflow as tf
 from tensorflow import keras
 from keras import regularizers
 from MusEEG import parentDir
@@ -143,18 +141,6 @@ class classifier:
         if loadScaler:
             self.scaler = joblib.load(filename+'_scaler')
         self.model = keras.models.load_model(os.path.join(address, filename))
-        if platform.uname()[1] == 'raspberrypi':
-            litemodel = self.createLiteModel(self.model)
-            self.model = litemodel
 
-    def createLiteModel(self, model):
-        """
-        create tflite model from saved keras model
-        :param filename: name of the savedModel
-        :param address: address (relative to the parent directory) where your model is stored. defaults to /data/SavedModels
-        :return: tensorflow lite model
-        """
-        converter = tf.lite.TFLiteConverter.from_keras_model(model)
-        return converter.convert()
 
 

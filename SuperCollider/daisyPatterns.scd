@@ -1,4 +1,32 @@
 ////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////   SynthDef /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+(
+SynthDef.new(
+	name: \daisy,
+	ugenGraphFunc: {
+		arg freq = 440, atk = 0.005, rel=0.3, amp=1, pan=0;
+		var sig, env, freqdev;
+		sig = SinOsc.ar(
+			freq: freq + (PinkNoise.kr()*10*freq/440);
+		);
+		env = EnvGen.ar(
+			envelope: Env.new(
+				levels: [0, 1, 0],
+				times: [atk, rel],
+				curve: [1, -1]),
+			doneAction: 2);
+		sig = Pan2 .ar(
+			in: sig,
+			pos: pan,
+			level: amp);
+		sig = sig * env;
+
+
+		Out.ar(0, sig *0.05);
+}).add;
+);
+////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////   Patterns /////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 (~mainRhythm = [0.1, 0.2, 0.3, 0.2, 0.1];
@@ -37,7 +65,7 @@
 (Pdef(
 	\daisy,
 	Pbind(
-		\instrument, \fmsynth,
+		\instrument, \daisy,
 		//try different permutations of this
 		\dur, ~daisyRhythm,
 		\midinote,~daisyChord,
@@ -135,8 +163,10 @@ OSCdef.new(\lookleftDef,  ~lookleftFunc, '/lookleft').add;
 OSCdef.new(\scrunchDef,   ~scrunchFunc,  '/scrunch').add;
 OSCdef.new(\hardblinkDef, ~hardblinkFunc,'/hardblink').add;
 
-OSCFunc.trace(true, true);
+OSCFunc.trace(false, true);
 );
+
+Pdef(\daisy).play
 
 ///////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////   GUI    /////////////////////////////////////

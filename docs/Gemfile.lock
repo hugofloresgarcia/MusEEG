@@ -121,6 +121,8 @@ GEM
     jekyll-github-metadata (2.12.1)
       jekyll (~> 3.4)
       octokit (~> 4.0, != 4.4.0)
+    jekyll-latex (1.0.0)
+      polytexnic (~> 1.5)
     jekyll-mentions (1.4.1)
       html-pipeline (~> 2.3)
       jekyll (~> 3.0)
@@ -192,6 +194,7 @@ GEM
       gemoji (~> 3.0)
       html-pipeline (~> 2.2)
       jekyll (~> 3.0)
+    json (1.8.6)
     kramdown (1.17.0)
     liquid (4.0.0)
     listen (3.1.5)
@@ -205,6 +208,8 @@ GEM
       jekyll-feed (~> 0.9)
       jekyll-seo-tag (~> 2.1)
     minitest (5.13.0)
+    msgpack (1.2.10)
+    multi_json (1.14.1)
     multipart-post (2.1.1)
     nokogiri (1.10.5)
       mini_portile2 (~> 2.4.0)
@@ -212,7 +217,15 @@ GEM
       sawyer (~> 0.8.0, >= 0.5.3)
     pathutil (0.16.2)
       forwardable-extended (~> 2.6)
+    polytexnic (1.5.13)
+      json (~> 1.8.1)
+      kramdown (~> 1.17)
+      msgpack (~> 1.2.0)
+      nokogiri (~> 1.8)
+      pygments.rb (~> 1.2.1)
     public_suffix (3.1.1)
+    pygments.rb (1.2.1)
+      multi_json (>= 1.0.0)
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
@@ -244,6 +257,7 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
+  jekyll-latex
 
 BUNDLED WITH
    2.0.2

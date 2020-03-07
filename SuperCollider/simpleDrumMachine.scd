@@ -1,5 +1,5 @@
-
-TempoClock.default.tempo = 80/60;
+~tempo = 80;
+TempoClock.default.tempo = ~tempo/60;
 
 ////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////   hats /////////////////////////////////////
@@ -226,15 +226,9 @@ Pdef(
 	arg val;
 	val.postln;
 	~kickON = ~kickON.not;
-	if(~kickON){
-		//play kick
-		~highKick = Pdef(\kickpat).play(quant: Quant.new(4, 0, -1)); // bring in at a different time than kick
-	},
-	{
-		//stop kick
-		~highKick.stop;
-	}
-
+	if(~kickON,
+		{ ~highKick = Pdef(\kickpat).play(quant: Quant.new(4, 0, -1))  },
+		{~highKick.stop;})
 };
 
 //scrunch toggles the hats
@@ -242,14 +236,8 @@ Pdef(
 	arg val;
 	val.postln;
 	~hatsON = ~hatsON.not;
-	if(~hatsON){
-		//play hats
-		~hats = Pdef(\hatpat).play(quant: 1);
-	},
-	{
-		//stop kick
-		~hats.stop;
-	};
+	if(~hatsON,{~hats = Pdef(\hatpat).play(quant: 1);},
+		{~hats.stop;});
 };
 
 //hardblink toggles the snare
@@ -257,29 +245,24 @@ Pdef(
 	arg val;
 	val.postln;
 	~snareON = ~snareON.not;
-	if(~snareON){
-		//play snare
-		~snare = Pdef(\snarepat).play(quant: 1);
-
-	},
-	{
-		//stop snare
-		~snare.stop;
-	};
+	if(~snareON,{~snare = Pdef(\snarepat).play(quant: 1);},
+		{~snare.stop;});
 };
 
 //lookleft decreases tempo by 5 bpm
 ~lookleftFunc = {
 	arg val;
 	val.postln;
-
+	~tempo = ~tempo + 5;
+	TempoClock.default.tempo = ~tempo/60;
 };
 
 //lookright increases tempo  by 5 bpm
 ~lookrightFunc = {
 	arg val;
 	val.postln;
-
+	~tempo = ~tempo - 5;
+	TempoClock.default.tempo = ~tempo/60;
 };
 );
 
