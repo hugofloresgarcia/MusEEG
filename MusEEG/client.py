@@ -35,7 +35,6 @@ class client:
 		self.windowSize = eegData.chunkSize * 2
 		self.line = deque([[0 for channels in range(0, eegData.nchannels)] for packets in range(0, self.windowSize)])
 
-		self.plotLine = Line2D([0], [0])
 
 		# Named fields according to Warren doc !
 		self.FIELDS = {"COUNTER": 0, "DATA-TYPE": 1, "AF3": 4, "F7": 5, "F3": 2, "FC5": 3, "T7": 6, "P7": 7, "O1": 8, "O2": 9,
@@ -251,7 +250,7 @@ class client:
 	"""
 	emotiv
 	"""
-	def animatePlot(self, subplot, offset=400):
+	def animatePlot(self, line,  offset=400):
 		while not self.plotq.empty():
 			appendedChunk = []
 			while len(appendedChunk) < self.windowSize / 8:
@@ -269,15 +268,37 @@ class client:
 
 		yAxis = plotBuffer + offset * 13
 
+		# add offset to display all channels
+		for i in range(0, len(plotBuffer[0, :])):
+			yAxis[:, i] -= offset * i
 
+		line.set_data(tAxis, yAxis[:, 0].transpose)
+
+		return line
+
+	def getPlotData(self,  offset=400):
+		while not self.plotq.empty():
+			appendedChunk = []
+			while len(appendedChunk) < self.windowSize / 8:
+				self.line.popleft()
+				packet = self.plotq.get()
+				self.line.append(self.dict2list(packet))
+				appendedChunk.append(packet)
+
+		tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
+		tAxis = tAxis / eegData.sampleRate  # adjust time axis to 256 sample rate
+		if self.streamIsSimulated:
+			plotBuffer = array(self.line) -4100
+		else:
+			plotBuffer = array(self.line) - 4100
+
+		yAxis = plotBuffer + offset * 13
 
 		# add offset to display all channels
 		for i in range(0, len(plotBuffer[0, :])):
 			yAxis[:, i] -= offset * i
 
-		self.plotLine.set_data(tAxis, yAxis)
-
-		return self.plotLine
+		return tAxis, yAxis[:, 0]
 
 
 	"""

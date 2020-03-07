@@ -8,6 +8,9 @@ from osc4py3 import oscbuildparse
 import pandas as pd
 
 
+
+
+
 class Processor:
     def __init__(self, device=None):
         self.cerebro = cerebro()
@@ -44,7 +47,7 @@ class Processor:
 
     def startStream(self):
         if self.simulation:
-            self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=4)
+            self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=1)
         else:
             self.client.setup()
             self.client.stream()
@@ -118,7 +121,6 @@ class Processor:
         gammaAvg = float(np.mean(gamma))
 
         bandPowerArray = np.array([ theta, alpha, beta, gamma])
-        print(bandPowerArray)
 
         bandPowerStr = ['theta', 'alpha', 'beta', 'gamma']
         # put these in a dataframe
@@ -131,7 +133,7 @@ class Processor:
         betaOSC = oscbuildparse.OSCMessage('/beta', None, [betaAvg])
         gammaOSC = oscbuildparse.OSCMessage('/gamma', None, [gammaAvg])
 
-        OSCmsglist = [  thetaOSC, alphaOSC, betaOSC, gammaOSC]
+        OSCmsglist = [thetaOSC, alphaOSC, betaOSC, gammaOSC]
 
         for message in OSCmsglist:
             osc_send(message, self.clientNameOSC)
@@ -270,6 +272,6 @@ if __name__ == "__main__":
     processor = Processor(device=None)
     processor.OSCstart()
     processor.defineOSCMessages()
-    # processor.runProcessorThread(target=processor.mainProcessorWithSmallBrain)
     processor.startStream()
-    processor.bandPowerThread(asThread=False)
+    processor.runProcessorThread(target=processor.mainProcessorWithSmallBrain)
+    processor.bandPowerThread(asThread=True)
