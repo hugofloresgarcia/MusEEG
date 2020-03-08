@@ -53,7 +53,7 @@ class demoApp(tk.Frame):
             processor.bigBrain.loadmodel(filename=path, loadScaler=True)
 
         loadModelBttn = tk.Button(self, command=loadModel)
-        loadModelBttn["text"] = "Load Model"
+        loadModelBttn["text"] = "Load a Brain"
         loadModelBttn.grid(row=8, column=3, columnspan=2, padx=5, pady=5)
 
     def buttonStartProcessor(self):
@@ -154,7 +154,7 @@ class demoApp(tk.Frame):
         return self.bpline
 
     def commandWindow(self):
-        self.cmd = ScrolledText(master=self, height=10, width=50, relief="solid", bd =2)
+        self.cmd = ScrolledText(master=self, height=15, width=50, relief="solid", bd =2)
         self.cmd.grid(row=5, column=0, rowspan=2,  columnspan=2, padx=5, pady=5)
 
         self.add_timestamp()
@@ -180,7 +180,7 @@ class demoApp(tk.Frame):
         self.connectBttn.grid(row=8, column=1, columnspan=1, padx=5, pady=5)
 
     def deviceDropDown(self):
-        self.deviceLabel = tk.Label(self, text='device')
+        self.deviceLabel = tk.Label(self, text='pick a device above ^^^')
         self.deviceLabel.grid(row=9, column=0, columnspan=1, padx=0, pady=0)
         self.deviceVar = tk.StringVar(self)
         self.deviceVar.set("sim")
@@ -198,9 +198,9 @@ class demoApp(tk.Frame):
         self.buttonConnect()
 
         pl = PrintLogger(self.cmd)
- 
+
         # replace sys.stdout with our object
-        # sys.stdout = pl
+        sys.stdout = pl
 
 
 class PrintLogger(): # create file like object
@@ -230,6 +230,23 @@ while True:
     try:
         print('hello! this is the MusEEG log')
         print('classification results are printed here\n\n')
+        flower =  [
+            "/                   __     __                  /",
+            "/                 .'  `...'  `.                /",
+            "/               __|     |     |__              /",
+            "/             .'    \   .   /    `.            /",
+            "/             |      ./###\.      |            /",
+            "/              >---- |#####| ----<             /",
+            "/             |      `\###/'      |            /",
+            "/             `.__ /    .    \ __.'            /",
+            "/                 |     |     |                /",
+            "/                 `.___.^.___.'                /"]
+
+        for line in flower:
+            print(line)
+
+
+
         app.mainloop()
         break
     except UnicodeDecodeError:

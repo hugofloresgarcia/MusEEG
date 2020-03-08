@@ -8,6 +8,8 @@ from osc4py3 import oscbuildparse
 import pandas as pd
 import queue
 
+import time
+
 
 
 class Processor:
@@ -94,11 +96,12 @@ class Processor:
                            'neutral': neutralOSC}
 
     def processAndPlay(self, eeg):
+        TIMEstart = time.clock()
         brainInput = eeg.process()
         brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
         gestureResult = self.cerebro.gestures[brainOutput]
 
-        print('classification result: ' + gestureResult + '\n')
+        print('i found a ' + gestureResult + '!')
 
         if self.sendOSC:
             message = self.discreteOSCdict[gestureResult]
@@ -108,7 +111,9 @@ class Processor:
         if self.sendMIDI:
             resultingChord = self.cerebro.mididict[gestureResult]
             resultingChord.playchord()
-
+        TIMEend = time.clock()
+        print('classification took ' + str(round(TIMEend-TIMEstart, 3)) + ' s')
+        print('...')
     def getMoreChunks(self, chunk):
         while len(chunk) < eegData.chunkSize:
             chunk.extend(list(self.client.getChunk(chunkSize=eegData.smallchunkSize)))
@@ -186,12 +191,12 @@ class Processor:
                     brainOutput = self.cerebro.smallBrain.classify(brainInput.reshape(1, 350))
 
                     if brainOutput == 0:
-                        print('facial expression found!')
+                        # print('facial expression found!')
                         activeGesture = True
                         self.stopChunkGetter = False
                         chunkGetter.join()
                     else:
-                        print('.')
+                        print('...')
                         activeGesture = False
                         self.stopChunkGetter = True
                         chunkGetter.join()
