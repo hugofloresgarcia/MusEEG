@@ -1,14 +1,16 @@
 import tkinter as tk
 import MusEEG
-from MusEEG import Processor, eegData
+from MusEEG import Processor, eegData, parentDir
 from tkinter import filedialog
-import os
+from tkinter.scrolledtext import ScrolledText
 import sys
+import os
+
+import queue
 
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -20,8 +22,17 @@ def get_data_raw():
     x, y = processor.client.getPlotData()
     return x, y
 
+global lastbandpwr
+lastbandpwr = [[0, 1, 2, 3], processor.baselinedB]
+
 def get_data_bp():
-    bandpwr = processor.bandPowerQueue.get(block=True)
+    global lastbandpwr
+    try:
+        bandpwr = processor.bandPowerQueue.get(block=False)
+        lastbandpwr = bandpwr
+
+    except queue.Empty:
+        bandpwr = lastbandpwr
     # x = bandpwr[0]
     x = [0, 1, 2, 3]
     y = bandpwr[1]
@@ -142,14 +153,15 @@ class demoApp(tk.Frame):
         return self.bpline
 
     def commandWindow(self):
-        self.cmd = tk.Text(master=self, height=10, width=50, relief="solid")
+        self.cmd = ScrolledText(master=self, height=10, width=50, relief="solid")
         self.cmd.grid(row=5, column=0, rowspan=3,  columnspan=2, padx=5, pady=5)
-        self.cmd.bind('<<Modified>>', self.modified)
 
-        self.cmd.see(tk.END)
+        self.add_timestamp()
 
-    def modified(self, event):
-        self.cmd.see(tk.END)
+    def add_timestamp(self):
+        self.cmd.see("end")
+        self.after(1000, self.add_timestamp)
+
 
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG (OSC)")
@@ -175,12 +187,21 @@ class PrintLogger(): # create file like object
     def flush(self): # needed for file like object
         pass
 
+def quit_properly():
+    processor.processorShutDown()
+    del processor
+
 root = tk.Tk()
+root.lift()
+root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
+root.protocol("WM_DELETE_WINDOW_", quit_properly)
 app = demoApp(master=root)
 
 #todo: the app isnt quitting properly
 while True:
     try:
+        print('hello! this is the MusEEG log')
+        print('classification results are printed here\n\n')
         app.mainloop()
         break
     except UnicodeDecodeError:

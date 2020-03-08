@@ -142,6 +142,27 @@ class client:
 
 		self.board.start_stream(callback)
 
+	def simulateStream(self, gesture, subdir='hugo_facialgestures', streamSpeed=1):
+		self.streamIsSimulated = True
+		eeg = TrainingDataMacro()
+		eeg.importCSV(subdir=subdir, filename=gesture+'.csv', tag=gesture)
+		self.q = queue.Queue()
+		self.plotq = queue.Queue()
+		self.psdq = queue.Queue()
+		self.streamSpeed = streamSpeed
+		def worker():
+			for i in range(0,len(eeg.matrix)):
+				packet = {eeg.eegChannels[j]: eeg.matrix[i][j] for j in range(len(eeg.emotivChannels))}
+				packet["COUNTER"] = i
+				self.q.put(item=packet)
+				self.plotq.put(item=packet)
+				self.psdq.put(item=packet)
+				time.sleep(1/eegData.sampleRate/streamSpeed)
+
+		simulationWorker = threading.Thread(target=worker)
+		simulationWorker.setDaemon(True)
+		simulationWorker.start()
+
 	def stream(self):
 		self.streamFunc()
 
@@ -192,26 +213,7 @@ class client:
 
 		return chunk
 
-	def simulateStream(self, gesture, subdir='hugo_facialgestures', streamSpeed=1):
-		self.streamIsSimulated = True
-		eeg = TrainingDataMacro()
-		eeg.importCSV(subdir=subdir, filename=gesture+'.csv', tag=gesture)
-		self.q = queue.Queue()
-		self.plotq = queue.Queue()
-		self.psdq = queue.Queue()
-		self.streamSpeed = streamSpeed
-		def worker():
-			for i in range(0,len(eeg.matrix)):
-				packet = {eeg.eegChannels[j]: eeg.matrix[i][j] for j in range(len(eeg.emotivChannels))}
-				packet["COUNTER"] = i
-				self.q.put(item=packet)
-				self.plotq.put(item=packet)
-				self.psdq.put(item=packet)
-				time.sleep(1/eegData.sampleRate/streamSpeed)
 
-		simulationWorker = threading.Thread(target=worker)
-		simulationWorker.setDaemon(True)
-		simulationWorker.start()
 
 	"""
 	only works with emotiv
@@ -247,7 +249,6 @@ class client:
 
 		return array(chunk) - 4100
 
-
 	def getPlotData(self,  offset=400):
 		while not self.plotq.empty():
 			appendedChunk = []
@@ -271,7 +272,6 @@ class client:
 			yAxis[:, i] -= offset * i
 
 		return tAxis, yAxis
-
 
 	"""
 	DEPRECATED
