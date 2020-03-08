@@ -76,7 +76,7 @@ class demoApp(tk.Frame):
         # self.line, = self.ax1.plot([], [], lw=2)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=5, columnspan=5)
+        self.canvas.get_tk_widget().grid(row=1, column=0, rowspan=4, columnspan=5)
 
         self.ax1.set_title('Raw EEG')
         self.ax1.set_ylim(-500, 6000)
