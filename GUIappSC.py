@@ -293,11 +293,12 @@ def quit_properly():
     processor.client.done = True
     processor.processorShutDown()
     del processor
+    KeyboardInterrupt()
 
 root = tk.Tk()
 root.lift()
 root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
-# root.protocol("WM_DELETE_WINDOW_", quit_properly)
+root.protocol("WM_DELETE_WINDOW_", quit_properly)
 app = demoApp(master=root)
 
 #todo: the app isnt quitting properly

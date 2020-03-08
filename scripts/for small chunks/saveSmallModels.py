@@ -1,7 +1,11 @@
 import MusEEG
 
 brain = MusEEG.classifier()
-train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(percentTrain=0.75)
+train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(
+    address=MusEEG.parentDir+'/data/training/smallChunks_v2',
+    percentTrain=0.75,
+    normalize=True)
+
 brain.build_model(inputShape=brain.inputShape,
                   hiddenNeurons=100,
                   hiddenActivation='elu',

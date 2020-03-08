@@ -31,36 +31,33 @@ gesture = [eegData() for i in range(0, 160)]
 
 
 
-splitsies = int(len(gesture)/8)
+splitsies = int(len(gesture)/5)
 
 # load chunks
 for i in range(0, len(nogesture)):
-    nogesture[i].loadChunkFromTraining(os.path.join('smallChunks','hugo_facialgestures'), 'neutral_' + str(i) + '.csv')
+    nogesture[i].loadChunkFromTraining(os.path.join('trainbatch1', 'smallChunks', 'hugo_facialgestures'), 'neutral_' + str(i) + '.csv')
 
 for j in range(0, splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'smile_' + str(i) + '.csv')
-for j in range(splitsies, 2*splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'bitelowerlip_' + str(i) + '.csv')
+    for i in range(0, int(160 / 5)):
+         gesture[j].loadChunkFromTraining(os.path.join('trainbatch1','bigChunks'), 'smile_' + str(i) + '.csv')
+
 for j in range(2*splitsies, 3*splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'lookleft_' + str(i) + '.csv')
+    for i in range(0, int(160 / 5)):
+         gesture[j].loadChunkFromTraining(os.path.join('trainbatch1','bigChunks'), 'lookleft_' + str(i) + '.csv')
+
 for j in range(3 * splitsies, 4 * splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'lookright_' + str(i) + '.csv')
+    for i in range(0, int(160 / 5)):
+         gesture[j].loadChunkFromTraining(os.path.join('trainbatch1','bigChunks'), 'lookright_' + str(i) + '.csv')
+
 for j in range(4 * splitsies, 5 * splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'scrunch_' + str(i) + '.csv')
-for j in range(5 * splitsies, 6 * splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'tongue_' + str(i) + '.csv')
-for j in range(6 * splitsies, 7 * splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'hardblink_' + str(i) + '.csv')
-for j in range(7 * splitsies, 8 * splitsies):
-    for i in range(0, int(160 / 8)):
-         gesture[j].loadChunkFromTraining(os.path.join('bigChunks','hugo_facialgestures'), 'eyebrows_' + str(i) + '.csv')
+    for i in range(0, int(160 / 5)):
+         gesture[j].loadChunkFromTraining(os.path.join('trainbatch1','bigChunks'), 'scrunch_' + str(i) + '.csv')
+
+for j in range( splitsies, 2 * splitsies):
+    for i in range(0, int(160 / 5)):
+         gesture[j].loadChunkFromTraining(os.path.join('trainbatch1','bigChunks'), 'hardblink_' + str(i) + '.csv')
+
+
 
 
 gestures = [gesture, nogesture]
@@ -76,9 +73,9 @@ targets = createTargetVector(gestures, 'yesgesture', 'nogesture')
 
 ##for smallchunks only. smallchunks are 1/8 of bigChunks (comment if you're working with big chunks)
 for i in range(0, len(gestures)):
-    gesture[i].cutChunk()
+    gesture[i].cutChunk(eegData.smallchunkSize)
 
-inputs = np.ndarray([540, 350])
+inputs = np.ndarray([320, 350])
 inputindex = 0
 for i in range(0, len(gestures)):
     for j in range(0, len(gestures[0])):
@@ -93,5 +90,5 @@ print(targets)
 inputs = pandas.DataFrame(inputs)
 targets = pandas.DataFrame(targets)
 
-inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks', 'inputs.csv'))
-targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks', 'targets.csv'))
+inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v2', 'inputs.csv'))
+targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v2', 'targets.csv'))

@@ -19,12 +19,11 @@ class classifier:
         self.scaler = None
 
     def loadTrainingData(self, percentTrain=0.75,
-                         address=os.path.join(parentDir, 'data', 'training'),
-                         subdir='bigChunks',
+                         address=os.path.join(parentDir, 'data', 'training' ),
                          inputFilename='inputs.csv',
                          targetFilename='targets.csv', normalize=True):
-        inputsAll = pandas.read_csv(os.path.join(address, subdir,  inputFilename)).values
-        targetsAll = pandas.read_csv(os.path.join(address, subdir,  targetFilename)).values
+        inputsAll = pandas.read_csv(os.path.join(address, inputFilename)).values
+        targetsAll = pandas.read_csv(os.path.join(address, targetFilename)).values
         # use index from 1 on bc index 0 is just a counter for some reason.
         inputsAll[:, 0] = targetsAll[:, 1]
         # first column of inputsAll will now be the targets (sorry programming gods, I'm going crazy over this one)
