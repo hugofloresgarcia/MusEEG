@@ -4,7 +4,6 @@ from numpy import array
 import threading
 import time
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 from collections import deque
 from scipy import signal
 import numpy as np
@@ -32,7 +31,8 @@ class client:
 
 		self.done = False
 
-		self.windowSize = eegData.chunkSize * 2
+		self.windowSize = eegData.chunkSize * 4
+		self.refreshScale = 64 ## a higher number means a smoother plot in the GUI
 		self.line = deque([[0 for channels in range(0, eegData.nchannels)] for packets in range(0, self.windowSize)])
 
 
@@ -247,13 +247,11 @@ class client:
 
 		return array(chunk) - 4100
 
-	"""
-	emotiv
-	"""
-	def animatePlot(self, line,  offset=400):
+
+	def getPlotData(self,  offset=400):
 		while not self.plotq.empty():
 			appendedChunk = []
-			while len(appendedChunk) < self.windowSize / 8:
+			while len(appendedChunk) < self.windowSize / self.refreshScale:
 				self.line.popleft()
 				packet = self.plotq.get()
 				self.line.append(self.dict2list(packet))
@@ -272,36 +270,11 @@ class client:
 		for i in range(0, len(plotBuffer[0, :])):
 			yAxis[:, i] -= offset * i
 
-		line.set_data(tAxis, yAxis[:, 0].transpose)
-
-		return line
-
-	def getPlotData(self,  offset=400):
-		while not self.plotq.empty():
-			appendedChunk = []
-			while len(appendedChunk) < self.windowSize / 8:
-				self.line.popleft()
-				packet = self.plotq.get()
-				self.line.append(self.dict2list(packet))
-				appendedChunk.append(packet)
-
-		tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
-		tAxis = tAxis / eegData.sampleRate  # adjust time axis to 256 sample rate
-		if self.streamIsSimulated:
-			plotBuffer = array(self.line) -4100
-		else:
-			plotBuffer = array(self.line) - 4100
-
-		yAxis = plotBuffer + offset * 13
-
-		# add offset to display all channels
-		for i in range(0, len(plotBuffer[0, :])):
-			yAxis[:, i] -= offset * i
-
-		return tAxis, yAxis[:, 0]
+		return tAxis, yAxis
 
 
 	"""
+	DEPRECATED
 	only works with emotiv
 	"""
 	def plotClientStream(self, streamfigure=None, plotChunks=False,  chunkfigure=None, offset=400):

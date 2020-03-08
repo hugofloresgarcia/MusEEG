@@ -1,4 +1,3 @@
-#todo: use emotions as upper harmonics of synthesized signal (affective computing)
 #todo: clean up
 
 import os

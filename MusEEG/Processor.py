@@ -6,6 +6,7 @@ import threading
 from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
 import pandas as pd
+import queue
 
 
 
@@ -17,6 +18,8 @@ class Processor:
         self.bigBrain = classifier()
 
         self.client = client(device=device)
+
+        self.bandPowerQueue = queue.Queue()
 
         if device is None:
             self.simulation = True
@@ -42,7 +45,7 @@ class Processor:
         self.sendMIDI = True #send midi messages for facial expressions
 
         ##these are just some average bandpower values from the neutral track
-        self.baseline = [78.72624375770606, 310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
+        self.baseline = [310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
         self.baselinedB = np.log10(self.baseline)
 
     def startStream(self):
@@ -86,7 +89,7 @@ class Processor:
         brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
         gestureResult = self.cerebro.gestures[brainOutput]
 
-        print('classification result: ' + gestureResult)
+        print('classification result: ' + gestureResult + '\n')
 
         if self.sendOSC:
             message = self.discreteOSCdict[gestureResult]
@@ -134,6 +137,10 @@ class Processor:
         gammaOSC = oscbuildparse.OSCMessage('/gamma', None, [gammaAvg])
 
         OSCmsglist = [thetaOSC, alphaOSC, betaOSC, gammaOSC]
+
+        queueX = bandPowerStr
+        queueY = [thetaAvg, alphaAvg, betaAvg, gammaAvg]
+        self.bandPowerQueue.put([queueX, queueY])
 
         for message in OSCmsglist:
             osc_send(message, self.clientNameOSC)

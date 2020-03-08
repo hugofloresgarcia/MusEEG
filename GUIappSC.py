@@ -2,6 +2,8 @@ import tkinter as tk
 import MusEEG
 from MusEEG import Processor, eegData
 from tkinter import filedialog
+import os
+import sys
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -14,8 +16,15 @@ processor = Processor(device=None)
 processor.OSCstart()
 processor.defineOSCMessages()
 
-def get_data():
+def get_data_raw():
     x, y = processor.client.getPlotData()
+    return x, y
+
+def get_data_bp():
+    bandpwr = processor.bandPowerQueue.get(block=True)
+    # x = bandpwr[0]
+    x = [0, 1, 2, 3]
+    y = bandpwr[1]
     return x, y
 
 class demoApp(tk.Frame):
@@ -26,9 +35,6 @@ class demoApp(tk.Frame):
         self.pack()
         self.create_widgets()
 
-        self.running = False
-        self.ani = None
-
     def buttonLoadModel(self):
         def loadModel():
             path = filedialog.askdirectory(initialdir=MusEEG.parentDir+'/data/savedModels', title='load classifier')
@@ -36,24 +42,52 @@ class demoApp(tk.Frame):
 
         loadModelBttn = tk.Button(self, command=loadModel)
         loadModelBttn["text"] = "Load Model"
-        loadModelBttn.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
+        loadModelBttn.grid(row=8, column=0, columnspan=2, padx=5, pady=5)
 
     def buttonStartProcessor(self):
-
         self.startProcessorBttn = tk.Button(self, command=self.on_click)
         self.startProcessorBttn["text"] = "Start Processor"
-        self.startProcessorBttn.grid(row=5, column=1, columnspan=2, padx=5, pady=5)
+        self.startProcessorBttn.grid(row=8, column=2, columnspan=2, padx=5, pady=5)
 
     def plotWindow(self):
+        self.running = False
+        self.ani = None
+
         self.fig = plt.Figure()
         self.ax1 = self.fig.add_subplot(111)
-        self.line, = self.ax1.plot([], [], lw=2)
+
+        self.lines = []
+        for _ in range(0, eegData.nchannels):
+            templine, = self.ax1.plot([], [], lw=2)
+            self.lines.append(templine)
+
+        # self.line, = self.ax1.plot([], [], lw=2)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=5, columnspan=4)
 
-        self.ax1.set_ylim(0, 1500)
+        self.ax1.set_title('Raw EEG')
+        self.ax1.set_ylim(-500, 6000)
         self.ax1.set_xlim(0, processor.client.windowSize/eegData.sampleRate)
+
+    def bandPowerWindow(self):
+        self.BPani = None
+
+        self.bpfig = plt.Figure((3, 2))
+        self.bpax1 = self.bpfig.add_subplot(111)
+
+
+        self.bpline, = self.bpax1.plot([0, 1, 2, 3], processor.baselinedB, lw=2)
+
+        # self.line, = self.ax1.plot([], [], lw=2)
+        self.bpcanvas = FigureCanvasTkAgg(self.bpfig, master=self)
+        self.bpcanvas.draw()
+        self.bpcanvas.get_tk_widget().grid(row=5, column=3, rowspan=2, columnspan=2)
+
+        self.bpax1.set_ylim(0, 40)
+        self.bpax1.set_title('Band Power (dB)')
+        self.bpax1.set_xlim(-1, 4)
+        self.bpax1.set_xticklabels(['', 'theta', 'alpha', 'beta', 'gamma', ''])
 
     def on_click(self):
         '''the button is a start, pause and unpause button all in one
@@ -65,46 +99,86 @@ class demoApp(tk.Frame):
             # animation is not running; start it
             return self.start()
 
-        if self.running:
-            # animation is running; pause it
-            self.ani.event_source.stop()
-            self.startProcessorBttn.config(text='Un-Pause')
-        else:
-            # animation is paused; unpause it
-            self.ani.event_source.start()
-            self.startProcessorBttn.config(text='Pause')
-        self.running = not self.running
+        # if self.running:
+        #     # animation is running; pause it
+        #     self.ani.event_source.stop()
+        #     self.startProcessorBttn.config(text='Un-Pause')
+        # else:
+        #     # animation is paused; unpause it
+        #     self.ani.event_source.start()
+        #     self.startProcessorBttn.config(text='Pause')
+        # self.running = not self.running
 
     def start(self):
         self.ani = animation.FuncAnimation(
             self.fig,
             self.update_graph,
-            interval=processor.client.windowSize/8/eegData.sampleRate*1000,
+            interval=processor.client.windowSize/processor.client.refreshScale/eegData.sampleRate*1000,
+            repeat=False)
+        self.bpani = animation.FuncAnimation(
+            self.bpfig,
+            self.update_graph_bp,
+            interval=500,
             repeat=False)
         self.running = True
-        self.startProcessorBttn.config(text='Pause')
+        # self.startProcessorBttn.config(text='Pause')
         self.ani._start()
+        self.bpani._start()
         print('started animation')
 
     def update_graph(self, i):
-        self.line.set_data(*get_data()) # update graph
+        x, y = get_data_raw()
 
-        return self.line,
-        
+        for idx, line in enumerate(self.lines):
+            line.set_data(x, y[:,idx])
+
+        return self.lines
+
+    def update_graph_bp(self, i):
+        x, y = get_data_bp()
+        if y is not None:
+            self.bpline.set_data(x, y)
+
+        return self.bpline
+
+    def commandWindow(self):
+        self.cmd = tk.Text(master=self, height=10, width=50, relief="solid")
+        self.cmd.grid(row=5, column=0, rowspan=3,  columnspan=2, padx=5, pady=5)
+        self.cmd.bind('<<Modified>>', self.modified)
+
+        self.cmd.see(tk.END)
+
+    def modified(self, event):
+        self.cmd.see(tk.END)
+
     def create_widgets(self):
-        self.winfo_toplevel().title("MusEEG (SuperCollider)")
+        self.winfo_toplevel().title("MusEEG (OSC)")
         self.buttonStartProcessor()
         self.buttonLoadModel()
         self.plotWindow()
+        self.commandWindow()
+        self.bandPowerWindow()
 
+        pl = PrintLogger(self.cmd)
 
+        # replace sys.stdout with our object
+        sys.stdout = pl
+
+class PrintLogger(): # create file like object
+    def __init__(self, textbox): # pass reference to text widget
+        self.textbox = textbox # keep ref
+
+    def write(self, text):
+        self.textbox.insert(tk.END, text) # write text to textbox
+            # could also scroll to end of textbox here to make sure always visible
+
+    def flush(self): # needed for file like object
+        pass
 
 root = tk.Tk()
 app = demoApp(master=root)
 
-
-
-#todo: the app isnt quitting properly and it ruins ur computer
+#todo: the app isnt quitting properly
 while True:
     try:
         app.mainloop()

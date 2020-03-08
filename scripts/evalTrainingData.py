@@ -1,7 +1,8 @@
 """
-sortTrainingData
+evalTrainingData
 This is meant for u to look through each of the really long CSV files and cut the time series EEG data into chunks that
 contain the desired gesture
+ONLY WORKS ON EMOTIV
 """
 import os
 from MusEEG import TrainingDataMacro

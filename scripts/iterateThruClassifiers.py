@@ -35,5 +35,3 @@ results = pd.DataFrame(results)
 results.to_csv(os.path.join(MusEEG.parentDir, 'data', 'ClassifierResults', 'forSmallChunks.csv'))
 results.plot()
 print('hi')
-
-#it appears as if using elu, 175 neurons, l1_l2 regulation and sparse categorical crossentropy losses is the best, with 93%
