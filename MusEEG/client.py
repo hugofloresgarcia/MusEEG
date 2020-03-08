@@ -64,19 +64,23 @@ class client:
 		self.done = False
 
 		if self.device == 'emotiv':
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.s.connect((self.host, self.port))
-			self.s.send(b"\r\n")
+			try:
+				self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				self.s.connect((self.host, self.port))
+				self.s.send(b"\r\n")
 
-			# To read the header msgs about cykit etc...
-			self.s.recv(168, socket.MSG_WAITALL)
+				# To read the header msgs about cykit etc...
+				self.s.recv(168, socket.MSG_WAITALL)
 
-			# Local buffer to store parts of the messages
-			self.buffer = b''
+				# Local buffer to store parts of the messages
+				self.buffer = b''
 
-			# If when when split by \r, \r was the last character of the message, we know that we have to remove \n from
-			# the begining of the next message
-			self.remove_newline = False
+				# If when when split by \r, \r was the last character of the message, we know that we have to remove \n from
+				# the begining of the next message
+				self.remove_newline = False
+			except ConnectionRefusedError:
+				print('uh oh. looks like CyKIT isn\'t setup right. '
+					  'try again by restarting MusEEG')
 
 		elif self.device == 'openBCI':
 			from pyOpenBCI import OpenBCICyton

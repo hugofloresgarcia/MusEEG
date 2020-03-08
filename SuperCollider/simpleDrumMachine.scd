@@ -1,3 +1,6 @@
+
+s.waitForBoot({
+
 ~tempo = 80;
 TempoClock.default.tempo = ~tempo/60;
 
@@ -287,7 +290,6 @@ OSCdef.new(\lookleftDef,  ~lookleftFunc, '/lookleft').add;
 OSCdef.new(\scrunchDef,   ~scrunchFunc,  '/scrunch').add;
 OSCdef.new(\hardblinkDef, ~hardblinkFunc,'/hardblink').add;
 
-OSCFunc.trace(true, true);
 );
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -295,55 +297,9 @@ OSCFunc.trace(true, true);
 //////////////////////////////////////////////////////////////////////////////////
 // Run this live for funs.
 // facial expressions toggle rhythms in drum machine
-(
-~hats = Pdef(\hatpat).play(quant: 1);
-~snare = Pdef(\snarepat).play(quant: 1);
-);
-
-(
-~highKick = Pdef(\kickpat).play(quant: Quant.new(4, 0, -1)); // bring in at a different time than kick
-);
-
-(
-~kick = Pdef(\kickpat2).play(quant: 1);
-);
-
-(
-~highKick.pause;
-);
-
-(
-~highKick.play(quant: Quant.new(4, 0, -1));
-);
-
-(
-~hats.stop;
-~kick.stop;
-~highKick.play(quant: Quant.new(4, 0, -1));
-);
-
-(
-~hats.reset; ~hats.play(quant: 1);
-);
 
 
-(
-~highKick.pause;
-);
-
-
-(
-~hats.pause;
-~snare.pause;
-~kick.play(quant: 1);
-);
-
-(
-~kick.stop;
-);
-
-
-
+})
 
 
 

@@ -94,12 +94,48 @@ class demoApp(tk.Frame):
         # self.line, = self.ax1.plot([], [], lw=2)
         self.bpcanvas = FigureCanvasTkAgg(self.bpfig, master=self)
         self.bpcanvas.draw()
-        self.bpcanvas.get_tk_widget().grid(row=5, column=3, rowspan=2, columnspan=2)
+        self.bpcanvas.get_tk_widget().grid(row=5, column=6, rowspan=2, columnspan=2)
 
         self.bpax1.set_ylim(0, 40)
         self.bpax1.set_title('Band Power (dB)')
         self.bpax1.set_xlim(-1, 4)
         self.bpax1.set_xticklabels(['', 'theta', 'alpha', 'beta', 'gamma', ''])
+
+    def smallBrainMonitor(self):
+        self.sbani = None
+        self.sbfig = plt.Figure((3, 2))
+        self.sbax = self.sbfig.add_subplot(111)
+
+        self.sblines = []
+        for _ in range(0, eegData.nchannels):
+            templine, = self.sbax.plot([], [], lw=2)
+            self.sblines.append(templine)
+
+        self.sbcanvas = FigureCanvasTkAgg(self.sbfig, master=self)
+        self.sbcanvas.draw()
+        self.sbcanvas.get_tk_widget().grid(row=1, column=6, rowspan=2, columnspan=2)
+
+        self.sbax.set_ylim(-100, 300)
+        self.sbax.set_title('smallBrain monitor')
+        self.sbax.set_xlim(-5, eegData.smallchunkSize+5)
+
+    def bigBrainMonitor(self):
+        self.bbani = None
+        self.bbfig = plt.Figure((3, 2))
+        self.bbax = self.bbfig.add_subplot(111)
+
+        self.bblines = []
+        for _ in range(0, eegData.nchannels):
+            templine, = self.bbax.plot([], [], lw=2)
+            self.bblines.append(templine)
+
+        self.bbcanvas = FigureCanvasTkAgg(self.bbfig, master=self)
+        self.bbcanvas.draw()
+        self.bbcanvas.get_tk_widget().grid(row=3, column=6, rowspan=2, columnspan=2)
+
+        self.bbax.set_ylim(-400, 500)
+        self.bbax.set_title('bigBrain monitor')
+        self.bbax.set_xlim(-5, eegData.chunkSize+5)
 
     def on_click(self):
         '''the button is a start, pause and unpause button all in one
@@ -132,17 +168,29 @@ class demoApp(tk.Frame):
             self.update_graph_bp,
             interval=500,
             repeat=False)
+        self.sbani = animation.FuncAnimation(
+            self.sbfig,
+            self.update_graph_sb,
+            interval=250,
+            repeat=False)
+        self.bbani = animation.FuncAnimation(
+            self.bbfig,
+            self.update_graph_bb,
+            interval=250,
+            repeat=False)
         self.running = True
         # self.startProcessorBttn.config(text='Pause')
         self.ani._start()
         self.bpani._start()
+        self.sbani._start()
+        self.bbani._start()
         print('started animation')
 
     def update_graph(self, i):
         x, y = get_data_raw()
 
         for idx, line in enumerate(self.lines):
-            line.set_data(x, y[:,idx])
+            line.set_data(x, y[:, idx])
 
         return self.lines
 
@@ -153,9 +201,30 @@ class demoApp(tk.Frame):
 
         return self.bpline
 
+    def update_graph_sb(self, i):
+        try:
+           y = processor.smallBrainMonitorQueue.get(block=False)
+           for idx, line in enumerate(self.sblines):
+               line.set_data(range(0, eegData.smallchunkSize), y[:, idx])
+
+        except queue.Empty:
+            pass
+
+        return self.sblines
+
+    def update_graph_bb(self, i):
+        try:
+            y = processor.bigBrainMonitorQueue.get(block=False)
+            for idx, line in enumerate(self.bblines):
+                line.set_data(range(0, eegData.chunkSize), y[:, idx])
+        except queue.Empty:
+            pass
+
+        return self.bblines
+
     def commandWindow(self):
         self.cmd = ScrolledText(master=self, height=15, width=50, relief="solid", bd =2)
-        self.cmd.grid(row=5, column=0, rowspan=2,  columnspan=2, padx=5, pady=5)
+        self.cmd.grid(row=5, column=0, rowspan=2,  columnspan=6, padx=5, pady=5)
 
         self.add_timestamp()
 
@@ -187,6 +256,8 @@ class demoApp(tk.Frame):
 
         self.deviceMenu = tk.OptionMenu(self, self.deviceVar, *processor.deviceList).grid(row=8, column=0, columnspan=1, padx=5, pady=5)
 
+
+
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG (OSC)")
         self.buttonStartProcessor()
@@ -196,11 +267,15 @@ class demoApp(tk.Frame):
         self.bandPowerWindow()
         self.deviceDropDown()
         self.buttonConnect()
+        self.smallBrainMonitor()
+        self.bigBrainMonitor()
 
         pl = PrintLogger(self.cmd)
 
         # replace sys.stdout with our object
         sys.stdout = pl
+
+
 
 
 class PrintLogger(): # create file like object
@@ -222,7 +297,7 @@ def quit_properly():
 root = tk.Tk()
 root.lift()
 root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
-root.protocol("WM_DELETE_WINDOW_", quit_properly)
+# root.protocol("WM_DELETE_WINDOW_", quit_properly)
 app = demoApp(master=root)
 
 #todo: the app isnt quitting properly

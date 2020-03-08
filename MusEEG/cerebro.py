@@ -38,9 +38,10 @@ class cerebro:
         # open and reset midiport
         resetPort()
 
-        # load the DNN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
+        # load the ANN classifier (bigbrain for whole eeg chunks, small brain for small chunks)
         self.bigBrain = classifier()
         self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v2'))
+
         self.smallBrain = classifier()
         self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_v1'))
 

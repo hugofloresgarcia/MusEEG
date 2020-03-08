@@ -17,9 +17,14 @@ class Processor:
         self.cerebro = cerebro()
         self.bigBrain = classifier()
 
+        self.smallBrain = classifier()
+        self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_v1'))
+
         self.client = client()
 
         self.bandPowerQueue = queue.Queue()
+        self.smallBrainMonitorQueue = queue.Queue()
+        self.bigBrainMonitorQueue = queue.Queue()
 
         self.simPath = ''
 
@@ -114,6 +119,7 @@ class Processor:
         TIMEend = time.clock()
         print('classification took ' + str(round(TIMEend-TIMEstart, 3)) + ' s')
         print('...')
+
     def getMoreChunks(self, chunk):
         while len(chunk) < eegData.chunkSize:
             chunk.extend(list(self.client.getChunk(chunkSize=eegData.smallchunkSize)))
@@ -187,8 +193,9 @@ class Processor:
                     chunkGetter = threading.Thread(target=self.getMoreChunks, args=(fullchunk,))
                     chunkGetter.start()
 
+                    self.smallBrainMonitorQueue.put(eeg.chunk)
                     brainInput = eeg.process()
-                    brainOutput = self.cerebro.smallBrain.classify(brainInput.reshape(1, 350))
+                    brainOutput = self.smallBrain.classify(brainInput.reshape(1, 350))
 
                     if brainOutput == 0:
                         # print('facial expression found!')
@@ -208,6 +215,7 @@ class Processor:
                 if len(eeg.chunk) != eeg.chunkSize:
                     raise RuntimeWarning('chunk size error')
 
+                self.bigBrainMonitorQueue.put(eeg.chunk)
                 processor = threading.Thread(target=self.processAndPlay, args=(eeg,))
                 processor.start()
             except KeyboardInterrupt:

@@ -28,7 +28,7 @@ class eegData:
     device = 'emotiv'
     ####note: these used to be 384 samples and 64 samples.
     chunkSize = int(256 * 1.25)
-    smallchunkSize = int(chunkSize / 4)
+    smallchunkSize = 64
     backTrack = 50  ##backtrack used to be 35
     nchannels = 14
     emotivChannels = ["EEG.AF3", "EEG.F7", "EEG.F3", "EEG.FC5", "EEG.T7", "EEG.P7", "EEG.O1",
