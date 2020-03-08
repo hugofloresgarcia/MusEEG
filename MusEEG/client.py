@@ -14,22 +14,11 @@ import queue
 
 class client:
 
-	def __init__(self, device):
+	def __init__(self):
 		self.BUFFER_SIZE = eegData.chunkSize
 		self.host = "127.0.0.1"
 		self.port = 5555
-		self.device = device
 
-		if device is None:
-			self.streamIsSimulated = True
-
-		elif device == 'emotiv':
-			self.streamFunc = self.emotivStream
-
-		elif device == 'openBCI':
-			self.streamFunc = self.openBCIStream
-
-		self.done = False
 
 		self.windowSize = eegData.chunkSize * 4
 		self.refreshScale = 64 ## a higher number means a smoother plot in the GUI
@@ -57,7 +46,23 @@ class client:
 				data["O2"], data["P8"], data["T8"], data["FC6"], data["F4"], data["F8"], data["AF4"]]
 		return list
 
-	def setup(self):
+	def setup(self, device):
+		self.device = device
+
+		if self.device == 'None':
+			self.device = None
+
+		if self.device is None:
+			self.streamIsSimulated = True
+
+		elif self.device == 'emotiv':
+			self.streamFunc = self.emotivStream
+
+		elif self.device == 'openBCI':
+			self.streamFunc = self.openBCIStream
+
+		self.done = False
+
 		if self.device == 'emotiv':
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.s.connect((self.host, self.port))
@@ -141,10 +146,10 @@ class client:
 
 		self.board.start_stream(callback)
 
-	def simulateStream(self, gesture, subdir='hugo_facialgestures', streamSpeed=1):
+	def simulateStream(self, address, streamSpeed=1):
 		self.streamIsSimulated = True
 		eeg = TrainingDataMacro()
-		eeg.importCSV(subdir=subdir, filename=gesture+'.csv', tag=gesture)
+		eeg.importCSV(address)
 		self.q = queue.Queue()
 		self.plotq = queue.Queue()
 		self.psdq = queue.Queue()

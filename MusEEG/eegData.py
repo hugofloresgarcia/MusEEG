@@ -317,7 +317,7 @@ class TrainingDataMacro(eegData):
         self.curatedChunkCount = 0
 
     #todo: needs openBCI fix
-    def importCSV(self, subdir, filename, tag):
+    def importCSV(self, address):
         if self.device == 'emotiv':
             """
             :param subdir: subdirectory under MusEEG/data/longRawTrainingSamples where the .csv files are located
@@ -326,14 +326,12 @@ class TrainingDataMacro(eegData):
             :return:
             """
 
-            self.rawData = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
+            self.rawData = pandas.read_csv(address,
                                            skiprows=1, dtype=float, header=0,
                                            usecols=self.emotivChannels)
-            self.markers = pandas.read_csv(os.path.join(parentDir, 'data', 'longRawTrainingSamples', subdir, filename),
+            self.markers = pandas.read_csv(address,
                                            skiprows=1, usecols=['EEG.MarkerHardware'])
-            self.address = subdir
-            self.filename = filename
-            self.tag = tag
+            self.address = address
             self.matrix = np.array(self.rawData.values - 4100)
             self.AF3 = self.matrix[:, 0]
             self.F7 = self.matrix[:, 1]

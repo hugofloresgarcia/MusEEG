@@ -14,7 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-processor = Processor(device=None)
+processor = Processor()
 processor.OSCstart()
 processor.defineOSCMessages()
 processor.sendMIDI = False
@@ -54,12 +54,12 @@ class demoApp(tk.Frame):
 
         loadModelBttn = tk.Button(self, command=loadModel)
         loadModelBttn["text"] = "Load Model"
-        loadModelBttn.grid(row=8, column=0, columnspan=2, padx=5, pady=5)
+        loadModelBttn.grid(row=8, column=3, columnspan=2, padx=5, pady=5)
 
     def buttonStartProcessor(self):
         self.startProcessorBttn = tk.Button(self, command=self.on_click)
         self.startProcessorBttn["text"] = "Start Processor"
-        self.startProcessorBttn.grid(row=8, column=2, columnspan=2, padx=5, pady=5)
+        self.startProcessorBttn.grid(row=9, column=3, columnspan=2, padx=0, pady=0)
 
     def plotWindow(self):
         self.running = False
@@ -76,7 +76,7 @@ class demoApp(tk.Frame):
         # self.line, = self.ax1.plot([], [], lw=2)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=5, columnspan=4)
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=5, columnspan=5)
 
         self.ax1.set_title('Raw EEG')
         self.ax1.set_ylim(-500, 6000)
@@ -154,8 +154,8 @@ class demoApp(tk.Frame):
         return self.bpline
 
     def commandWindow(self):
-        self.cmd = ScrolledText(master=self, height=10, width=50, relief="solid")
-        self.cmd.grid(row=5, column=0, rowspan=3,  columnspan=2, padx=5, pady=5)
+        self.cmd = ScrolledText(master=self, height=10, width=50, relief="solid", bd =2)
+        self.cmd.grid(row=5, column=0, rowspan=2,  columnspan=2, padx=5, pady=5)
 
         self.add_timestamp()
 
@@ -163,6 +163,29 @@ class demoApp(tk.Frame):
         self.cmd.see("end")
         self.after(1000, self.add_timestamp)
 
+    def buttonConnect(self):
+        def setup():
+            device = self.deviceVar.get()
+            if device == 'sim':
+                processor.setDevice(None)
+                simPath = filedialog.askopenfilename(initialdir=MusEEG.parentDir+'/data/longRawTrainingSamples', title='choose a .csv file!')
+                processor.simPath = simPath
+                print('loaded ' + simPath + '!')
+
+            else:
+                processor.setDevice(device)
+
+        self.connectBttn = tk.Button(self, command=setup)
+        self.connectBttn["text"] = "setup"
+        self.connectBttn.grid(row=8, column=1, columnspan=1, padx=5, pady=5)
+
+    def deviceDropDown(self):
+        self.deviceLabel = tk.Label(self, text='device')
+        self.deviceLabel.grid(row=9, column=0, columnspan=1, padx=0, pady=0)
+        self.deviceVar = tk.StringVar(self)
+        self.deviceVar.set("sim")
+
+        self.deviceMenu = tk.OptionMenu(self, self.deviceVar, *processor.deviceList).grid(row=8, column=0, columnspan=1, padx=5, pady=5)
 
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG (OSC)")
@@ -171,11 +194,14 @@ class demoApp(tk.Frame):
         self.plotWindow()
         self.commandWindow()
         self.bandPowerWindow()
+        self.deviceDropDown()
+        self.buttonConnect()
 
         pl = PrintLogger(self.cmd)
-
+ 
         # replace sys.stdout with our object
-        sys.stdout = pl
+        # sys.stdout = pl
+
 
 class PrintLogger(): # create file like object
     def __init__(self, textbox): # pass reference to text widget
@@ -189,6 +215,7 @@ class PrintLogger(): # create file like object
         pass
 
 def quit_properly():
+    processor.client.done = True
     processor.processorShutDown()
     del processor
 

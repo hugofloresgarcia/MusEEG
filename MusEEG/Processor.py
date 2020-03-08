@@ -11,33 +11,17 @@ import queue
 
 
 class Processor:
-    def __init__(self, device=None):
+    def __init__(self):
         self.cerebro = cerebro()
         self.bigBrain = classifier()
 
-        self.client = client(device=device)
+        self.client = client()
 
         self.bandPowerQueue = queue.Queue()
 
-        if device is None:
-            self.simulation = True
-            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
-                                    loadScaler=True)
+        self.simPath = ''
 
-        elif device == 'emotiv':
-            eegData.device = device
-            eegData.sampleRate = 256
-            eegData.chunkSize = 256*1.25
-            eegData.nchannels = 14
-            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
-                                    loadScaler=True)
-
-        elif device == 'openBCI':
-            eegData.device = device
-            eegData.sampleRate = 125
-            eegData.chunkSize = eegData.chunkSize/2
-            eegData.nchannels = 16
-
+        self.deviceList = ['sim', 'emotiv', 'OpenBCI']
 
         self.sendOSC = True #send OSC messages for facial expressions
         self.sendMIDI = True #send midi messages for facial expressions
@@ -46,9 +30,36 @@ class Processor:
         self.baseline = [310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
         self.baselinedB = np.log10(self.baseline)
 
+    def setDevice(self, device):
+        self.device = device
+
+        if self.device is None or 'sim':
+            self.client.device = None
+            self.simulation = True
+            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
+                                    loadScaler=True)
+
+        elif self.device == 'emotiv':
+            eegData.device = self.device
+            self.client.device = self.device
+            eegData.sampleRate = 256
+            eegData.chunkSize = 256*1.25
+            eegData.nchannels = 14
+            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
+                                    loadScaler=True)
+
+        elif self.device == 'openBCI':
+            eegData.device = self.device
+            self.client.device = self.device
+            eegData.sampleRate = 125
+            eegData.chunkSize = eegData.chunkSize/2
+            eegData.nchannels = 16
+
+        self.client.setup(device)
+
     def startStream(self):
         if self.simulation:
-            self.client.simulateStream('smile', subdir='trainbatch1', streamSpeed=1)
+            self.client.simulateStream(self.simPath, streamSpeed=1)
         else:
             self.client.setup()
             self.client.stream()
