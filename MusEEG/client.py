@@ -89,8 +89,7 @@ class client:
 					# Cykit Example TCP - Client
 					# author: Icannos
 					# modified for MusEEG by: hugo flores garcia
-					import matplotlib
-					# We read a chunk
+
 					data = self.s.recv(self.BUFFER_SIZE)
 
 					# If we have to remove \n at the begining

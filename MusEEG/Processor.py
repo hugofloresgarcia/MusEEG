@@ -10,8 +10,6 @@ import queue
 
 
 
-
-
 class Processor:
     def __init__(self, device=None):
         self.cerebro = cerebro()

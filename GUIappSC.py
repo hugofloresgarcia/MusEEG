@@ -17,6 +17,7 @@ import matplotlib.animation as animation
 processor = Processor(device=None)
 processor.OSCstart()
 processor.defineOSCMessages()
+processor.sendMIDI = False
 
 def get_data_raw():
     x, y = processor.client.getPlotData()
