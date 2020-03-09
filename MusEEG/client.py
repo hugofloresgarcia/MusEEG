@@ -123,10 +123,11 @@ class client:
 
 					# We setup the buffer for next step
 					self.buffer = self.n_buffer
-					self.plotq.put(fields, block=False)
-					self.psdq.put(fields,block=False)
-					# Print all channel
-					self.q.put(fields, block=False)
+					if not isinstance(fields, int):
+						self.plotq.put(fields, block=False)
+						self.psdq.put(fields,block=False)
+						self.q.put(fields, block=False)
+				
 			except Exception:
 				self.q.join()
 				self.s.close()
