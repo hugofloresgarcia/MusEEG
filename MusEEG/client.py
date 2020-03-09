@@ -214,7 +214,7 @@ class client:
 
 		self.chunkq.put(array(chunk))
 
-		if self.streamIsSimulated or self.device == 'openBCI':
+		if self.device == 'openBCI' or self.device == 'sim':
 			chunk = array(chunk)
 		if self.device == 'emotiv':
 			chunk = array(chunk) - 4100

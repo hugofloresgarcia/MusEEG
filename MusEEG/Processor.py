@@ -54,6 +54,7 @@ class Processor:
             eegData.nchannels = 14
             self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
                                     loadScaler=True)
+            self.simulation = False
 
         elif self.device == 'openBCI':
             eegData.device = self.device
@@ -61,6 +62,7 @@ class Processor:
             eegData.sampleRate = 125
             eegData.chunkSize = eegData.chunkSize/2
             eegData.nchannels = 16
+            self.simulation = False
 
         self.client.setup(device)
 
@@ -68,7 +70,7 @@ class Processor:
         if self.simulation:
             self.client.simulateStream(self.simPath, streamSpeed=1)
         else:
-            self.client.setup()
+            self.client.setup(self.device)
             self.client.stream()
 
     def OSCstart(self, address="127.0.0.1", port=57120, clientName = "MusEEGosc"):

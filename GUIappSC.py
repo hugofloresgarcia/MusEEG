@@ -243,6 +243,7 @@ class demoApp(tk.Frame):
 
             else:
                 processor.setDevice(device)
+                processor.simulation = False
 
         self.connectBttn = tk.Button(self, command=setup)
         self.connectBttn["text"] = "setup"
