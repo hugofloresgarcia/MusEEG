@@ -127,7 +127,7 @@ class client:
 						self.plotq.put(fields, block=False)
 						self.psdq.put(fields,block=False)
 						self.q.put(fields, block=False)
-				
+
 			except Exception:
 				self.q.join()
 				self.s.close()
@@ -221,8 +221,6 @@ class client:
 			chunk = array(chunk) - 4100
 
 		return chunk
-
-
 
 	"""
 	only works with emotiv
