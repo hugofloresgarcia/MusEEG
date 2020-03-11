@@ -19,6 +19,8 @@ class client:
 		self.host = "127.0.0.1"
 		self.port = 5555
 
+		self.streamIsSimulated = False
+
 
 		self.windowSize = eegData.chunkSize * 4
 		self.refreshScale = 64 ## a higher number means a smoother plot in the GUI

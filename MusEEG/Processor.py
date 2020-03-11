@@ -215,7 +215,7 @@ class Processor:
                 eeg.chunk = np.array(fullchunk)
                 # eeg.plotRawEEG(figure=self.streamPlotFigure)
                 if len(eeg.chunk) != eeg.chunkSize:
-                    raise RuntimeWarning('chunk size error')
+                    print('chunk size error')
 
                 self.bigBrainMonitorQueue.put(eeg.chunk)
                 processor = threading.Thread(target=self.processAndPlay, args=(eeg,))
