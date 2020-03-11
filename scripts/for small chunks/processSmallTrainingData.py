@@ -9,10 +9,12 @@ from MusEEG import eegData
 import pandas as pandas
 import numpy as np
 
+sizeYes = 160
+sizeNo = 160
 
 def createTargetVector(objarray, *argv):
     labels = []
-    targets = [0 for row in range(len(objarray[0][:]) * len(objarray))]
+    targets = [0 for row in range(0, sizeYes+sizeNo)]
     index = 0
     for i in range(0, len(objarray)):
         print(objarray[i][0].filename)
@@ -26,8 +28,8 @@ def createTargetVector(objarray, *argv):
 
 
 # create object lists.  They are lists, not arrays
-nogesture = [eegData() for i in range(0, 160)]
-gesture = [eegData() for i in range(0, 160)]
+nogesture = [eegData() for i in range(0, sizeNo)]
+gesture = [eegData() for i in range(0, sizeYes)]
 
 
 
@@ -60,25 +62,25 @@ for j in range( splitsies, 2 * splitsies):
 
 
 
-gestures = [gesture, nogesture]
+gestures = [nogesture, gesture]
 
 for i in range(0, len(gestures)):
-    for j in range(0, len(gestures[0])):
-        if i == 0:
+    for j in range(0, len(gestures[i])):
+        if i == 1:
             gestures[i][j].filename = 'yesgesture'
-        elif i == 1:
+        elif i == 0:
             gestures[i][j].filename = 'nogesture'
 
-targets = createTargetVector(gestures, 'yesgesture', 'nogesture')
+targets = createTargetVector(gestures, 'nogesture', 'yesgesture')
 
 ##for smallchunks only. smallchunks are 1/8 of bigChunks (comment if you're working with big chunks)
 for i in range(0, len(gestures)):
     gesture[i].cutChunk(eegData.smallchunkSize)
 
-inputs = np.ndarray([320, 350])
+inputs = np.ndarray([sizeYes + sizeNo, 350])
 inputindex = 0
 for i in range(0, len(gestures)):
-    for j in range(0, len(gestures[0])):
+    for j in range(0, len(gestures[i])):
         gestures[i][j].wavelet()
         gestures[i][j].extractStatsFromWavelets()
         gestures[i][j].flattenIntoVector()
@@ -90,5 +92,5 @@ print(targets)
 inputs = pandas.DataFrame(inputs)
 targets = pandas.DataFrame(targets)
 
-inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v2', 'inputs.csv'))
-targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v2', 'targets.csv'))
+inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v3', 'inputs.csv'))
+targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v3', 'targets.csv'))

@@ -53,13 +53,22 @@ class demoApp(tk.Frame):
             processor.bigBrain.loadmodel(filename=path, loadScaler=True)
 
         loadModelBttn = tk.Button(self, command=loadModel)
-        loadModelBttn["text"] = "Load a Brain"
-        loadModelBttn.grid(row=8, column=3, columnspan=2, padx=5, pady=5)
+        loadModelBttn["text"] = "Load a bigBrain"
+        loadModelBttn.grid(row=8, column=3, columnspan=1, padx=5, pady=5)
+
+    def buttonLoadSmallModel(self):
+        def loadModel():
+            path = filedialog.askdirectory(initialdir=MusEEG.parentDir+'/data/savedModels', title='load classifier')
+            processor.smallBrain.loadmodel(filename=path, loadScaler=True)
+
+        loadModelBttn = tk.Button(self, command=loadModel)
+        loadModelBttn["text"] = "Load a smallBrain"
+        loadModelBttn.grid(row=8, column=4, columnspan=1, padx=5, pady=5)
 
     def buttonStartProcessor(self):
         self.startProcessorBttn = tk.Button(self, command=self.on_click)
         self.startProcessorBttn["text"] = "Start Processor"
-        self.startProcessorBttn.grid(row=9, column=3, columnspan=2, padx=0, pady=0)
+        self.startProcessorBttn.grid(row=9, column=3, columnspan=1, padx=0, pady=0)
 
     def plotWindow(self):
         self.running = False
@@ -270,6 +279,7 @@ class demoApp(tk.Frame):
         self.buttonConnect()
         self.smallBrainMonitor()
         self.bigBrainMonitor()
+        self.buttonLoadSmallModel()
 
         pl = PrintLogger(self.cmd)
 

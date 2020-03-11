@@ -18,7 +18,7 @@ class Processor:
         self.bigBrain = classifier()
 
         self.smallBrain = classifier()
-        self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_norm'), loadScaler=True)
+        self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_norm_lopsided_v3'), loadScaler=True)
 
         self.client = client()
 
