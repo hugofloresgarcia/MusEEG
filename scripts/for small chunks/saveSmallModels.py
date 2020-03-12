@@ -2,7 +2,7 @@ import MusEEG
 
 brain = MusEEG.classifier()
 train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(
-    address=MusEEG.parentDir+'/data/training/smallChunks_v4',
+    address=MusEEG.parentDir+'/data/training/smallChunks_v5',
     percentTrain=0.75,
     normalize=True)
 

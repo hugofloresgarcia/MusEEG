@@ -28,7 +28,7 @@ class cerebro:
         '- to change a chord, press the "update chord dictionary" button after youve changed the notes\n')
     eeg = eegData()
 
-    gestures = ['smile', 'hardblink', 'lookleft', 'lookright',
+    gestures = ['smile', 'eyebrows', 'lookleft', 'lookright',
                      'neutral', 'scrunch']
 
     def __init__(self):

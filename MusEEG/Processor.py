@@ -18,7 +18,7 @@ class Processor:
         self.bigBrain = classifier()
 
         self.smallBrain = classifier()
-        self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_norm_lopsided_v3'), loadScaler=True)
+        self.smallBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'smallBrain_v5_norm'), loadScaler=True)
 
         self.client = client()
 
@@ -43,7 +43,7 @@ class Processor:
         if self.device is None or 'sim':
             self.client.device = None
             self.simulation = True
-            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
+            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v5_norm'),
                                     loadScaler=True)
 
         elif self.device == 'emotiv':
@@ -52,7 +52,7 @@ class Processor:
             eegData.sampleRate = 256
             eegData.chunkSize = 256*1.25
             eegData.nchannels = 14
-            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_b1b2_norm'),
+            self.bigBrain.loadmodel(os.path.join(parentDir, 'data', 'savedModels', 'bigBrain_v5_norm'),
                                     loadScaler=True)
             self.simulation = False
 

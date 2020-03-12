@@ -27,7 +27,7 @@ numofSamples = 140
 
 # create object lists, for easier handling
 smile = [eegData() for i in range(0, numofSamples)]
-hardBlink = [eegData() for i in range(0, numofSamples)]
+eyebrows = [eegData() for i in range(0, numofSamples)]
 lookLeft = [eegData() for i in range(0, numofSamples)]
 lookRight = [eegData() for i in range(0, numofSamples)]
 neutral = [eegData() for i in range(0, numofSamples)]
@@ -52,7 +52,7 @@ for i in range(0, 70):
                                      filename='scrunch_' + str(i) + '.csv', labelcols=False)
     # tongue[i].loadChunkFromTraining(subdir=os.path.join('trainbatch2_improved_320samples', 'bigChunks'),
     #                                 filename='tongue_' + str(i) + '.csv', labelcols=False)
-    hardBlink[i].loadChunkFromTraining(subdir=os.path.join('trainbatch2_improved_320samples', 'bigChunks'),
+    eyebrows[i].loadChunkFromTraining(subdir=os.path.join('trainbatch2_improved_320samples', 'bigChunks'),
                                        filename='hardblink_' + str(i) + '.csv', labelcols=False)
 
 for i in range(70, numofSamples):
@@ -64,12 +64,12 @@ for i in range(70, numofSamples):
                                        filename='lookright_' + str(i-70) + '.csv', labelcols=False)
     scrunch[i].loadChunkFromTraining(subdir=os.path.join('trainbatch1_320samples', 'bigChunks'),
                                      filename='scrunch_' + str(i-70) + '.csv', labelcols=False)
-    hardBlink[i].loadChunkFromTraining(subdir=os.path.join('trainbatch1_320samples', 'bigChunks'),
-                                       filename='hardblink_' + str(i-70) + '.csv', labelcols=False)
+    eyebrows[i].loadChunkFromTraining(subdir=os.path.join('trainbatch1_320samples', 'bigChunks'),
+                                       filename='eyebrows_' + str(i-70) + '.csv', labelcols=False)
 
 
-gestures = [smile, hardBlink, lookLeft, lookRight, neutral, scrunch]
-targets = createTargetVector(gestures, 'smile', 'hardblink', 'lookleft', 'lookright',
+gestures = [smile, eyebrows, lookLeft, lookRight, neutral, scrunch]
+targets = createTargetVector(gestures, 'smile', 'eyebrows', 'lookleft', 'lookright',
                              'neutral', 'scrunch')
 
 

@@ -6,9 +6,10 @@ import numpy as np
 save = True
 
 brain = MusEEG.classifier()
-train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(subdir=os.path.join('batch1_batch2_320samples', 'bigChunks'),
-                                                                                percentTrain=0.5,
-                                                                                normalize=True)
+train_inputs, train_targets, test_inputs, test_targets = brain.loadTrainingData(
+    address=os.path.join(MusEEG.parentDir, 'data', 'training', 'batch1_batch2_320samples', 'bigChunks'),
+    percentTrain=0.5,
+    normalize=True)
 brain.build_model(inputShape=brain.inputShape,
                   hiddenNeurons=100,
                   hiddenActivation='elu',
