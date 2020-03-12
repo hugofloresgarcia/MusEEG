@@ -194,7 +194,7 @@ class Processor:
                     fullchunk = list(eeg.chunk)
                     chunkGetter = threading.Thread(target=self.getMoreChunks, args=(fullchunk,))
                     chunkGetter.start()
-
+                    eeg.chunk = np.array(eeg.chunk)
                     self.smallBrainMonitorQueue.put(eeg.chunk)
                     brainInput = eeg.process()
                     brainOutput = self.smallBrain.classify(brainInput.reshape(1, 350))

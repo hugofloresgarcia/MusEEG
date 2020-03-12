@@ -124,7 +124,7 @@ class demoApp(tk.Frame):
         self.sbcanvas.draw()
         self.sbcanvas.get_tk_widget().grid(row=1, column=6, rowspan=2, columnspan=2)
 
-        self.sbax.set_ylim(-100, 300)
+        self.sbax.set_ylim(-800, 800)
         self.sbax.set_title('smallBrain monitor')
         self.sbax.set_xlim(-5, eegData.smallchunkSize+5)
 
@@ -142,7 +142,7 @@ class demoApp(tk.Frame):
         self.bbcanvas.draw()
         self.bbcanvas.get_tk_widget().grid(row=3, column=6, rowspan=2, columnspan=2)
 
-        self.bbax.set_ylim(-400, 500)
+        self.bbax.set_ylim(-800, 800)
         self.bbax.set_title('bigBrain monitor')
         self.bbax.set_xlim(-5, eegData.chunkSize+5)
 
@@ -266,7 +266,15 @@ class demoApp(tk.Frame):
 
         self.deviceMenu = tk.OptionMenu(self, self.deviceVar, *processor.deviceList).grid(row=8, column=0, columnspan=1, padx=5, pady=5)
 
+    def quitButton(self):
+        def quit():
+            global processor
+            processor.client.done = True
+            processor.processorShutDown()
+            del processor
+            self.destroy()
 
+        tk.Button(self, text="Shutdown", command=quit).grid(row=9, column=4, padx=5, pady=5)
 
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG (OSC)")
@@ -280,8 +288,11 @@ class demoApp(tk.Frame):
         self.smallBrainMonitor()
         self.bigBrainMonitor()
         self.buttonLoadSmallModel()
+        # self.quitButton()
 
         pl = PrintLogger(self.cmd)
+
+
 
         # replace sys.stdout with our object
         sys.stdout = pl
@@ -300,16 +311,10 @@ class PrintLogger(): # create file like object
     def flush(self): # needed for file like object
         pass
 
-def quit_properly():
-    processor.client.done = True
-    processor.processorShutDown()
-    del processor
-    KeyboardInterrupt()
 
 root = tk.Tk()
 root.lift()
 root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
-root.protocol("WM_DELETE_WINDOW_", quit_properly)
 app = demoApp(master=root)
 
 #todo: the app isnt quitting properly
@@ -331,8 +336,6 @@ while True:
 
         for line in flower:
             print(line)
-
-
 
         app.mainloop()
         break

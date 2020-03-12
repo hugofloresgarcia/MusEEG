@@ -9,7 +9,7 @@ from MusEEG import eegData
 import pandas as pandas
 import numpy as np
 
-sizeYes = 160
+sizeYes = 160*3
 sizeNo = 160
 
 def createTargetVector(objarray, *argv):
@@ -92,5 +92,5 @@ print(targets)
 inputs = pandas.DataFrame(inputs)
 targets = pandas.DataFrame(targets)
 
-inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v3', 'inputs.csv'))
-targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v3', 'targets.csv'))
+inputs.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v4', 'inputs.csv'))
+targets.to_csv(os.path.join(MusEEG.parentDir, 'data', 'training', 'smallChunks_v4', 'targets.csv'))
