@@ -224,10 +224,7 @@ class client:
 
 		return chunk
 
-	"""
-	only works with emotiv
-	"""
-	def getChunkWithBackTrack(self):
+	def getChunkWithBackTrack(self, chunkSize=eegData.chunkSize):
 		bufferchunk = []
 		chunk = []
 		self.chunkq = queue.Queue()
@@ -235,16 +232,18 @@ class client:
 			try:
 				## get packets until u find one that passes the threshold
 				data = self.q.get()
-				# print(data["COUNTER"])
-				formattedData = self.dict2list(data)
-				# self.plotClientStream(formattedData=formattedData, figure=self.figure)
+				if self.device == 'emotiv' or self.device is None:
+					formattedData = self.dict2list(data)
+				elif self.device == 'openBCI':
+					formattedData = data
+
 				bufferchunk.append(formattedData)
 
 
 				## backtrack a couple samples to get all the transient info, then finish getting the chunk
 				if eegData.checkThreshold(data):
 					chunk.extend(bufferchunk[(-1-eegData.backTrack):-1])
-					while len(chunk) <eegData.chunkSize:
+					while len(chunk) < chunkSize:
 						data = self.q.get()
 						formattedData = self.dict2list(data)
 						chunk.append(formattedData)
@@ -253,10 +252,12 @@ class client:
 
 		self.chunkq.put(array(chunk))
 
-		if self.streamIsSimulated:
-			chunk = array(chunk) + 4100
+		if self.device == 'openBCI' or self.device == 'sim':
+			chunk = array(chunk)
+		if self.device == 'emotiv':
+			chunk = array(chunk) - 4100
 
-		return array(chunk) - 4100
+		return chunk
 
 	def getPlotData(self,  offset=400):
 		while not self.plotq.empty():

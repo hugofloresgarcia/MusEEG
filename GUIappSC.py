@@ -151,7 +151,7 @@ class demoApp(tk.Frame):
         this method sorts out which of those actions to take'''
         if self.ani is None:
             processor.startStream()
-            processor.runProcessorThread(target=processor.mainProcessorWithSmallBrain)
+            processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
             processor.bandPowerThread(asThread=True)
             # animation is not running; start it
             return self.start()

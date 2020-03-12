@@ -229,11 +229,14 @@ class Processor:
                 if self.client.done:
                     break
                 eeg = eegData()
-                eeg.chunk = self.client.getChunkWithBackTrack()
+                eeg.chunk = np.array(self.client.getChunkWithBackTrack())
+
+                self.bigBrainMonitorQueue.put(eeg.chunk)
+
                 if len(eeg.chunk) != eeg.chunkSize:
                     raise RuntimeError('this chunk did not have the '
                                        'required number of samples. something went wrong')
-                self.processAndSendOSC(eeg)
+                self.processAndPlay(eeg)
 
             except KeyboardInterrupt:
                 break
