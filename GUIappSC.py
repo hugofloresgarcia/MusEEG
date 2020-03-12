@@ -103,7 +103,7 @@ class demoApp(tk.Frame):
         # self.line, = self.ax1.plot([], [], lw=2)
         self.bpcanvas = FigureCanvasTkAgg(self.bpfig, master=self)
         self.bpcanvas.draw()
-        self.bpcanvas.get_tk_widget().grid(row=5, column=6, rowspan=2, columnspan=2)
+        self.bpcanvas.get_tk_widget().grid(row=1, column=6, rowspan=2, columnspan=2)
 
         self.bpax1.set_ylim(0, 40)
         self.bpax1.set_title('Band Power (dB)')
@@ -122,7 +122,7 @@ class demoApp(tk.Frame):
 
         self.sbcanvas = FigureCanvasTkAgg(self.sbfig, master=self)
         self.sbcanvas.draw()
-        self.sbcanvas.get_tk_widget().grid(row=1, column=6, rowspan=2, columnspan=2)
+        self.sbcanvas.get_tk_widget().grid(row=5, column=6, rowspan=2, columnspan=2)
 
         self.sbax.set_ylim(-800, 800)
         self.sbax.set_title('smallBrain monitor')
@@ -285,9 +285,9 @@ class demoApp(tk.Frame):
         self.bandPowerWindow()
         self.deviceDropDown()
         self.buttonConnect()
-        self.smallBrainMonitor()
+        # self.smallBrainMonitor()
         self.bigBrainMonitor()
-        self.buttonLoadSmallModel()
+        # self.buttonLoadSmallModel()
         # self.quitButton()
 
         pl = PrintLogger(self.cmd)

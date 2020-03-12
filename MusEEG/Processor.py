@@ -118,6 +118,7 @@ class Processor:
         if self.sendMIDI:
             resultingChord = self.cerebro.mididict[gestureResult]
             resultingChord.playchord()
+
         TIMEend = time.clock()
         print('classification took ' + str(round(TIMEend-TIMEstart, 3)) + ' s')
         print('...')
@@ -128,7 +129,7 @@ class Processor:
             if self.stopChunkGetter:
                 break
 
-    def bandPowerProcessorOld(self):
+    def bandPowerProcessor(self):
         buffer = self.client.getBuffer(bufferSize=128)
         freqBins = [0.5, 4, 8, 12, 30, 60]
 
@@ -174,7 +175,7 @@ class Processor:
     def bandPowerThread(self, asThread=True):
         def bandPowerLoop():
             while True:
-                self.bandPowerProcessorOld()
+                self.bandPowerProcessor()
 
         if asThread:
             thread = threading.Thread(target=bandPowerLoop)
@@ -184,7 +185,7 @@ class Processor:
 
     def mainProcessorWithSmallBrain(self):
         self.stopChunkGetter = False
-        while (True):
+        while not self.client.done:
             try:
                 activeGesture = False
                 while not activeGesture:
@@ -200,7 +201,6 @@ class Processor:
                     brainOutput = self.smallBrain.classify(brainInput.reshape(1, 350))
 
                     if brainOutput == 0:
-                        # print('facial expression found!')
                         activeGesture = True
                         self.stopChunkGetter = False
                         chunkGetter.join()
@@ -237,6 +237,7 @@ class Processor:
                     raise RuntimeError('this chunk did not have the '
                                        'required number of samples. something went wrong')
                 self.processAndPlay(eeg)
+                time.sleep(20e-3) #try sleeping 20 ms to  debounce
 
             except KeyboardInterrupt:
                 break
@@ -250,57 +251,8 @@ class Processor:
 
     def processorShutDown(self):
         self.OSCclose()
+        self.client.done
 
-    """
-    old methods I'm not ready to let go of yet
-    """
-    # def sendOSCMessage(self, message):
-    #     print(message)
-    #     osc_send(message, self.clientNameOSC)
-    #     osc_process()
-
-    # def processAndSendOSC(self, eeg):
-    #     brainInput = eeg.process()
-    #     brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
-    #     gestureResult = self.cerebro.gestures[brainOutput]
-    #
-    #     print('classification result: ' + gestureResult)
-    #
-    #     message = self.discreteOSCdict[gestureResult]
-    #     osc_send(message, self.clientNameOSC)
-    #     osc_process()
-    # def bandPowerProcessor(self):
-    #     buffer = self.client.getBuffer(bufferSize=128)
-    #     freqBins = {'delta': [0.5, 4],
-    #                 'theta': [4, 8],
-    #                 'alpha': [8, 12],
-    #                 'beta': [12, 30],
-    #                 'gamma': [30, 60]}
-    #     bandPowerArray = []
-    #     bandPowerAvg = []
-    #     for key in freqBins:
-    #         band = eegData.bandPower(buffer=buffer, band=freqBins[key])
-    #         bandPowerArray.append(np.array(band))
-    #         bandPowerAvg.append(float(np.mean(band)))
-    #
-    #     fBinKeys = list(freqBins.keys())
-    #     dfBandPower = pd.DataFrame(bandPowerArray, index=fBinKeys)
-    #     dfBandPower.columns = eegData.eegChannels
-    #
-    #     bandPowerDict = dict(zip(fBinKeys, bandPowerAvg))
-    #
-    #     OSCmsglist = []
-    #     for key in bandPowerDict:
-    #         thing = bandPowerDict[key]
-    #         tag = '/' + key
-    #         msg = oscbuildparse.OSCMessage(tag, None, float(thing))
-    #         OSCmsglist.append(msg)
-    #
-    #     for message in OSCmsglist:
-    #         osc_send(message, self.clientNameOSC)
-
-    # plot histogram
-    # eegData.bandPowerHistogram(dfBandPower, figure=self.bandPowerFigure)
 
 if __name__ == "__main__":
     processor = Processor(device=None)
