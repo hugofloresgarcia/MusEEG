@@ -54,7 +54,7 @@ SynthDef.new(
 ~daisyRhythm = PatternProxy(Pseq(~mainRhythm*2, inf));
 ~daisyChord = PatternProxy(Pseq(~cloudChord + 33, inf));
 ~daisyHarmonic = PatternProxy(Pexprand(1, ~maxHarmonic, inf).round);
-~daisyAtk = PatternProxy(Pwhite(0.1, 0.3, inf));
+~daisyAtk = PatternProxy(Pwhite(0.01, 0.03, inf));
 ~daisyRel =  PatternProxy(Pwhite(0.1, 0.3, inf));
 ~daisyAmp = PatternProxy(Pkey(\harmonic).reciprocal * 0.3);
 
