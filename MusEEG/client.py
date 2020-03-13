@@ -39,7 +39,7 @@ class client:
 		field_list = data.split(b',')
 
 		if len(field_list) > 17:
-			return {field: float(field_list[index]) for field, index in self.FIELDS.items()}
+			return {field: float(field_list[index]-4100) for field, index in self.FIELDS.items()}
 		else:
 			return -1
 
@@ -182,9 +182,7 @@ class client:
 		while len(buffer) < bufferSize:
 			try:
 				packet = self.psdq.get()
-				if self.device == 'emotiv':
-					buffer.append(array(self.dict2list(packet)) - 4100)
-				elif self.streamIsSimulated:
+				if self.device == 'emotiv' or self.device == 'sim' or self.streamIsSimulated:
 					buffer.append(array(self.dict2list(packet)))
 				elif self.device == 'openBCI':
 					buffer.append(packet)
@@ -217,10 +215,7 @@ class client:
 
 		self.chunkq.put(array(chunk))
 
-		if self.device == 'openBCI' or self.device == 'sim':
-			chunk = array(chunk)
-		if self.device == 'emotiv':
-			chunk = array(chunk) - 4100
+		chunk = np.array(chunk)
 
 		return chunk
 
@@ -252,10 +247,7 @@ class client:
 
 		self.chunkq.put(array(chunk))
 
-		if self.device == 'openBCI' or self.device == 'sim':
-			chunk = array(chunk)
-		if self.device == 'emotiv':
-			chunk = array(chunk) - 4100
+		chunk = np.array(chunk)
 
 		return chunk
 
@@ -270,10 +262,8 @@ class client:
 
 		tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
 		tAxis = tAxis / eegData.sampleRate  # adjust time axis to 256 sample rate
-		if self.streamIsSimulated:
-			plotBuffer = array(self.line)
-		else:
-			plotBuffer = array(self.line) - 4100
+
+		plotBuffer = array(self.line)
 
 		yAxis = plotBuffer + offset * 13
 
@@ -301,11 +291,8 @@ class client:
 			# define time axis
 			tAxis = np.arange(0, self.windowSize)  # create time axis w same length as the data matrix
 			tAxis = tAxis / eegData.sampleRate  # adjust time axis to 256 sample rate
-			if self.streamIsSimulated:
-				plotBuffer = array(self.line)
-			else:
-				plotBuffer = array(self.line) - 4100
 
+			plotBuffer = array(self.line)
 			yAxis = plotBuffer + offset * 13
 
 			# add offset to display all channels

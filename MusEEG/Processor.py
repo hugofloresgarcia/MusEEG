@@ -37,7 +37,7 @@ class Processor:
         self.scrambleBool = False
         self.durVal = 0.5
 
-        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data', 'MIDIdicts', 'simpleCmajor.pickle'))
+        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data', 'MIDIdicts', 'cMajorExtended.pickle'))
 
         ##these are just some average bandpower values from the neutral track
         self.baseline = [310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565]

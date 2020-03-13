@@ -45,8 +45,7 @@ class MIDIOSCControl():
 
         self.chordlist = [chord.notelist for chord in processor.cerebro.mididict.values()]
 
-        self.controlRow = self.startRow + len(self.chordlist) + 2
-        self.controlColumn = 0
+        self.controlRow = self.startRow + len(self.chordlist) + 3
 
         for gesture in processor.cerebro.gestures:
             index = processor.cerebro.gestures.index(gesture)
@@ -103,18 +102,18 @@ class MIDIOSCControl():
     def checkboxArpeggiate(self):
         self.arpeggiateVar = tk.BooleanVar()
         self.checkboxArp = tk.Checkbutton(self.master, text="arpeggiate?", variable=self.arpeggiateVar)
-        self.checkboxArp.grid(row=self.controlRow, column=self.controlColumn, padx=5, pady=5)
+        self.checkboxArp.grid(row=self.controlRow, column=self.startColumn, padx=5, pady=5)
 
     def checkboxScramble(self):
         self.scrambleVar = tk.BooleanVar()
         checkboxScramble = tk.Checkbutton(self.master, text="scramble?", variable=self.scrambleVar)
-        checkboxScramble.grid(row=self.controlRow+1, column=self.controlColumn, padx=5, pady=5)
+        checkboxScramble.grid(row=self.controlRow+1, column=self.startColumn, padx=5, pady=5)
 
     def chordDuration(self):
-        self.sustainlbl = tk.Label(self.master, text='sustain duration (in qtr notes)').grid(row=self.controlRow+1, column=self.controlColumn+1)
+        self.sustainlbl = tk.Label(self.master, text='sustain duration (in qtr notes)').grid(row=self.controlRow+1, column=self.startColumn+1)
         self.sustainbx = tk.Entry(self.master)
         self.sustainbx.insert(10, '8')
-        self.sustainbx.grid(row=self.controlRow, column=self.controlColumn+1)
+        self.sustainbx.grid(row=self.controlRow, column=self.startColumn+1)
 
     def updateAllButton(self):
         def updateAll():
@@ -132,14 +131,6 @@ class MIDIOSCControl():
         self.checkboxScramble()
         self.chordDuration()
         self.updateAllButton()
-
-class MIDIControlPanel(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.pack()
-        self.widgets = MIDIOSCControl(self)
-        self.widgets.createWidgets()
 
 class App(tk.Frame):
 
@@ -170,7 +161,7 @@ class App(tk.Frame):
     def buttonStartProcessor(self):
         self.startProcessorBttn = tk.Button(self, command=self.on_click)
         self.startProcessorBttn["text"] = "Start Processor"
-        self.startProcessorBttn.grid(row=9, column=3, columnspan=1, padx=0, pady=0)
+        self.startProcessorBttn.grid(row=9, column=2, columnspan=1, padx=0, pady=0)
 
     def plotWindow(self):
         self.running = False
@@ -227,7 +218,7 @@ class App(tk.Frame):
         self.sbcanvas.get_tk_widget().grid(row=5, column=6, rowspan=2, columnspan=2)
 
         self.sbax.set_ylim(-800, 800)
-        self.sbax.set_title('smallBrain monitor')
+        # self.sbax.set_title('smallBrain monitor')
         self.sbax.set_xlim(-5, eegData.smallchunkSize+5)
 
     def bigBrainMonitor(self):
@@ -395,6 +386,17 @@ class App(tk.Frame):
 
         tk.Button(self, text="Shutdown", command=quit).grid(row=9, column=4, padx=5, pady=5)
 
+    def midiOSCCOntrolButton(self):
+        def createMIDIWindow():
+            submaster = tk.Toplevel(self)
+            submaster.wm_title('MusEEG MIDI')
+            midiOSC = MIDIOSCControl(master=submaster, startRow=0, startColumn=0)
+            midiOSC.createWidgets()
+            processor.sendMIDI = True
+
+        button = tk.Button(self, text="Show MIDI Menu", command=createMIDIWindow)
+        button.grid(row=9, column=3)
+
     def create_widgets(self):
         self.winfo_toplevel().title("MusEEG (OSC)")
         self.buttonStartProcessor()
@@ -404,18 +406,18 @@ class App(tk.Frame):
         self.bandPowerWindow()
         self.deviceDropDown()
         self.buttonConnect()
-        # self.smallBrainMonitor()
+        self.smallBrainMonitor()
         self.bigBrainMonitor()
+        self.midiOSCCOntrolButton()
         # self.buttonLoadSmallModel()
         # self.quitButton()
 
         # replace sys.stdout with our object
         sys.stdout = PrintLogger(self.cmd)
+        #
 
-        midiOSC = MIDIOSCControl(master=self, startRow=0, startColumn=8)
-        midiOSC.createWidgets()
 
-class PrintLogger(): # create file like object
+class PrintLogger(): # createa file like object
     def __init__(self, textbox): # pass reference to text widget
         self.textbox = textbox # keep ref
 

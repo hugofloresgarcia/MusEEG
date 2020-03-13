@@ -33,7 +33,7 @@ class cerebro:
 
     def __init__(self):
         #default mididict. it will be updated everytime the user presses the update chord button
-        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data',  'MIDIdicts', 'simpleCmajor.pickle'))
+        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data',  'MIDIdicts', 'cMajorExtended.pickle'))
 
         # open and reset midiport
         resetPort()
