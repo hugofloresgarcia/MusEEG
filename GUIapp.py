@@ -9,7 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 buttonRow = 2
 
-processor = Processor(device=None)
+processor = Processor()
 processor.OSCstart()
 processor.defineOSCMessages()
 
@@ -54,32 +54,12 @@ class demoApp(tk.Frame):
         self.startProcessorBttn["text"] = "Start Processor"
         self.startProcessorBttn.grid(row=self.buttonRow+3, column=0, columnspan=2, padx=5, pady=5)
 
-    def gestureButtons(self):
-        def gestBttnCommand(gestureToLoad):
-            #load from dataset
-            processor.cerebro.loadFromDataSet(name=gestureToLoad)
-
-        self.gesturebttn = list()
-        for GESTURES in processor.cerebro.gestures:
-            index = processor.cerebro.gestures.index(GESTURES)
-            self.gesturebttn.append(tk.Label(self, text=GESTURES))
-            self.gesturebttn[index].grid(row=self.gestureButtonStartRow+index, column=0)
 
     def plotWindow(self):
         self.canvas = FigureCanvasTkAgg(processor.cerebro.eeg.plotWavelets(1), self)
         self.canvas.draw()
         # self.canvas.get_tk_widget().pack(side="right", expand=True)
         self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
-
-    # def wavPlotWindow(self):
-    #     self.wavcanvas = FigureCanvasTkAgg(processor.cerebro.eeg.plotWavelets(1), self)
-    #     self.wavcanvas.draw()
-    #     # self.canvas.get_tk_widget().pack(side="right", expand=True)
-    #     self.wavcanvas.get_tk_widget().grid(row=0, column=6, rowspan=11, columnspan=3, padx=5, pady=5)
-    # def welcomeMessage(self):
-    #     self.welcomemsg = tk.Message(self, text=processor.cerebro.demomsg, relief=tk.RIDGE)
-    #     self.welcomemsg.anchor('nw')
-    #     self.welcomemsg.grid(row=11, column=0, rowspan=5, columnspan=2, padx=5, pady=5)
 
     def checkboxArpeggiate(self):
         self.arpVar = tk.BooleanVar()
@@ -173,25 +153,3 @@ while True:
         break
     except UnicodeDecodeError:
         pass
-
-
-
-    """
-    no longer needed (from demoApp)
-    """
-    # def buttonProcessAndSend(self):
-    #     def processFunction():
-    #         processor.cerebro.processAndPlay(arp=self.arpVar.get(), tempo=int(self.tempobx.get()),
-    #                                arpDurationFromGUI=float(self.arpegbx.get()),
-    #                                noteDurationFromGUI=float(self.sustainbx.get()))
-    #
-    #         # update plot window todo: make it not have to redefine entire plot window for faster processing
-    #         self.canvas.flush_events()
-    #         self.canvas = FigureCanvasTkAgg(processor.cerebro.eeg.plotWavelets(1), self)
-    #         self.canvas.draw()
-    #         self.say_hi()
-    #         self.canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, columnspan=3, padx=5, pady=5)
-    #
-    #     self.processAndSendBttn = tk.Button(self, command=processFunction)
-    #     self.processAndSendBttn["text"] = "Process and Send to Musician"
-    #     self.processAndSendBttn.grid(row=self.buttonRow+3, column=2, padx=5, pady=5)

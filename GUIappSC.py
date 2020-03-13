@@ -19,27 +19,129 @@ processor.OSCstart()
 processor.defineOSCMessages()
 processor.sendMIDI = False
 
-def get_data_raw():
-    x, y = processor.client.getPlotData()
-    return x, y
-
-global lastbandpwr
 lastbandpwr = [[0, 1, 2, 3], processor.baselinedB]
 
-def get_data_bp():
-    global lastbandpwr
-    try:
-        bandpwr = processor.bandPowerQueue.get(block=False)
-        lastbandpwr = bandpwr
+class MIDIOSCControl():
 
-    except queue.Empty:
-        bandpwr = lastbandpwr
-    # x = bandpwr[0]
-    x = [0, 1, 2, 3]
-    y = bandpwr[1]
-    return x, y
+    def __init__(self, master=None, startRow=0, startColumn=0):
+        self.master = master
+        self.startRow = startRow
+        self.startColumn = startColumn
+        self.controlRow = startRow ##this gets overwritten if defineChordEntry() is on
+        self.controlColumn = startColumn
 
-class demoApp(tk.Frame):
+    def defineChordEntry(self):
+        def listToString(s):
+            # initialize an empty string
+            str1 = " "
+            # return string
+            return (str1.join(s))
+
+        def stringToList(s):
+            return s.split()
+
+        self.chordEntryLbl = list()
+        self.chordEntrybx = list()
+
+        self.chordlist = [chord.notelist for chord in processor.cerebro.mididict.values()]
+
+        self.controlRow = self.startRow + len(self.chordlist) + 2
+        self.controlColumn = 0
+
+        for gesture in processor.cerebro.gestures:
+            index = processor.cerebro.gestures.index(gesture)
+
+            self.chordEntryLbl.append(tk.Label(self.master))
+            self.chordEntryLbl[index]["text"] = gesture
+            self.chordEntryLbl[index].grid(row=self.startRow+index, column=self.startColumn)
+
+            # create entry box and set defaultchordlist as default
+            self.chordEntrybx.append(tk.Entry(self.master))
+            self.chordEntrybx[index].insert(0, listToString(self.chordlist[index]))
+            self.chordEntrybx[index].grid(row=self.startRow + index, column=self.startColumn+1)
+
+        # retrieve chords from list
+        def defineChordList():
+            for items in range(len(processor.cerebro.gestures)):
+                self.chordlist[items] = stringToList(self.chordEntrybx[items].get())
+
+            processor.cerebro.updateChordList(self.chordlist)
+
+        # button to update chords
+        self.updateChords = tk.Button(self.master, command=defineChordList)
+        self.updateChords["text"] = "update MIDIdict"
+        # place the button under all the entry boxes
+        self.updateChords.grid(row=self.startRow + len(self.chordlist) + 2, column=self.startColumn, columnspan=2)
+
+        def saveChordDict():
+            processor.cerebro.saveMIDIdict(
+                addressPath=filedialog.asksaveasfilename(initialdir=MusEEG.parentDir + '/data/MIDIdicts',
+                                                         title='save MIDI dictionary') + '.pickle')
+
+        # button to save chords
+        self.saveChords = tk.Button(self.master, command=saveChordDict)
+        self.saveChords["text"] = "save MIDIdict"
+        # place the button under all the entry boxes
+        self.saveChords.grid(row=self.startRow + len(self.chordlist) + 1, column=self.startColumn)
+
+        def loadChordDict():
+            processor.cerebro.loadMIDIdict(
+                addressPath=filedialog.askopenfilename(initialdir=MusEEG.parentDir + '/data/MIDIdicts',
+                                                       title='load MIDI dictionary'))
+
+            for gesture in processor.cerebro.gestures:
+                index = processor.cerebro.gestures.index(gesture)
+                self.chordEntrybx[index].delete(0, 'end')
+                self.chordEntrybx[index].insert(0, listToString(processor.cerebro.mididict[gesture].notelist))
+
+        # button to load chords
+        self.loadChords = tk.Button(self.master, command=loadChordDict)
+        self.loadChords["text"] = "load MIDIdict"
+        # place the button under all the entry boxes
+        self.loadChords.grid(row=self.startRow + len(self.chordlist) + 1, column=self.startColumn+1)
+
+    def checkboxArpeggiate(self):
+        self.arpeggiateVar = tk.BooleanVar()
+        self.checkboxArp = tk.Checkbutton(self.master, text="arpeggiate?", variable=self.arpeggiateVar)
+        self.checkboxArp.grid(row=self.controlRow, column=self.controlColumn, padx=5, pady=5)
+
+    def checkboxScramble(self):
+        self.scrambleVar = tk.BooleanVar()
+        checkboxScramble = tk.Checkbutton(self.master, text="scramble?", variable=self.scrambleVar)
+        checkboxScramble.grid(row=self.controlRow+1, column=self.controlColumn, padx=5, pady=5)
+
+    def chordDuration(self):
+        self.sustainlbl = tk.Label(self.master, text='sustain duration (in qtr notes)').grid(row=self.controlRow+1, column=self.controlColumn+1)
+        self.sustainbx = tk.Entry(self.master)
+        self.sustainbx.insert(10, '8')
+        self.sustainbx.grid(row=self.controlRow, column=self.controlColumn+1)
+
+    def updateAllButton(self):
+        def updateAll():
+            processor.scrambleBool = self.scrambleVar.get()
+            processor.arpBool = self.arpeggiateVar.get()
+            processor.durVal = self.sustainbx.get()
+
+        self.startProcessorBttn = tk.Button(self.master, command=updateAll())
+        self.startProcessorBttn["text"] = "update these ^^^^^"
+        self.startProcessorBttn.grid(row=self.controlRow+2, column=self.controlColumn, columnspan=2, padx=5, pady=5)
+
+    def createWidgets(self):
+        self.defineChordEntry()
+        self.checkboxArpeggiate()
+        self.checkboxScramble()
+        self.chordDuration()
+        self.updateAllButton()
+
+class MIDIControlPanel(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
+        self.widgets = MIDIOSCControl(self)
+        self.widgets.createWidgets()
+
+class App(tk.Frame):
 
     def __init__(self, master=None):
         super().__init__(master)
@@ -195,8 +297,25 @@ class demoApp(tk.Frame):
         self.bbani._start()
         print('started animation')
 
+    def get_data_raw(self):
+        x, y = processor.client.getPlotData()
+        return x, y
+
+    def get_data_bp(self):
+        global lastbandpwr
+        try:
+            bandpwr = processor.bandPowerQueue.get(block=False)
+            lastbandpwr = bandpwr
+
+        except queue.Empty:
+            bandpwr = lastbandpwr
+        # x = bandpwr[0]
+        x = [0, 1, 2, 3]
+        y = bandpwr[1]
+        return x, y
+
     def update_graph(self, i):
-        x, y = get_data_raw()
+        x, y = self.get_data_raw()
 
         for idx, line in enumerate(self.lines):
             line.set_data(x, y[:, idx])
@@ -204,7 +323,7 @@ class demoApp(tk.Frame):
         return self.lines
 
     def update_graph_bp(self, i):
-        x, y = get_data_bp()
+        x, y = self.get_data_bp()
         if y is not None:
             self.bpline.set_data(x, y)
 
@@ -290,15 +409,11 @@ class demoApp(tk.Frame):
         # self.buttonLoadSmallModel()
         # self.quitButton()
 
-        pl = PrintLogger(self.cmd)
-
-
-
         # replace sys.stdout with our object
-        sys.stdout = pl
+        sys.stdout = PrintLogger(self.cmd)
 
-
-
+        midiOSC = MIDIOSCControl(master=self, startRow=0, startColumn=8)
+        midiOSC.createWidgets()
 
 class PrintLogger(): # create file like object
     def __init__(self, textbox): # pass reference to text widget
@@ -312,32 +427,33 @@ class PrintLogger(): # create file like object
         pass
 
 
-root = tk.Tk()
-root.lift()
-root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
-app = demoApp(master=root)
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.lift()
+    root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
+    app = App(master=root)
 
-#todo: the app isnt quitting properly
-while True:
-    try:
-        print('hello! this is the MusEEG log')
-        print('classification results are printed here\n\n')
-        flower =  [
-            "/                   __     __                  /",
-            "/                 .'  `...'  `.                /",
-            "/               __|     |     |__              /",
-            "/             .'    \   .   /    `.            /",
-            "/             |      ./###\.      |            /",
-            "/              >---- |#####| ----<             /",
-            "/             |      `\###/'      |            /",
-            "/             `.__ /    .    \ __.'            /",
-            "/                 |     |     |                /",
-            "/                 `.___.^.___.'                /"]
+    # todo: the app isnt quitting properly
+    while True:
+        try:
+            print('hello! this is the MusEEG log')
+            print('classification results are printed here\n\n')
+            flower = [
+                "/                   __     __                  /",
+                "/                 .'  `...'  `.                /",
+                "/               __|     |     |__              /",
+                "/             .'    \   .   /    `.            /",
+                "/             |      ./###\.      |            /",
+                "/              >---- |#####| ----<             /",
+                "/             |      `\###/'      |            /",
+                "/             `.__ /    .    \ __.'            /",
+                "/                 |     |     |                /",
+                "/                 `.___.^.___.'                /"]
 
-        for line in flower:
-            print(line)
+            for line in flower:
+                print(line)
 
-        app.mainloop()
-        break
-    except UnicodeDecodeError:
-        pass
+            app.mainloop()
+            break
+        except UnicodeDecodeError:
+            pass

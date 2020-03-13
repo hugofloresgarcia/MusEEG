@@ -7,10 +7,9 @@ from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
 import pandas as pd
 import queue
+import pickle
 
 import time
-
-
 
 class Processor:
     def __init__(self):
@@ -31,10 +30,17 @@ class Processor:
         self.deviceList = ['sim', 'emotiv', 'OpenBCI']
 
         self.sendOSC = True #send OSC messages for facial expressions
-        self.sendMIDI = True #send midi messages for facial expressions
+
+        self.sendMIDI = True #send midi chords for facial expressions
+        self.GUIcontrol = False #get arpeggio/scramble/duration messages from GUI
+        self.arpBool = False
+        self.scrambleBool = False
+        self.durVal = 0.5
+
+        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data', 'MIDIdicts', 'simpleCmajor.pickle'))
 
         ##these are just some average bandpower values from the neutral track
-        self.baseline = [310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565];
+        self.baseline = [310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565]
         self.baselinedB = np.log10(self.baseline)
 
     def setDevice(self, device):
@@ -102,6 +108,32 @@ class Processor:
                            'lookright': lookrightOSC,
                            'neutral': neutralOSC}
 
+    def sendChordSC(self, chord):
+        chordOSC = oscbuildparse.OSCMessage('/chord', None, chord)
+        arpeggiateOSC = oscbuildparse.OSCMessage('/arpeggiate', None, [self.arpBool])
+        durationOSC = oscbuildparse.OSCMessage('/duration', None, [self.durVal])
+        scrambleOSC = oscbuildparse.OSCMessage('/scramble', None, [self.scrambleBool])
+
+        messages = [arpeggiateOSC, durationOSC, scrambleOSC, chordOSC]
+
+        for msg in messages:
+            osc_send(msg, self.clientNameOSC)
+
+    def updateMIDIdict(self, chordlistlist):
+        for index, c in enumerate(chordlistlist):
+            gestureBeingDefined = self.cerebro.gestures[index]
+            self.mididict[gestureBeingDefined] = c
+            print(self.mididict)
+
+    def saveMIDIdict(self, addressPath):
+        with open(os.path.join(addressPath), 'wb') as handle:
+            pickle.dump(self.mididict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def loadMIDIdict(self, addressPath):
+        with open(addressPath, 'rb') as handle:
+            self.mididict = pickle.load(handle)
+            return self.mididict
+
     def processAndPlay(self, eeg):
         TIMEstart = time.clock()
         brainInput = eeg.process()
@@ -117,7 +149,7 @@ class Processor:
 
         if self.sendMIDI:
             resultingChord = self.cerebro.mididict[gestureResult]
-            resultingChord.playchord()
+            self.sendChordSC(resultingChord)
 
         TIMEend = time.clock()
         print('classification took ' + str(round(TIMEend-TIMEstart, 3)) + ' s')
