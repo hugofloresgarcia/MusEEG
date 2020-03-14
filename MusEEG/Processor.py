@@ -1,4 +1,5 @@
 from MusEEG import eegData, client, classifier, cerebro
+from audiolazy.lazy_midi import str2midi
 from MusEEG import parentDir
 import os
 import numpy as np
@@ -37,7 +38,7 @@ class Processor:
         self.scrambleBool = False
         self.durVal = 0.5
 
-        self.mididict = self.loadMIDIdict(os.path.join(parentDir, 'data', 'MIDIdicts', 'cMajorExtended.pickle'))
+        self.mididict =dict(zip(self.cerebro.gestures, [["C4", "E4", "G4"] for i in range(0, len(self.cerebro.gestures))]))
 
         ##these are just some average bandpower values from the neutral track
         self.baseline = [310.0973281373556, 99.40740830852117, 59.90541365434281, 31.977649759096565]
@@ -109,7 +110,8 @@ class Processor:
                            'neutral': neutralOSC}
 
     def sendChordSC(self, chord):
-        chordOSC = oscbuildparse.OSCMessage('/chord', None, chord)
+        midiChord = [str2midi(note) for note in chord]
+        chordOSC = oscbuildparse.OSCMessage('/chord', None, midiChord)
         arpeggiateOSC = oscbuildparse.OSCMessage('/arpeggiate', None, [self.arpBool])
         durationOSC = oscbuildparse.OSCMessage('/duration', None, [self.durVal])
         scrambleOSC = oscbuildparse.OSCMessage('/scramble', None, [self.scrambleBool])
@@ -118,6 +120,9 @@ class Processor:
 
         for msg in messages:
             osc_send(msg, self.clientNameOSC)
+            osc_process()
+            # print(msg)
+
 
     def updateMIDIdict(self, chordlistlist):
         for index, c in enumerate(chordlistlist):
@@ -148,8 +153,9 @@ class Processor:
             osc_process()
 
         if self.sendMIDI:
-            resultingChord = self.cerebro.mididict[gestureResult]
+            resultingChord = self.mididict[gestureResult]
             self.sendChordSC(resultingChord)
+            osc_process()
 
         TIMEend = time.clock()
         print('classification took ' + str(round(TIMEend-TIMEstart, 3)) + ' s')

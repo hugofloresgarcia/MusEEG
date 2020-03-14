@@ -13,27 +13,28 @@ m = NetAddr("localhost", 57120);
 
 OSCdef.new(\noteDur, {
 	arg dur;
-
 	dur.removeAt(0);
-	~dur = dur;
+	~dur = dur.at(0).asFloat;
+	~dur.postln;
 },'/duration');
 
 OSCdef.new(\arpeggioDef, {
 	arg arpeggioBool;
 	arpeggioBool.removeAt(0);
-	~arpeggioBool = arpeggioBool;
+	~arpeggioBool = arpeggioBool.at(0).asBoolean;
 }, '/arpeggiate') ;
 
 OSCdef.new(\scrambleDef, {
 	arg scrambleBool;
 	scrambleBool.removeAt(0);
-	~scrambleBool = scrambleBool;
+	~scrambleBool = scrambleBool.at(0).asBoolean;
+	~scrambleBool.postln;
 }, '/scramble');
 
 OSCdef.new(\chordDef, {
 	arg noteArray;
 	noteArray.removeAt(0);
-	noteArray = noteArray ++ (noteArray+12);
+	// noteArray = noteArray ++ (noteArray+12);
 	noteArray.postln;
 	~playChord.value(noteArray);
 }, '/chord');
@@ -41,12 +42,11 @@ OSCdef.new(\chordDef, {
 OSCdef.new(\numRepeats, {
 	arg numRepeats;
 	numRepeats.removeAt(0);
-	~numRepeats = numRepeats;
+	~numRepeats = numRepeats.at(0);
 }, '/chord');
 
 ~playChord = {
 	arg noteArray;
-
 	if(~scrambleBool, {noteArray = noteArray.scramble});
 
 	~routine = Routine({
@@ -77,10 +77,11 @@ OSCdef.new(\numRepeats, {
 
 	~clock.play(task: ~routine, quant: 4);
 };
-)
+);
+
+
+OSCFunc.trace(false,true);
+
 
 
 m.sendMsg("/chord", 60, 64, 67, 69, 71, 74);
-
-MIDIFunc.trace(false)
-			

@@ -43,7 +43,7 @@ class MIDIOSCControl():
         self.chordEntryLbl = list()
         self.chordEntrybx = list()
 
-        self.chordlist = [chord.notelist for chord in processor.cerebro.mididict.values()]
+        self.chordlist = [chord for chord in processor.mididict.values()]
 
         self.controlRow = self.startRow + len(self.chordlist) + 3
 
@@ -64,7 +64,7 @@ class MIDIOSCControl():
             for items in range(len(processor.cerebro.gestures)):
                 self.chordlist[items] = stringToList(self.chordEntrybx[items].get())
 
-            processor.cerebro.updateChordList(self.chordlist)
+            processor.updateMIDIdict(self.chordlist)
 
         # button to update chords
         self.updateChords = tk.Button(self.master, command=defineChordList)
@@ -73,7 +73,7 @@ class MIDIOSCControl():
         self.updateChords.grid(row=self.startRow + len(self.chordlist) + 2, column=self.startColumn, columnspan=2)
 
         def saveChordDict():
-            processor.cerebro.saveMIDIdict(
+            processor.saveMIDIdict(
                 addressPath=filedialog.asksaveasfilename(initialdir=MusEEG.parentDir + '/data/MIDIdicts',
                                                          title='save MIDI dictionary') + '.pickle')
 
@@ -84,14 +84,14 @@ class MIDIOSCControl():
         self.saveChords.grid(row=self.startRow + len(self.chordlist) + 1, column=self.startColumn)
 
         def loadChordDict():
-            processor.cerebro.loadMIDIdict(
+            processor.loadMIDIdict(
                 addressPath=filedialog.askopenfilename(initialdir=MusEEG.parentDir + '/data/MIDIdicts',
                                                        title='load MIDI dictionary'))
 
             for gesture in processor.cerebro.gestures:
                 index = processor.cerebro.gestures.index(gesture)
                 self.chordEntrybx[index].delete(0, 'end')
-                self.chordEntrybx[index].insert(0, listToString(processor.cerebro.mididict[gesture].notelist))
+                self.chordEntrybx[index].insert(0, listToString(processor.mididict[gesture]))
 
         # button to load chords
         self.loadChords = tk.Button(self.master, command=loadChordDict)
@@ -121,9 +121,9 @@ class MIDIOSCControl():
             processor.arpBool = self.arpeggiateVar.get()
             processor.durVal = self.sustainbx.get()
 
-        self.startProcessorBttn = tk.Button(self.master, command=updateAll())
-        self.startProcessorBttn["text"] = "update these ^^^^^"
-        self.startProcessorBttn.grid(row=self.controlRow+2, column=self.controlColumn, columnspan=2, padx=5, pady=5)
+        self.updateAllBttn = tk.Button(self.master, command=updateAll)
+        self.updateAllBttn["text"] = "update these ^^^^^"
+        self.updateAllBttn.grid(row=self.controlRow+2, column=self.controlColumn, columnspan=2, padx=5, pady=5)
 
     def createWidgets(self):
         self.defineChordEntry()
@@ -245,7 +245,7 @@ class App(tk.Frame):
         if self.ani is None:
             processor.startStream()
             processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
-            processor.bandPowerThread(asThread=True)
+            # processor.bandPowerThread(asThread=True)
             # animation is not running; start it
             return self.start()
 

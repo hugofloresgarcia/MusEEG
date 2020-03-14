@@ -1,6 +1,6 @@
 import mido
 import time
-from audiolazy.lazy_midi import str2midi
+from audiolazy.lazy_midi import str2midi, midi2str
 from MusEEG import parentDir, port, closePort, resetPort
 
 
