@@ -115,11 +115,18 @@ class MIDIOSCControl():
         self.sustainbx.insert(10, '8')
         self.sustainbx.grid(row=self.controlRow, column=self.startColumn+1)
 
+    def numRepeats(self):
+        self.numRepeatsLabel = tk.Label(self.master, text='number of repeats (for arpeggios)').grid(row=self.controlRow+4, column=self.startColumn+1)
+        self.numRepBx = tk.Entry(self.master)
+        self.numRepBx.insert(0, '8')
+        self.numRepBx.grid(row=self.controlRow+3, column=self.startColumn+1)
+
     def updateAllButton(self):
         def updateAll():
             processor.scrambleBool = self.scrambleVar.get()
             processor.arpBool = self.arpeggiateVar.get()
             processor.durVal = self.sustainbx.get()
+            processor.numRepeats = self.numRepBx.get()
 
         self.updateAllBttn = tk.Button(self.master, command=updateAll)
         self.updateAllBttn["text"] = "update these ^^^^^"
@@ -130,6 +137,7 @@ class MIDIOSCControl():
         self.checkboxArpeggiate()
         self.checkboxScramble()
         self.chordDuration()
+        self.numRepeats()
         self.updateAllButton()
 
 class App(tk.Frame):
@@ -388,12 +396,15 @@ class App(tk.Frame):
 
     def midiOSCCOntrolButton(self):
         def createMIDIWindow():
-            submaster = tk.Toplevel(self)
-            submaster.wm_title('MusEEG MIDI')
-            midiOSC = MIDIOSCControl(master=submaster, startRow=0, startColumn=0)
-            midiOSC.createWidgets()
-            processor.sendMIDI = True
+            if not self.MIDIWindowOpen:
+                submaster = tk.Toplevel(self)
+                submaster.wm_title('MusEEG MIDI')
+                midiOSC = MIDIOSCControl(master=submaster, startRow=0, startColumn=0)
+                midiOSC.createWidgets()
+                processor.sendMIDI = True
+                self.MIDIWindowOpen = True
 
+        self.MIDIWindowOpen = False
         button = tk.Button(self, text="Show MIDI Menu", command=createMIDIWindow)
         button.grid(row=9, column=3)
 

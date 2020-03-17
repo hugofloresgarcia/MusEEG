@@ -45,7 +45,7 @@ OSCdef.new(\numRepeats, {
 	arg numRepeats;
 	numRepeats.removeAt(0);
 	~numRepeats = numRepeats.at(0);
-}, '/chord');
+}, '/numRepeats');
 
 ~playChord = {
 	arg noteArray;

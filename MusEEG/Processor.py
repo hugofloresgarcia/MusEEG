@@ -37,6 +37,7 @@ class Processor:
         self.arpBool = False
         self.scrambleBool = False
         self.durVal = 0.5
+        self.numRepeats = 8
 
         self.mididict =dict(zip(self.cerebro.gestures, [["C4", "E4", "G4"] for i in range(0, len(self.cerebro.gestures))]))
 
@@ -115,8 +116,9 @@ class Processor:
         arpeggiateOSC = oscbuildparse.OSCMessage('/arpeggiate', None, [self.arpBool])
         durationOSC = oscbuildparse.OSCMessage('/duration', None, [self.durVal])
         scrambleOSC = oscbuildparse.OSCMessage('/scramble', None, [self.scrambleBool])
+        numRepeatsOSC = oscbuildparse.OSCMessage('/numRepeats', None, [self.numRepeats])
 
-        messages = [arpeggiateOSC, durationOSC, scrambleOSC, chordOSC]
+        messages = [arpeggiateOSC, durationOSC, scrambleOSC, chordOSC, numRepeatsOSC]
 
         for msg in messages:
             osc_send(msg, self.clientNameOSC)
