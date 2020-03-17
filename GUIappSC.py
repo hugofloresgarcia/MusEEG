@@ -245,7 +245,7 @@ class App(tk.Frame):
         if self.ani is None:
             processor.startStream()
             processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
-            # processor.bandPowerThread(asThread=True)
+            processor.bandPowerThread(asThread=True)
             # animation is not running; start it
             return self.start()
 

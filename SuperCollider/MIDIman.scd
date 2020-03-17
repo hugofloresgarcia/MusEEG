@@ -1,5 +1,7 @@
 /// reroute OSC messages as midi
 (
+
+~midiOut = MIDIOut.new(0);
 MIDIIn.connectAll;
 ~clock = TempoClock.new(120/60);
 m = NetAddr("localhost", 57120);
@@ -56,20 +58,20 @@ OSCdef.new(\numRepeats, {
 				4.do({
 					noteArray.do({
 						arg note, count;
-						MIDIIn.doNoteOnAction(1, 1, note, 69);
+						~midiOut.noteOn(1, note, 69);
 						~dur.wait;
-						MIDIIn.doNoteOffAction(1, 1, note, 0);
+						~midiOut.noteOff(1,  note, 0);
 					});
 			})},
 			{
 				noteArray.do({
 					arg note, count;
-					MIDIIn.doNoteOnAction(1, 1, note, 69);
+					~midiOut.noteOn(1, note, 69);
 				});
 				(~dur * noteArray.size).wait;
 				noteArray.do({
 					arg note, count;
-					MIDIIn.doNoteOffAction(1, 1, note, 0);
+					~midiOut.noteOff(1, note, 0);
 				});
 			}
 		);
@@ -80,8 +82,6 @@ OSCdef.new(\numRepeats, {
 );
 
 
-OSCFunc.trace(false,true);
 
 
-
-m.sendMsg("/chord", 60, 64, 67, 69, 71, 74);
+// m.sendMsg("/chord", 60, 64, 67, 69, 71, 74);
