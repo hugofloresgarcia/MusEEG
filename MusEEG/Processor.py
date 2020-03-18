@@ -40,6 +40,7 @@ class Processor:
         self.numRepeats = 8
 
         self.isSleeping = False
+        self.debounceTime = 3
 
         self.mididict =dict(zip(self.cerebro.gestures, [["C4", "E4", "G4"] for i in range(0, len(self.cerebro.gestures))]))
 
@@ -94,6 +95,7 @@ class Processor:
 
     def OSCclose(self):
         osc_terminate()
+        print('osc port closed')
 
     def defineOSCMessages(self):
         smileOSC = oscbuildparse.OSCMessage('/smile', None, ['true'])
@@ -167,7 +169,7 @@ class Processor:
 
         if not self.isSleeping:
             print('i found a ' + gestureResult + '!')
-            self.sleep(3)
+            self.sleep(self.debounceTime)
             if self.sendOSC:
                 message = self.discreteOSCdict[gestureResult]
                 osc_send(message, self.clientNameOSC)
@@ -307,16 +309,16 @@ class Processor:
         """
         run the processor in a separate thread
         """
-        processorThread = threading.Thread(target=target)
-        processorThread.start()
+        self.processorThread = threading.Thread(target=target)
+        self.processorThread.start()
 
     def processorShutDown(self):
-        self.OSCclose()
+        print('processor shutting down')
         self.client.done
-        self.client.psdq.task_done()
-        self.client.q.task_done()
-        self.client.chunkq.task_done()
-        self.client.plotq.task_done()
+        self.processorThread.join(3.0)
+        self.OSCclose()
+        del self.client
+        print('client deleted')
 
 
 if __name__ == "__main__":

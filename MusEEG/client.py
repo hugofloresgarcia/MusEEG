@@ -19,8 +19,6 @@ class client:
 		self.host = "127.0.0.1"
 		self.port = 5555
 
-		self.streamIsSimulated = False
-
 
 		self.windowSize = eegData.chunkSize * 4
 		self.refreshScale = 64 ## a higher number means a smoother plot in the GUI
@@ -51,11 +49,8 @@ class client:
 	def setup(self, device):
 		self.device = device
 
-		if self.device == 'None':
-			self.device = None
-
-		if self.device is None:
-			self.streamIsSimulated = True
+		if self.device == 'sim':
+			self.streamFunc = self.simulateStream
 
 		elif self.device == 'emotiv':
 			self.streamFunc = self.emotivStream
@@ -94,7 +89,7 @@ class client:
 		self.plotq = queue.LifoQueue()
 		def workerjob():
 			try:
-				while not self.done:
+				while True:
 					# -*- coding: utf8 -*-
 					#
 					# Cykit Example TCP - Client
@@ -129,6 +124,9 @@ class client:
 						self.plotq.put(fields, block=False)
 						self.psdq.put(fields,block=False)
 						self.q.put(fields, block=False)
+					if self.done:
+						del self.q, self.plotq, self.psdq
+						break
 
 			except Exception:
 				self.q.join()
@@ -154,7 +152,6 @@ class client:
 		self.board.start_stream(callback)
 
 	def simulateStream(self, address, streamSpeed=1):
-		self.streamIsSimulated = True
 		eeg = TrainingDataMacro()
 		eeg.importCSV(address)
 		self.q = queue.Queue()
@@ -163,13 +160,15 @@ class client:
 		self.streamSpeed = streamSpeed
 		def worker():
 			for i in range(0,len(eeg.matrix)):
-				if not self.done:
 					packet = {eeg.eegChannels[j]: eeg.matrix[i][j] for j in range(len(eeg.emotivChannels))}
 					packet["COUNTER"] = i
 					self.q.put(item=packet)
 					self.plotq.put(item=packet)
 					self.psdq.put(item=packet)
 					time.sleep(1/eegData.sampleRate/streamSpeed)
+					if self.done:
+						del self.q, self.plotq, self.psdq
+						break
 
 		simulationWorker = threading.Thread(target=worker)
 		simulationWorker.setDaemon(True)
@@ -183,7 +182,7 @@ class client:
 		while len(buffer) < bufferSize:
 			try:
 				packet = self.psdq.get()
-				if self.device == 'emotiv' or self.device == 'sim' or self.streamIsSimulated:
+				if self.device == 'emotiv' or self.device == 'sim':
 					buffer.append(array(self.dict2list(packet)))
 				elif self.device == 'openBCI':
 					buffer.append(packet)

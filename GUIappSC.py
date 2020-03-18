@@ -169,7 +169,7 @@ class App(tk.Frame):
     def buttonStartProcessor(self):
         self.startProcessorBttn = tk.Button(self, command=self.on_click)
         self.startProcessorBttn["text"] = "Start Processor"
-        self.startProcessorBttn.grid(row=9, column=2, columnspan=1, padx=0, pady=0)
+        self.startProcessorBttn.grid(row=9, column=1, columnspan=1, padx=0, pady=0)
 
     def plotWindow(self):
         self.running = False
@@ -385,14 +385,24 @@ class App(tk.Frame):
         self.deviceMenu = tk.OptionMenu(self, self.deviceVar, *processor.deviceList).grid(row=8, column=0, columnspan=1, padx=5, pady=5)
 
     def quitButton(self):
-        def quit():
-            global processor
-            processor.client.done = True
+        self.quitbttn = tk.Button(self, text="Shutdown", command=self.quitProcessor).grid(row=9, column=4, padx=5, pady=5)
+
+    def quitProcessor(self):
+        # global processor
+        # processor.client.done = True
+        # processor.processorShutDown()
+        print('starting animation shutdown')
+        if self.running:
+            self.bbani._stop()
+            self.bpani._stop()
+            self.ani._stop()
+            self.sbani._stop()
+            print('starting processor shutdown')
             processor.processorShutDown()
+            # del processor
+            print('processor object deleted')
             print('shutdown! feel free to quit')
-
-        self.quitbttn = tk.Button(self, text="Shutdown", command=quit).grid(row=9, column=4, padx=5, pady=5)
-
+        self.master.destroy()
 
     def midiOSCCOntrolButton(self):
         def createMIDIWindow():
@@ -421,8 +431,9 @@ class App(tk.Frame):
         self.bigBrainMonitor()
         self.midiOSCCOntrolButton()
         # self.buttonLoadSmallModel()
-        self.quitButton()
+        # self.quitButton()
 
+        self.master.protocol("WM_DELETE_WINDOW", self.quitProcessor)
         # replace sys.stdout with our object
         sys.stdout = PrintLogger(self.cmd)
         #
@@ -445,6 +456,8 @@ if __name__ == "__main__":
     root.lift()
     root.iconbitmap(os.path.join(parentDir, 'museeg-logo.ico'))
     app = App(master=root)
+
+
 
     # todo: the app isnt quitting properly
     while True:
