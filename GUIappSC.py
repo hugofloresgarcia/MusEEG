@@ -116,10 +116,10 @@ class MIDIOSCControl():
         self.sustainbx.grid(row=self.controlRow, column=self.startColumn+1)
 
     def numRepeats(self):
-        self.numRepeatsLabel = tk.Label(self.master, text='number of repeats (for arpeggios)').grid(row=self.controlRow+4, column=self.startColumn+1)
+        self.numRepeatsLabel = tk.Label(self.master, text='number of repeats (for arpeggios)').grid(row=self.controlRow+3, column=self.startColumn+1)
         self.numRepBx = tk.Entry(self.master)
         self.numRepBx.insert(0, '8')
-        self.numRepBx.grid(row=self.controlRow+3, column=self.startColumn+1)
+        self.numRepBx.grid(row=self.controlRow+2, column=self.startColumn+1)
 
     def updateAllButton(self):
         def updateAll():
@@ -130,7 +130,7 @@ class MIDIOSCControl():
 
         self.updateAllBttn = tk.Button(self.master, command=updateAll)
         self.updateAllBttn["text"] = "update these ^^^^^"
-        self.updateAllBttn.grid(row=self.controlRow+2, column=self.controlColumn, columnspan=2, padx=5, pady=5)
+        self.updateAllBttn.grid(row=self.controlRow+4, column=self.controlColumn, columnspan=2, padx=5, pady=5)
 
     def createWidgets(self):
         self.defineChordEntry()
