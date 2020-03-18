@@ -389,10 +389,10 @@ class App(tk.Frame):
             global processor
             processor.client.done = True
             processor.processorShutDown()
-            del processor
-            self.destroy()
+            print('shutdown! feel free to quit')
 
-        tk.Button(self, text="Shutdown", command=quit).grid(row=9, column=4, padx=5, pady=5)
+        self.quitbttn = tk.Button(self, text="Shutdown", command=quit).grid(row=9, column=4, padx=5, pady=5)
+
 
     def midiOSCCOntrolButton(self):
         def createMIDIWindow():
@@ -421,7 +421,7 @@ class App(tk.Frame):
         self.bigBrainMonitor()
         self.midiOSCCOntrolButton()
         # self.buttonLoadSmallModel()
-        # self.quitButton()
+        self.quitButton()
 
         # replace sys.stdout with our object
         sys.stdout = PrintLogger(self.cmd)

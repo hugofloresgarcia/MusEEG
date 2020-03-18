@@ -94,7 +94,7 @@ class client:
 		self.plotq = queue.LifoQueue()
 		def workerjob():
 			try:
-				while True:
+				while not self.done:
 					# -*- coding: utf8 -*-
 					#
 					# Cykit Example TCP - Client
@@ -163,12 +163,13 @@ class client:
 		self.streamSpeed = streamSpeed
 		def worker():
 			for i in range(0,len(eeg.matrix)):
-				packet = {eeg.eegChannels[j]: eeg.matrix[i][j] for j in range(len(eeg.emotivChannels))}
-				packet["COUNTER"] = i
-				self.q.put(item=packet)
-				self.plotq.put(item=packet)
-				self.psdq.put(item=packet)
-				time.sleep(1/eegData.sampleRate/streamSpeed)
+				if not self.done:
+					packet = {eeg.eegChannels[j]: eeg.matrix[i][j] for j in range(len(eeg.emotivChannels))}
+					packet["COUNTER"] = i
+					self.q.put(item=packet)
+					self.plotq.put(item=packet)
+					self.psdq.put(item=packet)
+					time.sleep(1/eegData.sampleRate/streamSpeed)
 
 		simulationWorker = threading.Thread(target=worker)
 		simulationWorker.setDaemon(True)

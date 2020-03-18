@@ -39,6 +39,8 @@ class Processor:
         self.durVal = 0.5
         self.numRepeats = 8
 
+        self.isSleeping = False
+
         self.mididict =dict(zip(self.cerebro.gestures, [["C4", "E4", "G4"] for i in range(0, len(self.cerebro.gestures))]))
 
         ##these are just some average bandpower values from the neutral track
@@ -141,27 +143,46 @@ class Processor:
             self.mididict = pickle.load(handle)
             return self.mididict
 
+    def sleep(self, secs):
+        self.isSleeping = True
+        # print('sleeping: ' + str(self.isSleeping))
+        def sleepThread():
+            time.sleep(secs)
+            self.isSleeping = False
+            # print('sleeping: ' + str(self.isSleeping))
+
+        thread = threading.Thread(target=sleepThread)
+        thread.start()
+
+
     def processAndPlay(self, eeg):
         TIMEstart = time.clock()
         brainInput = eeg.process()
         brainOutput = self.bigBrain.classify(brainInput.reshape(1, 350))
         gestureResult = self.cerebro.gestures[brainOutput]
 
-        print('i found a ' + gestureResult + '!')
 
-        if self.sendOSC:
-            message = self.discreteOSCdict[gestureResult]
-            osc_send(message, self.clientNameOSC)
-            osc_process()
+        if self.isSleeping:
+            print('I think this is a bounce though!')
 
-        if self.sendMIDI:
-            resultingChord = self.mididict[gestureResult]
-            self.sendChordSC(resultingChord)
-            osc_process()
+        if not self.isSleeping:
+            print('i found a ' + gestureResult + '!')
+            self.sleep(3)
+            if self.sendOSC:
+                message = self.discreteOSCdict[gestureResult]
+                osc_send(message, self.clientNameOSC)
+                osc_process()
 
-        TIMEend = time.clock()
-        print('classification took ' + str(round(TIMEend-TIMEstart, 3)) + ' s')
-        print('...')
+            if self.sendMIDI:
+                resultingChord = self.mididict[gestureResult]
+                self.sendChordSC(resultingChord)
+                osc_process()
+
+            TIMEend = time.clock()
+            print('classification took ' + str(round(TIMEend - TIMEstart, 3)) + ' s')
+            print('...')
+
+
 
     def getMoreChunks(self, chunk):
         while len(chunk) < eegData.chunkSize:
@@ -292,6 +313,10 @@ class Processor:
     def processorShutDown(self):
         self.OSCclose()
         self.client.done
+        self.client.psdq.task_done()
+        self.client.q.task_done()
+        self.client.chunkq.task_done()
+        self.client.plotq.task_done()
 
 
 if __name__ == "__main__":
