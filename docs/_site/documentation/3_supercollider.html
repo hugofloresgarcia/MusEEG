@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Because of the limited amount of discrete commands MusEEG is able tosend, it may be helpful for users to control higher level musical events(such as chords, ...">
+  <meta name="keywords" content="blog and jekyll">
+  <meta name="author" content="Using MusEEG and SuperCollider Together | hugofloresgarcia/museeg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f5">
+
+  <!-- Twitter Tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Using MusEEG and SuperCollider Together | hugofloresgarcia/museeg">
+  <meta name="twitter:description" content="Because of the limited amount of discrete commands MusEEG is able tosend, it may be helpful for users to control higher level musical events(such as chords, ...">
+  
+    <meta property="twitter:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+
+  <!-- Open Graph Tags -->
+  <meta property="og:type" content="blog">
+  <meta property="og:url" content="http://localhost:4000/documentation/3_supercollider">
+  <meta property="og:title" content="Using MusEEG and SuperCollider Together | hugofloresgarcia/museeg">
+  <meta property="og:description" content="Because of the limited amount of discrete commands MusEEG is able tosend, it may be helpful for users to control higher level musical events(such as chords, ...">
+  
+    <meta property="og:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+  <title>Using MusEEG and SuperCollider Together | hugofloresgarcia/museeg</title>
+
+  <!-- CSS files -->
+  <link rel="stylesheet" href="http://localhost:4000/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://localhost:4000/css/main.css">
+
+  <link rel="canonical" href="http://localhost:4000/documentation/3_supercollider">
+  <link rel="alternate" type="application/rss+xml" title="hugofloresgarcia/museeg" href="http://localhost:4000/feed.xml" />
+
+  <!-- Icons -->
+  <!-- 16x16 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+  <!-- 32x32 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.png">
+</head>
+
+
+<body>
+  <div class="row">
+    <div class="col s12 m4">
+      <div class="table cover">
+        
+
+<div class="cover-card table-cell table-middle">
+  
+  <a href="http://localhost:4000/">
+    <img src="http://localhost:4000/img/flower_logo_v1_cropped.png" alt="" class="avatar">
+  </a>
+  
+  <a href="http://localhost:4000/" class="author_name">hugofloresgarcia/museeg</a>
+  <span class="author_job"></span>
+  <span class="author_bio mbm">a cool open source brain-computer interface for music performance</span>
+  <nav class="nav">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a href="https://hugofloresgarcia.github.io/">home (hugofloresgarcia)</a>
+      </li>
+      <li class="nav-item">
+        <a href="http://localhost:4000/">about</a>
+      </li>
+       
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/deliverables">deliverables</a>
+      </li>
+        
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/demo">demo</a>
+      </li>
+        
+      <li class="nav-item">
+        <a href="http://localhost:4000/documentation/">documentation</a>
+      </li>
+               
+    </ul>
+  </nav>
+  <script type="text/javascript">
+  // based on http://stackoverflow.com/a/10300743/280842
+  function gen_mail_to_link(hs, subject) {
+    var lhs,rhs;
+    var p = hs.split('@');
+    lhs = p[0];
+    rhs = p[1];
+    document.write("<a class=\"social-link-item\" target=\"_blank\" href=\"mailto");
+    document.write(":" + lhs + "@");
+    document.write(rhs + "?subject=" + subject + "\"><i class=\"fa fa-fw fa-envelope\"></i><\/a>");
+  }
+</script>
+<div class="social-links">
+  <ul>
+    
+      <li>
+      <script>gen_mail_to_link('hf01049@georgiasouthern.edu', 'Hello from website');</script>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <li><a href="http://github.com/hugofloresgarcia/museeg" class="social-link-item" target="_blank"><i class="fa fa-fw fa-github"></i></a></li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  </ul>
+</div>
+
+</div>
+
+      </div>
+    </div>
+    <div class="col s12 m8">
+      <div class="post-listing">
+          <div id="page">
+    <header class="page-header">
+      <h2>Using MusEEG and SuperCollider Together</h2>
+    </header>
+
+    <article class="page-content">
+      <p>Because of the limited amount of discrete commands MusEEG is able to
+send, it may be helpful for users to control higher level musical events
+(such as chords, phrases, drum beats, or pre-recorded samples) instead
+of singular notes. The SuperCollider programming language facilitates
+the creation of such objects, and may act as a dedicated musical server
+that responds to OSC commands sent from MusEEG.</p>
+
+<h2 id="oscdefs">OSCdefs</h2>
+
+<p><img src="OSCdefs.png" alt="OSCdefs for MusEEG in SuperCollider " /></p>
+
+<p>OSCdefs are SuperCollider objects that execute a callback function when
+a specific OSC message is received. In
+(Figure <a href="#fig:oscdefs">6.1</a>), a distinct callback function is assigned to
+each facial expression and band power message, allowing for different
+facial expressions to send control commands to user-specified musical
+objects.</p>
+
+<h2 id="using-supercollider-as-a-midi-server">Using SuperCollider as a MIDI server</h2>
+
+<p>SuperCollider’s innately friendly MIDI API makes it a more favorable
+option for programming MIDI patterns than Python. Because of this,
+MusEEG’s MIDI interface
+(Figure <a href="#fig:midi-menu">5.6</a>) simply sends OSC messages containing
+information regarding the chord chosen and some additional control
+paremeters: arpeggiation, number of repeats, chord duration, and note
+scrambling. On the other hand, a SuperCollider script takes care of
+receiving the OSC messages and creating the specified MIDI messages.</p>
+
+<p>The playChord function
+(Figure <a href="#fig:playchord">6.3</a>) allows for MIDI messages to be sent in a
+quantized manner, allowing asynchronously performed facial expressions
+to have a synchronous effect on the music being performed, and thus
+rendering a more accessible work flow.</p>
+
+<p><img src="midi-oscdefs.png" alt="OSCdefs for MusEEG MIDI" /></p>
+
+<p><img src="playchord.png" alt="MIDI performance Routine" /></p>
+
+<h2 id="the-pattern-system">The Pattern System</h2>
+
+<p>SuperCollider’s pattern system provides a simple way of sequencing
+synthesizer sounds. The MusEEG package includes two examples that
+demonstrate ways SuperCollider’s pattern system may be used in
+conjunction with MusEEG to control higher level musical events.</p>
+
+<h3 id="a-simple-drum-sequencer">A Simple Drum Sequencer</h3>
+
+<p><img src="drumsequencer.png" alt="Facial Expression Controls for Drum
+Sequencer" /></p>
+
+<p>(Figure <a href="#fig:oscdefs">6.1</a>) shows the facial expression callback functions
+for a drum sequencer pattern in SuperCollider. In this example, the
+following facial expression controls are enabled:</p>
+
+<ul>
+  <li>
+    <p>A smile expression toggles a kick drum sound in a drumbeat.</p>
+  </li>
+  <li>
+    <p>A scrunch expression toggles a hi-hat drum sound in a drumbeat.</p>
+  </li>
+  <li>
+    <p>A hard blink expression toggles a snare drum sound in a drumbeat.</p>
+  </li>
+  <li>
+    <p>A look left expression decreases the beat tempo by 5 bpm.</p>
+  </li>
+  <li>
+    <p>A look right expression increases the beat tempo by 5 bpm.</p>
+  </li>
+</ul>
+
+<h3 id="a-generative-arpeggio-pattern">A Generative Arpeggio Pattern</h3>
+
+<p><img src="daisypat.png" alt="Facial Expression Controls for Arpeggio
+Pattern" /></p>
+
+<p>(Figure <a href="#fig:oscdefs">6.1</a>) shows the facial expression callback functions
+for a generative arpeggio pattern in SuperCollider. In this particular
+pattern, a note is chosen randomly from a chord array. Once a note is
+chosen, the chosen note itself (or one of its overtones) is played
+through a synthesizer of the user’s choice. This process is then
+repeated over time at a certain density.</p>
+
+<p>In this example, the following facial expression controls are enabled:</p>
+
+<ul>
+  <li>
+    <p>A smile expression randomly chooses a new chord from a pre-existing
+chord bank.</p>
+  </li>
+  <li>
+    <p>A scrunch expression increases the number of overtones to choose
+from.</p>
+  </li>
+  <li>
+    <p>A hard blink expression decreases the number of overtones to choose
+from.</p>
+  </li>
+  <li>
+    <p>A look left expression decreases note density with respect to time.</p>
+  </li>
+  <li>
+    <p>A look right expression increases note density with respect to time.</p>
+  </li>
+</ul>
+
+    </article>
+
+
+  </div><!-- end page content -->
+
+
+  
+
+        <footer>
+  &copy; 2020 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
+</footer>
+
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="http://localhost:4000/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="http://localhost:4000/js/main.js"></script>
+
+
+</body>
+</html>

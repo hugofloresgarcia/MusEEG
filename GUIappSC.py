@@ -254,18 +254,9 @@ class App(tk.Frame):
             processor.startStream()
             processor.runProcessorThread(target=processor.mainProcessorWithBackTrack)
             processor.bandPowerThread(asThread=True)
+            # print('here on_click')
             # animation is not running; start it
             return self.start()
-
-        # if self.running:
-        #     # animation is running; pause it
-        #     self.ani.event_source.stop()
-        #     self.startProcessorBttn.config(text='Un-Pause')
-        # else:
-        #     # animation is paused; unpause it
-        #     self.ani.event_source.start()
-        #     self.startProcessorBttn.config(text='Pause')
-        # self.running = not self.running
 
     def start(self):
         self.ani = animation.FuncAnimation(
@@ -323,6 +314,7 @@ class App(tk.Frame):
 
     def update_graph_bp(self, i):
         x, y = self.get_data_bp()
+        # print(y)
         if y is not None:
             self.bpline.set_data(x, y)
 
@@ -363,7 +355,7 @@ class App(tk.Frame):
         def setup():
             device = self.deviceVar.get()
             if device == 'sim':
-                processor.setDevice(None)
+                processor.setDevice('sim')
                 simPath = filedialog.askopenfilename(initialdir=MusEEG.parentDir+'/data/longRawTrainingSamples', title='choose a .csv file!')
                 processor.simPath = simPath
                 print('loaded ' + simPath + '!')

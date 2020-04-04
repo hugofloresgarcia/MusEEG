@@ -165,9 +165,9 @@ class Processor:
 
 
         if self.isSleeping:
-            print('I think this is a bounce though!')
+            pass
 
-        if not self.isSleeping:
+        elif not self.isSleeping:
             print('i found a ' + gestureResult + '!')
             self.sleep(self.debounceTime)
             if self.sendOSC:
@@ -193,8 +193,10 @@ class Processor:
                 break
 
     def bandPowerProcessor(self):
+        # print('waiting for buffer')
         buffer = self.client.getBuffer(bufferSize=128)
         freqBins = [0.5, 4, 8, 12, 30, 60]
+        # print('got buffer')
 
         # compute delta, theta, alpha, beta, bands
         # delta = eegData.dbBandPower(buffer=buffer, band=freqBins[0:2])
@@ -227,6 +229,7 @@ class Processor:
         queueX = bandPowerStr
         queueY = [thetaAvg, alphaAvg, betaAvg, gammaAvg]
         self.bandPowerQueue.put([queueX, queueY])
+        # print(queueY)
 
         for message in OSCmsglist:
             osc_send(message, self.clientNameOSC)
@@ -238,6 +241,7 @@ class Processor:
     def bandPowerThread(self, asThread=True):
         def bandPowerLoop():
             while True:
+                # print('inside thread')
                 self.bandPowerProcessor()
 
         if asThread:
@@ -318,7 +322,7 @@ class Processor:
         self.processorThread.join(3.0)
         self.OSCclose()
         del self.client
-        print('client deleted')
+        # print('client deleted')
 
 
 if __name__ == "__main__":

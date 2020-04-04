@@ -40,7 +40,6 @@ for i in range(0, 70):
 for i in range(70, numofSamples):
     neutral[i].loadChunkFromTraining(subdir=os.path.join('trainbatch1_320samples', 'bigChunks'),
                                          filename='neutral_' + str(i-70) + '.csv', labelcols=False)
-
 for i in range(0, 70):
     smile[i].loadChunkFromTraining(subdir=os.path.join('trainbatch2_improved_320samples', 'bigChunks'),
                                    filename='smile_' + str(i) + '.csv', labelcols=False)
@@ -54,7 +53,6 @@ for i in range(0, 70):
     #                                 filename='tongue_' + str(i) + '.csv', labelcols=False)
     eyebrows[i].loadChunkFromTraining(subdir=os.path.join('trainbatch2_improved_320samples', 'bigChunks'),
                                        filename='hardblink_' + str(i) + '.csv', labelcols=False)
-
 for i in range(70, numofSamples):
     smile[i].loadChunkFromTraining(subdir=os.path.join('trainbatch1_320samples', 'bigChunks'),
                                    filename='smile_' + str(i-70) + '.csv', labelcols=False)
@@ -67,11 +65,9 @@ for i in range(70, numofSamples):
     eyebrows[i].loadChunkFromTraining(subdir=os.path.join('trainbatch1_320samples', 'bigChunks'),
                                        filename='eyebrows_' + str(i-70) + '.csv', labelcols=False)
 
-
 gestures = [smile, eyebrows, lookLeft, lookRight, neutral, scrunch]
 targets = createTargetVector(gestures, 'smile', 'eyebrows', 'lookleft', 'lookright',
                              'neutral', 'scrunch')
-
 
 inputs = np.ndarray([len(gestures)*numofSamples, 350])
 inputindex = 0

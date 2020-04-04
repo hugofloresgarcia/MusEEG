@@ -1,0 +1,144 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{os}
+\PYG{k+kn}{import} \PYG{n+nn}{pandas}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{tensorflow} \PYG{k+kn}{import} \PYG{n}{keras}
+\PYG{k+kn}{from} \PYG{n+nn}{keras} \PYG{k+kn}{import} \PYG{n}{regularizers}
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{parentDir}
+\PYG{k+kn}{from} \PYG{n+nn}{sklearn.metrics} \PYG{k+kn}{import} \PYG{n}{confusion\PYGZus{}matrix}
+\PYG{k+kn}{from} \PYG{n+nn}{sklearn.preprocessing} \PYG{k+kn}{import} \PYG{n}{MinMaxScaler}
+\PYG{k+kn}{from} \PYG{n+nn}{sklearn.externals} \PYG{k+kn}{import} \PYG{n}{joblib}
+
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+
+\PYG{k}{class} \PYG{n+nc}{classifier}\PYG{p}{:}
+    \PYG{n}{hiddenNeurons} \PYG{o}{=} \PYG{l+m+mi}{20}
+    \PYG{n}{numberOfTargets} \PYG{o}{=} \PYG{l+m+mi}{10}
+    \PYG{n}{inputShape} \PYG{o}{=} \PYG{l+m+mi}{350}
+
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o}{=} \PYG{k+kc}{None}
+
+    \PYG{k}{def} \PYG{n+nf}{loadTrainingData}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{percentTrain}\PYG{o}{=}\PYG{l+m+mf}{0.75}\PYG{p}{,}
+                         \PYG{n}{address}\PYG{o}{=}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}training\PYGZsq{}} \PYG{p}{),}
+                         \PYG{n}{inputFilename}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}inputs.csv\PYGZsq{}}\PYG{p}{,}
+                         \PYG{n}{targetFilename}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}targets.csv\PYGZsq{}}\PYG{p}{,} \PYG{n}{normalize}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{):}
+        \PYG{n}{inputsAll} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,} \PYG{n}{inputFilename}\PYG{p}{))}\PYG{o}{.}\PYG{n}{values}
+        \PYG{n}{targetsAll} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,} \PYG{n}{targetFilename}\PYG{p}{))}\PYG{o}{.}\PYG{n}{values}
+        \PYG{c+c1}{\PYGZsh{} use index from 1 on bc index 0 is just a counter for some reason.}
+        \PYG{n}{inputsAll}\PYG{p}{[:,} \PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{=} \PYG{n}{targetsAll}\PYG{p}{[:,} \PYG{l+m+mi}{1}\PYG{p}{]}
+        \PYG{c+c1}{\PYGZsh{} first column of inputsAll will now be the targets (sorry programming gods, I\PYGZsq{}m going crazy over this one)}
+        \PYG{n}{trainingData} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{inputsAll}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{}shuffle the data!!!}
+        \PYG{n}{trainingData} \PYG{o}{=} \PYG{n}{trainingData}\PYG{o}{.}\PYG{n}{reindex}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{permutation}\PYG{p}{(}\PYG{n}{trainingData}\PYG{o}{.}\PYG{n}{index}\PYG{p}{))}
+        \PYG{n}{trainingData} \PYG{o}{=} \PYG{n}{trainingData}\PYG{o}{.}\PYG{n}{values}
+
+        \PYG{c+c1}{\PYGZsh{}slice it up, baby}
+        \PYG{n+nb}{slice} \PYG{o}{=} \PYG{n+nb}{round}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{trainingData}\PYG{p}{[:,} \PYG{l+m+mi}{0}\PYG{p}{])}\PYG{o}{*}\PYG{n}{percentTrain}\PYG{p}{)}
+        \PYG{n}{train\PYGZus{}inputs} \PYG{o}{=} \PYG{n}{trainingData}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{:}\PYG{n+nb}{slice}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{:]}
+        \PYG{n}{train\PYGZus{}targets} \PYG{o}{=} \PYG{n}{trainingData}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{:}\PYG{n+nb}{slice}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}
+        \PYG{n}{test\PYGZus{}inputs} \PYG{o}{=} \PYG{n}{trainingData}\PYG{p}{[}\PYG{n+nb}{slice}\PYG{p}{:,} \PYG{l+m+mi}{1}\PYG{p}{:]}
+        \PYG{n}{test\PYGZus{}targets} \PYG{o}{=} \PYG{n}{trainingData}\PYG{p}{[}\PYG{n+nb}{slice}\PYG{p}{:,} \PYG{l+m+mi}{0}\PYG{p}{]}
+        \PYG{k}{if} \PYG{n}{normalize}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o}{=} \PYG{n}{MinMaxScaler}\PYG{p}{()}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{train\PYGZus{}inputs}\PYG{p}{)}
+            \PYG{n}{train\PYGZus{}inputs} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler}\PYG{o}{.}\PYG{n}{transform}\PYG{p}{(}\PYG{n}{train\PYGZus{}inputs}\PYG{p}{)}
+            \PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{train\PYGZus{}inputs}\PYG{p}{)}
+            \PYG{n}{test\PYGZus{}inputs} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler}\PYG{o}{.}\PYG{n}{transform}\PYG{p}{(}\PYG{n}{test\PYGZus{}inputs}\PYG{p}{)}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o}{=} \PYG{k+kc}{None}
+
+        \PYG{k}{return} \PYG{n}{train\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{train\PYGZus{}targets}\PYG{p}{,} \PYG{n}{test\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{test\PYGZus{}targets}
+
+    \PYG{c+c1}{\PYGZsh{} build the model}
+    \PYG{k}{def} \PYG{n+nf}{build\PYGZus{}model}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{inputShape}\PYG{p}{,} \PYG{n}{hiddenNeurons}\PYG{p}{,} \PYG{n}{numberOfTargets}\PYG{p}{,} \PYG{n}{hiddenActivation}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}relu\PYGZsq{}}\PYG{p}{,}
+                    \PYG{n}{outputActivation}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}softmax\PYGZsq{}}\PYG{p}{,} \PYG{n}{regularization}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}l2\PYGZus{}l2\PYGZsq{}}\PYG{p}{,} \PYG{n}{optimizer}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}adam\PYGZsq{}}\PYG{p}{,}
+                    \PYG{n}{loss}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}sparse\PYGZus{}categorical\PYGZus{}crossentropy\PYGZsq{}}\PYG{p}{):}
+        \PYG{k}{if} \PYG{n}{regularization} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}l1\PYGZsq{}}\PYG{p}{:}
+            \PYG{n}{reg} \PYG{o}{=} \PYG{n}{regularizers}\PYG{o}{.}\PYG{n}{l1}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model} \PYG{o}{=} \PYG{n}{keras}\PYG{o}{.}\PYG{n}{Sequential}\PYG{p}{([}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{hiddenNeurons}\PYG{p}{,}
+                                   \PYG{n}{activation}\PYG{o}{=}\PYG{n}{hiddenActivation}\PYG{p}{,}
+                                   \PYG{n}{activity\PYGZus{}regularizer}\PYG{o}{=}\PYG{n}{reg}\PYG{p}{,}
+                                   \PYG{n}{input\PYGZus{}dim}\PYG{o}{=}\PYG{n}{inputShape}\PYG{p}{),}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{numberOfTargets}\PYG{p}{,} \PYG{n}{activation}\PYG{o}{=}\PYG{n}{outputActivation}\PYG{p}{),}
+            \PYG{p}{])}
+        \PYG{k}{elif} \PYG{n}{regularization} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}l2\PYGZsq{}}\PYG{p}{:}
+            \PYG{n}{reg} \PYG{o}{=} \PYG{n}{regularizers}\PYG{o}{.}\PYG{n}{l2}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model} \PYG{o}{=} \PYG{n}{keras}\PYG{o}{.}\PYG{n}{Sequential}\PYG{p}{([}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{hiddenNeurons}\PYG{p}{,}
+                                   \PYG{n}{activation}\PYG{o}{=}\PYG{n}{hiddenActivation}\PYG{p}{,}
+                                   \PYG{n}{activity\PYGZus{}regularizer}\PYG{o}{=}\PYG{n}{reg}\PYG{p}{,}
+                                   \PYG{n}{input\PYGZus{}dim}\PYG{o}{=}\PYG{n}{inputShape}\PYG{p}{),}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{numberOfTargets}\PYG{p}{,} \PYG{n}{activation}\PYG{o}{=}\PYG{n}{outputActivation}\PYG{p}{),}
+            \PYG{p}{])}
+        \PYG{k}{elif} \PYG{n}{regularization} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}l1\PYGZus{}l2\PYGZsq{}}\PYG{p}{:}
+            \PYG{n}{reg} \PYG{o}{=} \PYG{n}{regularizers}\PYG{o}{.}\PYG{n}{l1\PYGZus{}l2}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model} \PYG{o}{=} \PYG{n}{keras}\PYG{o}{.}\PYG{n}{Sequential}\PYG{p}{([}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{hiddenNeurons}\PYG{p}{,}
+                                   \PYG{n}{activation}\PYG{o}{=}\PYG{n}{hiddenActivation}\PYG{p}{,}
+                                   \PYG{n}{activity\PYGZus{}regularizer}\PYG{o}{=}\PYG{n}{reg}\PYG{p}{,}
+                                   \PYG{n}{input\PYGZus{}dim}\PYG{o}{=}\PYG{n}{inputShape}\PYG{p}{),}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{numberOfTargets}\PYG{p}{,} \PYG{n}{activation}\PYG{o}{=}\PYG{n}{outputActivation}\PYG{p}{),}
+            \PYG{p}{])}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model} \PYG{o}{=} \PYG{n}{keras}\PYG{o}{.}\PYG{n}{Sequential}\PYG{p}{([}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{hiddenNeurons}\PYG{p}{,} \PYG{n}{activation}\PYG{o}{=}\PYG{n}{hiddenActivation}\PYG{p}{,}
+                                   \PYG{n}{input\PYGZus{}dim}\PYG{o}{=}\PYG{n}{inputShape}\PYG{p}{),}
+                \PYG{n}{keras}\PYG{o}{.}\PYG{n}{layers}\PYG{o}{.}\PYG{n}{Dense}\PYG{p}{(}\PYG{n}{numberOfTargets}\PYG{p}{,} \PYG{n}{activation}\PYG{o}{=}\PYG{n}{outputActivation}\PYG{p}{)])}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{compile}\PYG{p}{(}\PYG{n}{optimizer}\PYG{o}{=}\PYG{n}{optimizer}\PYG{p}{,}
+                           \PYG{n}{loss}\PYG{o}{=}\PYG{n}{loss}\PYG{p}{,}
+                           \PYG{n}{metrics}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}accuracy\PYGZsq{}}\PYG{p}{])}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{hiddenNeurons} \PYG{o}{=} \PYG{n}{hiddenNeurons}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numberOfTargets} \PYG{o}{=} \PYG{n}{numberOfTargets}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{inputShape} \PYG{o}{=} \PYG{n}{inputShape}
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}
+
+    \PYG{c+c1}{\PYGZsh{} train the model}
+    \PYG{k}{def} \PYG{n+nf}{train\PYGZus{}model}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{train\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{train\PYGZus{}targets}\PYG{p}{,} \PYG{n}{nEpochs}\PYG{p}{,} \PYG{n}{verbose}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{train\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{train\PYGZus{}targets}\PYG{p}{,} \PYG{n}{epochs}\PYG{o}{=}\PYG{n}{nEpochs}\PYG{p}{,} \PYG{n}{verbose}\PYG{o}{=}\PYG{n}{verbose}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{evaluate\PYGZus{}model}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{test\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{test\PYGZus{}targets}\PYG{p}{,} \PYG{n}{verbose}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{):}
+        \PYG{n}{test\PYGZus{}loss}\PYG{p}{,} \PYG{n}{test\PYGZus{}acc} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{evaluate}\PYG{p}{(}\PYG{n}{test\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{test\PYGZus{}targets}\PYG{p}{,} \PYG{n}{verbose}\PYG{p}{)}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{Test accuracy:\PYGZsq{}}\PYG{p}{,} \PYG{n}{test\PYGZus{}acc}\PYG{p}{)}
+        \PYG{k}{return} \PYG{n}{test\PYGZus{}acc}
+
+    \PYG{k}{def} \PYG{n+nf}{print\PYGZus{}confusion}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{test\PYGZus{}inputs}\PYG{p}{,} \PYG{n}{test\PYGZus{}targets}\PYG{p}{):}
+        \PYG{n}{prediction} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{test\PYGZus{}inputs}\PYG{p}{)}
+        \PYG{n}{prediction} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}\PYG{n}{np}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{n}{row}\PYG{p}{)} \PYG{k}{for} \PYG{n}{row} \PYG{o+ow}{in} \PYG{n}{prediction}\PYG{p}{])}
+        \PYG{n}{cm} \PYG{o}{=} \PYG{n}{confusion\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{test\PYGZus{}targets}\PYG{p}{,} \PYG{n}{prediction}\PYG{p}{)}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{cm}\PYG{p}{)}
+        \PYG{k}{return} \PYG{n}{cm}
+
+    \PYG{k}{def} \PYG{n+nf}{normalizeInput}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{inputVector}\PYG{p}{):}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler}\PYG{o}{.}\PYG{n}{transform}\PYG{p}{(}\PYG{n}{inputVector}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{classify}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{inputVector}\PYG{p}{):}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{inputVector} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler}\PYG{o}{.}\PYG{n}{transform}\PYG{p}{(}\PYG{n}{inputVector}\PYG{p}{)}
+
+        \PYG{n}{prediction} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{inputVector}\PYG{p}{)}
+        \PYG{n}{output} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{n}{prediction}\PYG{p}{)}
+        \PYG{k}{return} \PYG{n}{output}
+
+    \PYG{k}{def} \PYG{n+nf}{clear}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n}{keras}\PYG{o}{.}\PYG{n}{backend}\PYG{o}{.}\PYG{n}{clear\PYGZus{}session}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{savemodel}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{,} \PYG{n}{address}\PYG{o}{=}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{)):}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{joblib}\PYG{o}{.}\PYG{n}{dump}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler}\PYG{p}{,} \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{,}\PYG{n}{filename}\PYG{o}{+}\PYG{l+s+s1}{\PYGZsq{}\PYGZus{}scaler\PYGZsq{}}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{save}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{),} \PYG{n}{save\PYGZus{}format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}tf\PYGZsq{}}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{loadmodel}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{,} \PYG{n}{address}\PYG{o}{=}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{),} \PYG{n}{loadScaler}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        load a saved keras model}
+\PYG{l+s+sd}{        :param filename: name of the savedModel}
+\PYG{l+s+sd}{        :param address: address (relative to the parent directory) where your model is stored. defaults to /data/SavedModels}
+\PYG{l+s+sd}{        :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{k}{if} \PYG{n}{loadScaler}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scaler} \PYG{o}{=} \PYG{n}{joblib}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{n}{filename}\PYG{o}{+}\PYG{l+s+s1}{\PYGZsq{}\PYGZus{}scaler\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{model} \PYG{o}{=} \PYG{n}{keras}\PYG{o}{.}\PYG{n}{models}\PYG{o}{.}\PYG{n}{load\PYGZus{}model}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{))}
+\end{Verbatim}

@@ -1,0 +1,537 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{os}
+\PYG{k+kn}{import} \PYG{n+nn}{pandas}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{pywt} \PYG{k+kn}{import} \PYG{n}{wavedec}
+
+\PYG{k+kn}{from} \PYG{n+nn}{scipy.stats} \PYG{k+kn}{import} \PYG{n}{kurtosis}\PYG{p}{,} \PYG{n}{skew}
+\PYG{k+kn}{from} \PYG{n+nn}{scipy.signal} \PYG{k+kn}{import} \PYG{n}{welch}
+\PYG{k+kn}{from} \PYG{n+nn}{scipy.integrate} \PYG{k+kn}{import} \PYG{n}{simps}
+
+
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib}
+
+\PYG{n}{matplotlib}\PYG{o}{.}\PYG{n}{use}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}TkAgg\PYGZsq{}}\PYG{p}{)}
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{ion}\PYG{p}{()}
+\PYG{k+kn}{from} \PYG{n+nn}{matplotlib.figure} \PYG{k+kn}{import} \PYG{n}{Figure}
+\PYG{k+kn}{from} \PYG{n+nn}{matplotlib.pyplot} \PYG{k+kn}{import} \PYG{n}{figure}
+
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{parentDir}
+
+
+
+
+\PYG{k}{class} \PYG{n+nc}{eegData}\PYG{p}{:}
+    \PYG{n}{threshold} \PYG{o}{=} \PYG{l+m+mi}{350}
+    \PYG{n}{sampleRate} \PYG{o}{=} \PYG{l+m+mi}{256}
+    \PYG{n}{device} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{}\PYGZsh{}note: these used to be 384 samples and 64 samples.}
+    \PYG{n}{chunkSize} \PYG{o}{=} \PYG{n+nb}{int}\PYG{p}{(}\PYG{l+m+mi}{256} \PYG{o}{*} \PYG{l+m+mf}{1.25}\PYG{p}{)}
+    \PYG{n}{smallchunkSize} \PYG{o}{=} \PYG{l+m+mi}{64}
+    \PYG{n}{backTrack} \PYG{o}{=} \PYG{l+m+mi}{50}  \PYG{c+c1}{\PYGZsh{}\PYGZsh{}backtrack used to be 35}
+    \PYG{n}{nchannels} \PYG{o}{=} \PYG{l+m+mi}{14}
+    \PYG{n}{emotivChannels} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}EEG.AF3\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F7\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F3\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.FC5\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.T7\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.P7\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.O1\PYGZdq{}}\PYG{p}{,}
+                      \PYG{l+s+s2}{\PYGZdq{}EEG.O2\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.P8\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.T8\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.FC6\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F4\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F8\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.AF4\PYGZdq{}}\PYG{p}{]}
+    \PYG{n}{eegChannels} \PYG{o}{=} \PYG{p}{[}\PYG{n}{channel}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{:]} \PYG{k}{for} \PYG{n}{channel} \PYG{o+ow}{in} \PYG{n}{emotivChannels}\PYG{p}{]}
+    \PYG{n}{thresholdChannels} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}F7\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}AF4\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}T7\PYGZsq{}}\PYG{p}{]}
+
+    \PYG{k}{def} \PYG{n+nf}{wavelet}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        wavelet transform (4\PYGZhy{}level) for a single eeg chunk}
+\PYG{l+s+sd}{        input argument is a chunk}
+\PYG{l+s+sd}{        creates a self.wavelets list which contains np arrays with the coefficients}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{):}
+            \PYG{n}{cA4}\PYG{p}{,} \PYG{n}{cD4}\PYG{p}{,} \PYG{n}{cD3}\PYG{p}{,} \PYG{n}{cD2}\PYG{p}{,} \PYG{n}{cD1} \PYG{o}{=} \PYG{n}{wavedec}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{n}{i}\PYG{p}{],} \PYG{l+s+s1}{\PYGZsq{}db2\PYGZsq{}}\PYG{p}{,} \PYG{n}{level}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{cA4}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{cD4}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{cD3}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{cD2}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{cD1}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{wavelets} \PYG{o}{=} \PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{asarray}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{asarray}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{asarray}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{asarray}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{),}
+                         \PYG{n}{np}\PYG{o}{.}\PYG{n}{asarray}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{)]}
+
+    \PYG{n+nd}{@classmethod}
+    \PYG{k}{def} \PYG{n+nf}{bandPower}\PYG{p}{(}\PYG{n+nb+bp}{cls}\PYG{p}{,} \PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{p}{,} \PYG{n}{window\PYGZus{}sec}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{):}
+        \PYG{n}{band} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{asarray}\PYG{p}{(}\PYG{n}{band}\PYG{p}{)}
+        \PYG{n}{low}\PYG{p}{,} \PYG{n}{high} \PYG{o}{=} \PYG{n}{band}
+
+        \PYG{k}{if} \PYG{n}{window\PYGZus{}sec} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{nperseg} \PYG{o}{=} \PYG{n}{window\PYGZus{}sec}\PYG{o}{*}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{c+c1}{\PYGZsh{} nperseg = (2/low)*eegData.sampleRate}
+            \PYG{n}{nperseg} \PYG{o}{=} \PYG{l+m+mi}{128}
+
+        \PYG{n}{freqs}\PYG{p}{,} \PYG{n}{psd} \PYG{o}{=} \PYG{n}{welch}\PYG{p}{(}\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{p}{,} \PYG{n}{nperseg}\PYG{o}{=}\PYG{n}{nperseg}\PYG{p}{)}
+
+        \PYG{n}{freqRes} \PYG{o}{=} \PYG{n}{freqs}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{freqs}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+        \PYG{n}{idxBand} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{logical\PYGZus{}and}\PYG{p}{(}\PYG{n}{freqs} \PYG{o}{\PYGZgt{}=} \PYG{n}{low}\PYG{p}{,} \PYG{n}{freqs} \PYG{o}{\PYGZlt{}=} \PYG{n}{high}\PYG{p}{)}
+
+        \PYG{n}{bp} \PYG{o}{=} \PYG{n}{simps}\PYG{p}{(}\PYG{n}{psd}\PYG{p}{[:,} \PYG{n}{idxBand}\PYG{p}{],} \PYG{n}{dx}\PYG{o}{=}\PYG{n}{freqRes}\PYG{p}{)}
+        \PYG{k}{return} \PYG{n}{bp}
+
+    \PYG{n+nd}{@classmethod}
+    \PYG{k}{def} \PYG{n+nf}{dbBandPower}\PYG{p}{(}\PYG{n+nb+bp}{cls}\PYG{p}{,} \PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{p}{,} \PYG{n}{window\PYGZus{}sec}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{):}
+        \PYG{n}{bp} \PYG{o}{=} \PYG{n+nb+bp}{cls}\PYG{o}{.}\PYG{n}{bandPower}\PYG{p}{(}\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{p}{,} \PYG{n}{window\PYGZus{}sec}\PYG{p}{)}
+        \PYG{n}{bpdb} \PYG{o}{=} \PYG{l+m+mi}{10} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{log10}\PYG{p}{(}\PYG{n}{bp}\PYG{p}{)}
+        \PYG{k}{return} \PYG{n}{bpdb}
+
+    \PYG{n+nd}{@classmethod}
+    \PYG{k}{def} \PYG{n+nf}{bandPowerHistogram}\PYG{p}{(}\PYG{n+nb+bp}{cls}\PYG{p}{,} \PYG{n}{df}\PYG{p}{,} \PYG{n}{figure}\PYG{p}{):}
+        \PYG{n}{figure}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{flush\PYGZus{}events}\PYG{p}{()}
+        \PYG{n}{ax} \PYG{o}{=} \PYG{n}{figure}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{clear}\PYG{p}{()}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{df}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Band Power (dB)\PYGZsq{}}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{([}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{80}\PYG{p}{])}
+        \PYG{n}{figure}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{pause}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{extractStatsFromWavelets}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        calculates mean, standard deviation, variance, kurtosis, and skewness from self.wavelets object.}
+\PYG{l+s+sd}{        creates self.mean, self.std, self.kurtosis, self.skew which are numpy arrays with 14 rows (eeg channels)}
+\PYG{l+s+sd}{        and 5 columns (per coefficients)}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mean} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{((}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{var} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{((}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{std} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{((}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{kurtosis} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{((}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{skew} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{((}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{))}
+        \PYG{c+c1}{\PYGZsh{}\PYGZsh{} ojo, dimensions are transposed here}
+        \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{):}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),}
+                               \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{var}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),}
+                              \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{std}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),}
+                              \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{kurtosis}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{p}{[}\PYG{n}{kurtosis}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{kurtosis}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{kurtosis}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),}
+                                   \PYG{n}{kurtosis}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{kurtosis}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{skew}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{p}{[}\PYG{n}{skew}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{skew}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{skew}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),} \PYG{n}{skew}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]),}
+                               \PYG{n}{skew}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])]}
+
+    \PYG{k}{def} \PYG{n+nf}{flattenIntoVector}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        creates an input array for ANN, structured as:}
+\PYG{l+s+sd}{            [mean, var, std, kurtosis, skew]}
+\PYG{l+s+sd}{            each of these is 14 channels * 5 wavelet coefficients long = 70 floats}
+\PYG{l+s+sd}{            vector is flattened, and for 5 stat features * 70 numbers = 350 numbers}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n}{mean} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mean}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+        \PYG{n}{var} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{var}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+        \PYG{n}{std} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{std}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+        \PYG{n}{kurtosis} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{kurtosis}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+        \PYG{n}{skew} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{skew}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{inputVector} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}\PYG{n}{mean}\PYG{p}{,} \PYG{n}{var}\PYG{p}{,} \PYG{n}{std}\PYG{p}{,} \PYG{n}{kurtosis}\PYG{p}{,} \PYG{n}{skew}\PYG{p}{])}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{inputVector} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{inputVector}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{()}
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{inputVector}
+
+    \PYG{k}{def} \PYG{n+nf}{plotRawEEG}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{figure}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{chunk}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{offset}\PYG{o}{=}\PYG{l+m+mi}{200}\PYG{p}{,} \PYG{n}{plotTitle}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}eeg\PYGZsq{}}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        this version spits out a figure window for use in the UI}
+\PYG{l+s+sd}{        :param title: title of the figure}
+\PYG{l+s+sd}{        :param offset: DC offset between eeg channels}
+\PYG{l+s+sd}{        :return: plot with all 14 eeg channels}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{k}{if} \PYG{n}{chunk} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}
+        \PYG{c+c1}{\PYGZsh{} define time axis}
+        \PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{))}  \PYG{c+c1}{\PYGZsh{} create time axis w same length as the data matrix}
+        \PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{tAxis} \PYG{o}{/} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sampleRate}  \PYG{c+c1}{\PYGZsh{} adjust time axis to 256 sample rate}
+
+        \PYG{c+c1}{\PYGZsh{} use eeg matrix as y axis}
+        \PYG{n}{yAxis} \PYG{o}{=} \PYG{n}{chunk} \PYG{o}{+} \PYG{n}{offset} \PYG{o}{*} \PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nchannels}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} add offset to display all channels}
+        \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])):}
+            \PYG{n}{yAxis}\PYG{p}{[:,} \PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZhy{}=} \PYG{n}{offset} \PYG{o}{*} \PYG{n}{i}
+
+        \PYG{c+c1}{\PYGZsh{} plot figure}
+        \PYG{k}{if} \PYG{n}{figure} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{figure} \PYG{o}{=} \PYG{n}{Figure}\PYG{p}{()}
+
+        \PYG{n}{figure}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{flush\PYGZus{}events}\PYG{p}{()}
+        \PYG{n}{ax} \PYG{o}{=} \PYG{n}{figure}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{clear}\PYG{p}{()}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{n}{plotTitle}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{300}\PYG{p}{,} \PYG{n}{offset} \PYG{o}{*} \PYG{l+m+mi}{20}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{legend}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{eegChannels}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}time\PYGZsq{}}\PYG{p}{)}
+        \PYG{n}{ax}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{tAxis}\PYG{p}{,} \PYG{n}{yAxis}\PYG{p}{)}
+        \PYG{n}{figure}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{pause}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+
+        \PYG{k}{return} \PYG{n}{figure}
+
+        \PYG{c+c1}{\PYGZsh{} plt.pause(0.01)}
+
+    \PYG{k}{def} \PYG{n+nf}{plotWavelets}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{channel}\PYG{p}{,} \PYG{n}{figure}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        plots wavelet decomposition of a single channel self.chunk}
+\PYG{l+s+sd}{        :param channel: (between 0 and 13) eeg channel to be plotted}
+\PYG{l+s+sd}{        :return: figure}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{k}{if} \PYG{n}{figure} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{fig} \PYG{o}{=} \PYG{n}{Figure}\PYG{p}{()}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n}{fig} \PYG{o}{=} \PYG{n}{figure}
+        \PYG{c+c1}{\PYGZsh{} fig.suptitle(\PYGZsq{}Wavelet Plot\PYGZsq{})}
+        \PYG{n}{ax} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mi}{0} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{6}\PYG{p}{)]}
+        \PYG{k}{try}\PYG{p}{:}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{611}\PYG{p}{)}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{n}{channel}\PYG{p}{])}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Raw EEG\PYGZsq{}}\PYG{p}{,} \PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{612}\PYG{p}{)}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cA4}\PYG{p}{[:][}\PYG{n}{channel}\PYG{p}{])}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Approximation Coefficients\PYGZsq{}}\PYG{p}{,} \PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{613}\PYG{p}{)}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD4}\PYG{p}{[:][}\PYG{n}{channel}\PYG{p}{])}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Level 4 Detail Coefficients\PYGZsq{}}\PYG{p}{,} \PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{614}\PYG{p}{)}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD3}\PYG{p}{[:][}\PYG{n}{channel}\PYG{p}{])}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Level 3 Detail Coefficients\PYGZsq{}}\PYG{p}{,} \PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{]} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{615}\PYG{p}{)}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD2}\PYG{p}{[:][}\PYG{n}{channel}\PYG{p}{])}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{]}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Level 2 Detail Coefficients\PYGZsq{}}\PYG{p}{,} \PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{5}\PYG{p}{]} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{616}\PYG{p}{)}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{5}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cD1}\PYG{p}{[:][}\PYG{n}{channel}\PYG{p}{])}
+            \PYG{n}{ax}\PYG{p}{[}\PYG{l+m+mi}{5}\PYG{p}{]}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Level 1 Detail Coefficients\PYGZsq{}}\PYG{p}{,} \PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+            \PYG{n}{fig}\PYG{o}{.}\PYG{n}{tight\PYGZus{}layout}\PYG{p}{(}\PYG{n}{pad}\PYG{o}{=}\PYG{l+m+mf}{0.75}\PYG{p}{)}
+            \PYG{n}{fig}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+            \PYG{n}{plt}\PYG{o}{.}\PYG{n}{pause}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+        \PYG{k}{except} \PYG{n+ne}{AttributeError}\PYG{p}{:}
+            \PYG{k}{pass}
+        \PYG{c+c1}{\PYGZsh{} todo: make this work with the UI}
+        \PYG{k}{return} \PYG{n}{fig}
+
+    \PYG{c+c1}{\PYGZsh{}todo: needs openBCI fix}
+    \PYG{k}{def} \PYG{n+nf}{loadChunkFromTraining}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{,} \PYG{n}{labelcols}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        :rtype: objectram subdir: subdirectory where chunk is located from MusEEG/data/savedChunks}
+\PYG{l+s+sd}{        :param filename: filename with .csv at the end}
+\PYG{l+s+sd}{        :param labelcols: do the .csv files have the EEG.CHANNEL headers in them?}
+\PYG{l+s+sd}{        :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{filename} \PYG{o}{=} \PYG{n}{filename}
+        \PYG{k}{if} \PYG{o+ow}{not} \PYG{n}{labelcols}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{))}\PYG{o}{.}\PYG{n}{values}
+            \PYG{c+c1}{\PYGZsh{} print(len(self.chunk[0,:]))}
+            \PYG{k}{if} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])} \PYG{o}{==} \PYG{l+m+mi}{15}\PYG{p}{:}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{15}\PYG{p}{]}
+                \PYG{c+c1}{\PYGZsh{} print(self.chunk[:, 13])}
+            \PYG{k}{if} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])} \PYG{o}{==} \PYG{l+m+mi}{16}\PYG{p}{:}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{2}\PYG{p}{:}\PYG{l+m+mi}{16}\PYG{p}{]}
+
+
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n}{filename}\PYG{p}{),}
+                                     \PYG{n}{usecols}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{emotivChannels}\PYG{p}{)}\PYG{o}{.}\PYG{n}{values}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{AF3} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{0}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{1}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F3} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{2}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{FC5} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{3}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{T7} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{4}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{P7} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{5}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{O1} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{6}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{O2} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{7}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{P8} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{8}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{T8} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{9}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{FC6} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{10}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F4} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{11}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F8} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{12}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{AF4} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[:,} \PYG{l+m+mi}{13}\PYG{p}{]}
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}
+
+    \PYG{c+c1}{\PYGZsh{}todo: needs openBCI fix}
+    \PYG{k}{def} \PYG{n+nf}{cutChunk}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{newChunkSize}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        for smallBrain: cut chunk to a new ChunkSize}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{:(}\PYG{n}{newChunkSize} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{),} \PYG{p}{:]}
+
+    \PYG{k}{def} \PYG{n+nf}{process}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{wavelet}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{extractStatsFromWavelets}\PYG{p}{()}
+        \PYG{n}{inputVector} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{flattenIntoVector}\PYG{p}{()}
+        \PYG{k}{return} \PYG{n}{inputVector}
+
+    \PYG{n+nd}{@classmethod}
+    \PYG{k}{def} \PYG{n+nf}{checkThreshold}\PYG{p}{(}\PYG{n+nb+bp}{cls}\PYG{p}{,} \PYG{n}{packetdict}\PYG{p}{):}
+        \PYG{n}{thresholdActive} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{k}{for} \PYG{n}{channel} \PYG{o+ow}{in} \PYG{n+nb+bp}{cls}\PYG{o}{.}\PYG{n}{thresholdChannels}\PYG{p}{:}
+            \PYG{k}{if} \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n}{packetdict}\PYG{p}{[}\PYG{n}{channel}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{cls}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{:}
+                \PYG{n}{thresholdActive} \PYG{o}{=} \PYG{k+kc}{True}
+        \PYG{k}{return} \PYG{n}{thresholdActive}
+
+    \PYG{c+c1}{\PYGZsh{}todo: needs openBCI fix}
+    \PYG{k}{def} \PYG{n+nf}{saveChunkToCSV}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n}{gesturename}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        saves self.chunk to csv}
+\PYG{l+s+sd}{        :param subdir: sudirectory under /data/savedChunks}
+\PYG{l+s+sd}{        :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n}{workingDir} \PYG{o}{=} \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{)}
+        \PYG{n}{idx} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{n}{filesInFolder} \PYG{o}{=} \PYG{p}{[}\PYG{n}{file} \PYG{k}{for} \PYG{n}{file} \PYG{o+ow}{in} \PYG{n}{os}\PYG{o}{.}\PYG{n}{listdir}\PYG{p}{(}\PYG{n}{workingDir}\PYG{p}{)} \PYG{k}{if} \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{isfile}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{workingDir}\PYG{p}{,} \PYG{n}{file}\PYG{p}{))]}
+
+        \PYG{n}{chunkFilename} \PYG{o}{=} \PYG{n}{gesturename} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}\PYGZus{}\PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{idx}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.csv\PYGZsq{}}
+        \PYG{k}{while} \PYG{n}{chunkFilename} \PYG{o+ow}{in} \PYG{n}{filesInFolder}\PYG{p}{:}
+            \PYG{n}{idx} \PYG{o}{+=} \PYG{l+m+mi}{1}
+            \PYG{n}{chunkFilename} \PYG{o}{=} \PYG{n}{gesturename} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}\PYGZus{}\PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{idx}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.csv\PYGZsq{}}
+
+        \PYG{n}{chunkDataFrame} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+        \PYG{n}{chunkDataFrame}\PYG{o}{.}\PYG{n}{to\PYGZus{}csv}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n}{chunkFilename}\PYG{p}{))}
+
+ \PYG{c+c1}{\PYGZsh{}todo: needs openBCI fix}
+\PYG{k}{class} \PYG{n+nc}{TrainingDataMacro}\PYG{p}{(}\PYG{n}{eegData}\PYG{p}{):}
+    \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{    child eegData class meant for user to evaluate a long .csv file with multiple training samples in it}
+\PYG{l+s+sd}{    reads rawdata and creates a long self.rawData object with ALL the data}
+
+\PYG{l+s+sd}{    self.matrix contains only numbers w DC offset removed}
+
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb}{super}\PYG{p}{()}\PYG{o}{.}\PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunk} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{label} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{trainingChunks} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunkCount} \PYG{o}{=} \PYG{l+m+mi}{0}
+
+    \PYG{c+c1}{\PYGZsh{}todo: needs openBCI fix}
+    \PYG{k}{def} \PYG{n+nf}{importCSV}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{address}\PYG{p}{):}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}}\PYG{p}{:}
+            \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{            :param subdir: subdirectory under MusEEG/data/longRawTrainingSamples where the .csv files are located}
+\PYG{l+s+sd}{            :param filename: filename of the .csv file}
+\PYG{l+s+sd}{            :param tag: the label you would like to associate the file with. typically the same as filename.}
+\PYG{l+s+sd}{            :return:}
+\PYG{l+s+sd}{            \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{rawData} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,}
+                                           \PYG{n}{skiprows}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{dtype}\PYG{o}{=}\PYG{n+nb}{float}\PYG{p}{,} \PYG{n}{header}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,}
+                                           \PYG{n}{usecols}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{emotivChannels}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{markers} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,}
+                                           \PYG{n}{skiprows}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{usecols}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}EEG.MarkerHardware\PYGZsq{}}\PYG{p}{])}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{address} \PYG{o}{=} \PYG{n}{address}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{rawData}\PYG{o}{.}\PYG{n}{values} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{4100}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{AF3} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{0}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{1}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F3} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{2}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{FC5} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{3}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{T7} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{4}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{P7} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{5}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{O1} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{6}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{O2} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{7}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{P8} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{8}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{T8} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{9}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{FC6} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{10}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F4} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{11}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F8} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{12}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{AF4} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[:,} \PYG{l+m+mi}{13}\PYG{p}{]}
+
+    \PYG{k}{def} \PYG{n+nf}{plotRawChannel}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{channel}\PYG{p}{,} \PYG{n}{start}\PYG{p}{,} \PYG{n}{stop}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        plot raw channel for trainingdatamacro object}
+\PYG{l+s+sd}{        :param channel: channel to be plotted}
+\PYG{l+s+sd}{        :param start: (in seconds) where in the recording to start plotting}
+\PYG{l+s+sd}{        :param stop: (in seconds) where in the recording to stop plotting}
+\PYG{l+s+sd}{        :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n}{channel} \PYG{o}{=} \PYG{n}{channel}\PYG{p}{[}\PYG{n}{start} \PYG{o}{*} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{p}{:}\PYG{n}{stop} \PYG{o}{*} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{p}{]}
+
+        \PYG{c+c1}{\PYGZsh{} define time axis}
+        \PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{channel}\PYG{p}{))}  \PYG{c+c1}{\PYGZsh{} create time axis w same length as the data matrix}
+        \PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{tAxis} \PYG{o}{/} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sampleRate}  \PYG{c+c1}{\PYGZsh{} adjust time axis to 256 sample rate}
+
+        \PYG{c+c1}{\PYGZsh{} use eeg matrix as y axis}
+        \PYG{n}{yAxis} \PYG{o}{=} \PYG{n}{channel}
+
+        \PYG{c+c1}{\PYGZsh{} plot figure}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{()}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{tAxis}\PYG{p}{,} \PYG{n}{yAxis}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1000}\PYG{p}{,} \PYG{l+m+mi}{1000}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{(}\PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{createChunks}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        creates chunks that meet the threshold and backtrack criteria. Basically, if a certain channel\PYGZsq{}s voltage passes a}
+\PYG{l+s+sd}{        certain threshold, a chunk of samples will be saved to self.trainingChunks}
+\PYG{l+s+sd}{        :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nChunks} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{o}{.}\PYG{n}{shape}
+        \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{k}{while} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7}\PYG{p}{):}
+            \PYG{k}{if} \PYG{p}{((}\PYG{n+nb}{abs}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{)} \PYG{o+ow}{or} \PYG{p}{(}\PYG{n+nb}{abs}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{AF3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{)} \PYG{o+ow}{or} \PYG{p}{(}
+                    \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{T7}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{))} \PYG{o+ow}{and} \PYG{p}{(}\PYG{n}{i} \PYG{o}{\PYGZgt{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{backTrack}\PYG{p}{)} \PYG{o+ow}{and} \PYG{p}{(}
+                    \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{)):}
+                \PYG{n}{chunkStart} \PYG{o}{=} \PYG{n}{i} \PYG{o}{\PYGZhy{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{backTrack}
+                \PYG{n}{chunkEnd} \PYG{o}{=} \PYG{n}{chunkStart} \PYG{o}{+} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}
+                \PYG{c+c1}{\PYGZsh{} print(self.matrix[chunkStart:chunkEnd,:])}
+                \PYG{c+c1}{\PYGZsh{} print(self.emotivChannels)}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{trainingChunks}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}
+                    \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[}\PYG{n}{chunkStart}\PYG{p}{:}\PYG{n}{chunkEnd}\PYG{p}{,} \PYG{p}{:],} \PYG{n}{columns}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{emotivChannels}\PYG{p}{))}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nChunks} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nChunks} \PYG{o}{+} \PYG{l+m+mi}{1}
+                \PYG{n}{i} \PYG{o}{=} \PYG{n}{chunkEnd} \PYG{o}{+} \PYG{l+m+mi}{1}
+            \PYG{n}{i} \PYG{o}{+=} \PYG{l+m+mi}{1}
+
+    \PYG{k}{def} \PYG{n+nf}{plotChunk}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{num}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        plots a single chunk from self.trainingChunks (not curated). to be used in evalChunk method}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n}{fig} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{(}\PYG{n}{num}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{trainingChunks}\PYG{p}{[}\PYG{n}{num}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sample number \PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{num}\PYG{p}{))}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1500}\PYG{p}{,} \PYG{l+m+mi}{1500}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{pause}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+
+        \PYG{k}{return} \PYG{n}{fig}
+
+    \PYG{k}{def} \PYG{n+nf}{newChunkEvalMethod}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chunkSubdir}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{                creates chunks that meet the threshold and backtrack criteria. Basically, if a certain channel\PYGZsq{}s voltage passes a}
+\PYG{l+s+sd}{                certain threshold, a chunk of samples will be saved to self.trainingChunks}
+\PYG{l+s+sd}{                :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nChunks} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{n}{fig} \PYG{o}{=} \PYG{n}{figure}\PYG{p}{()}
+        \PYG{n}{i} \PYG{o}{=} \PYG{n+nb}{input}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}enter starting sample: \PYGZsq{}}\PYG{p}{)}
+        \PYG{n}{i} \PYG{o}{=} \PYG{n+nb}{int}\PYG{p}{(}\PYG{n}{i}\PYG{p}{)}
+        \PYG{k}{while} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7}\PYG{p}{):}
+            \PYG{c+c1}{\PYGZsh{} see if it passes threshold}
+            \PYG{k}{if} \PYG{p}{((}\PYG{n+nb}{abs}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{)} \PYG{o+ow}{or} \PYG{p}{(}\PYG{n+nb}{abs}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{AF3}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{)} \PYG{o+ow}{or} \PYG{p}{(}
+                    \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{T7}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZgt{}=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{threshold}\PYG{p}{))} \PYG{o+ow}{and} \PYG{p}{(}\PYG{n}{i} \PYG{o}{\PYGZgt{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{backTrack}\PYG{p}{)} \PYG{o+ow}{and} \PYG{p}{(}
+                    \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{F7}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{)):}
+                \PYG{c+c1}{\PYGZsh{} make sure user evaluates whether threshold was right or not}
+                \PYG{n}{approvedByUser} \PYG{o}{=} \PYG{k+kc}{False}
+                \PYG{n}{chunkStart} \PYG{o}{=} \PYG{n}{i} \PYG{o}{\PYGZhy{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{backTrack}
+                \PYG{n}{chunkEnd} \PYG{o}{=} \PYG{n}{chunkStart} \PYG{o}{+} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}
+
+                \PYG{n}{chunkUnderEvaluation} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[}\PYG{n}{chunkStart}\PYG{p}{:}\PYG{n}{chunkEnd}\PYG{p}{,} \PYG{p}{:]}
+                \PYG{k}{while} \PYG{o+ow}{not} \PYG{n}{approvedByUser}\PYG{p}{:}
+                    \PYG{n}{shift} \PYG{o}{=} \PYG{l+m+mi}{0}
+                    \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{chunkUnderEvaluation}
+                    \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotRawEEG}\PYG{p}{(}\PYG{n}{fig}\PYG{p}{)}
+                    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}current sample is \PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{chunkStart}\PYG{p}{))}
+                    \PYG{n}{keep} \PYG{o}{=} \PYG{n+nb}{input}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}keep this? y/n\PYGZsq{}}\PYG{p}{)}
+                    \PYG{k}{if} \PYG{n}{keep} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}n\PYGZsq{}}\PYG{p}{:}
+                        \PYG{k}{break}
+                    \PYG{k}{try}\PYG{p}{:}
+                        \PYG{n}{shift} \PYG{o}{=} \PYG{n+nb}{input}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}enter desired shift (in samples, negative numbers mean shift left) \PYGZsq{}}\PYG{p}{)}
+                        \PYG{n}{shift} \PYG{o}{=} \PYG{n+nb}{int}\PYG{p}{(}\PYG{n}{shift}\PYG{p}{)}
+                    \PYG{k}{except} \PYG{p}{(}\PYG{n+ne}{TypeError}\PYG{p}{,} \PYG{n+ne}{ValueError}\PYG{p}{):}
+                        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}uh thats not an integer, shift set to 0\PYGZsq{}}\PYG{p}{)}
+                        \PYG{n}{shift} \PYG{o}{=} \PYG{l+m+mi}{0}
+
+                    \PYG{n}{chunkStart} \PYG{o}{=} \PYG{n}{chunkStart} \PYG{o}{+} \PYG{n}{shift}
+                    \PYG{n}{chunkEnd} \PYG{o}{=} \PYG{n}{chunkEnd} \PYG{o}{+} \PYG{n}{shift}
+
+                    \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[}\PYG{n}{chunkStart}\PYG{p}{:}\PYG{n}{chunkEnd}\PYG{p}{,} \PYG{p}{:]}
+                    \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotRawEEG}\PYG{p}{(}\PYG{n}{fig}\PYG{p}{)}
+                    \PYG{n}{allgood} \PYG{o}{=} \PYG{n+nb}{input}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}save this chunk? (y/n)\PYGZsq{}}\PYG{p}{)}
+                    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+                    \PYG{k}{if} \PYG{n}{allgood} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}y\PYGZsq{}}\PYG{p}{:}
+                        \PYG{n}{approvedByUser} \PYG{o}{=} \PYG{k+kc}{True}
+                        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+                        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunkCount} \PYG{o}{+=} \PYG{l+m+mi}{1}
+                        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{nChunks} \PYG{o}{+=} \PYG{l+m+mi}{1}
+                        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{saveSingleChunkToCSV}\PYG{p}{(}\PYG{n}{chunk}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{,} \PYG{n}{subdir}\PYG{o}{=}\PYG{n}{chunkSubdir}\PYG{p}{)}
+
+                \PYG{n}{i} \PYG{o}{=} \PYG{n}{chunkEnd} \PYG{o}{+} \PYG{l+m+mi}{1}
+            \PYG{n}{i} \PYG{o}{+=} \PYG{l+m+mi}{1}
+
+    \PYG{k}{def} \PYG{n+nf}{saveSingleChunkToCSV}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chunk}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{):}
+        \PYG{n}{workingDir} \PYG{o}{=} \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{)}
+        \PYG{n}{idx} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{n}{filesInFolder} \PYG{o}{=} \PYG{p}{[}\PYG{n}{file} \PYG{k}{for} \PYG{n}{file} \PYG{o+ow}{in} \PYG{n}{os}\PYG{o}{.}\PYG{n}{listdir}\PYG{p}{(}\PYG{n}{workingDir}\PYG{p}{)} \PYG{k}{if} \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{isfile}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{workingDir}\PYG{p}{,} \PYG{n}{file}\PYG{p}{))]}
+
+        \PYG{n}{chunkFilename} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{tag} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}\PYGZus{}\PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{idx}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.csv\PYGZsq{}}
+        \PYG{k}{while} \PYG{n}{chunkFilename} \PYG{o+ow}{in} \PYG{n}{filesInFolder}\PYG{p}{:}
+            \PYG{n}{idx} \PYG{o}{+=} \PYG{l+m+mi}{1}
+            \PYG{n}{chunkFilename} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{tag} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}\PYGZus{}\PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{idx}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.csv\PYGZsq{}}
+
+        \PYG{n}{chunkDataFrame} \PYG{o}{=} \PYG{n}{pandas}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)}
+        \PYG{n}{chunkDataFrame}\PYG{o}{.}\PYG{n}{to\PYGZus{}csv}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n}{chunkFilename}\PYG{p}{))}
+
+    \PYG{k}{def} \PYG{n+nf}{evalChunk}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{                evaluates chunks}
+\PYG{l+s+sd}{                goes through self.matrix and picks out chunks for you to evaluate}
+\PYG{l+s+sd}{                if you think the chunk is good, it will save it to self.curatedChunk list that contains all good chunks}
+
+\PYG{l+s+sd}{                :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunkCount} \PYG{o}{=} \PYG{l+m+mi}{0}
+        \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{trainingChunks}\PYG{p}{)):}
+            \PYG{n}{fig} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotChunk}\PYG{p}{(}\PYG{n}{i}\PYG{p}{)}
+            \PYG{n}{prompt} \PYG{o}{=} \PYG{n+nb}{input}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}would you like to use sample number \PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{i}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}? \PYGZsq{}}\PYG{p}{)}
+            \PYG{k}{if} \PYG{n}{prompt} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}y\PYGZsq{}}\PYG{p}{:}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{trainingChunks}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunkCount} \PYG{o}{+=} \PYG{l+m+mi}{1}
+
+            \PYG{n}{plt}\PYG{o}{.}\PYG{n}{close}\PYG{p}{(}\PYG{n}{fig}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{saveChunksToCSV}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{subdir}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}smallChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{append}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        saves curated chunks to csv}
+\PYG{l+s+sd}{        :param subdir: subdirectory where chunks will be stored}
+\PYG{l+s+sd}{        :param append: append new chunks or overwrite old ones}
+\PYG{l+s+sd}{        :return:}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunk}\PYG{p}{)):}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{curatedChunk}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{.}\PYG{n}{to\PYGZus{}csv}\PYG{p}{(}
+                \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedChunks\PYGZsq{}}\PYG{p}{,} \PYG{n}{subdir}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{tag} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}\PYGZus{}\PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{i}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.csv\PYGZsq{}}\PYG{p}{))}
+
+    \PYG{k}{def} \PYG{n+nf}{plotRawCSV}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{offset}\PYG{o}{=}\PYG{l+m+mi}{200}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        plot the whole csv}
+\PYG{l+s+sd}{        :param matrix:}
+\PYG{l+s+sd}{        :param offset: DC offset between eeg channels}
+\PYG{l+s+sd}{        :return: plot with all 14}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{c+c1}{\PYGZsh{} define time axis}
+        \PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{))}  \PYG{c+c1}{\PYGZsh{} create time axis w same length as the data matrix}
+        \PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{tAxis} \PYG{o}{/} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sampleRate}  \PYG{c+c1}{\PYGZsh{} adjust time axis to 256 sample rate}
+
+        \PYG{c+c1}{\PYGZsh{} use eeg self.matrix as y axis}
+        \PYG{n}{yAxis} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix} \PYG{o}{+} \PYG{n}{offset} \PYG{o}{*} \PYG{l+m+mi}{13}
+
+        \PYG{c+c1}{\PYGZsh{} add offset to display all channels}
+        \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])):}
+            \PYG{n}{yAxis}\PYG{p}{[:,} \PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZhy{}=} \PYG{n}{offset} \PYG{o}{*} \PYG{n}{i}
+
+        \PYG{c+c1}{\PYGZsh{} plot figure}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{()}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{tAxis}\PYG{p}{,} \PYG{n}{yAxis}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{title}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{tag}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{300}\PYG{p}{,} \PYG{n}{offset} \PYG{o}{*} \PYG{l+m+mi}{20}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{legend}\PYG{p}{([}\PYG{l+s+s2}{\PYGZdq{}EEG.AF3\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F7\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F3\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.FC5\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.T7\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.P7\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.O1\PYGZdq{}}\PYG{p}{,}
+                    \PYG{l+s+s2}{\PYGZdq{}EEG.O2\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.P8\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.T8\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.FC6\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F4\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.F8\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}EEG.AF4\PYGZdq{}}\PYG{p}{],}
+                   \PYG{n}{loc}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}upper right\PYGZsq{}}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}time\PYGZsq{}}\PYG{p}{)}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{(}\PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} plt.pause(0.01)}
+
+\PYG{c+c1}{\PYGZsh{} todo: rebuild tensor flow with AVX2 FMA for faster performance}
+\end{Verbatim}

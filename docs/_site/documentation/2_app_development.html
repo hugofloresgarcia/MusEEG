@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="The MusEEG package is a Python package containing useful classes thataid developers in preprocessing and classifying EEG data, creating MIDIobjects, instanti...">
+  <meta name="keywords" content="blog and jekyll">
+  <meta name="author" content="Application Development | hugofloresgarcia/museeg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f5">
+
+  <!-- Twitter Tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Application Development | hugofloresgarcia/museeg">
+  <meta name="twitter:description" content="The MusEEG package is a Python package containing useful classes thataid developers in preprocessing and classifying EEG data, creating MIDIobjects, instanti...">
+  
+    <meta property="twitter:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+
+  <!-- Open Graph Tags -->
+  <meta property="og:type" content="blog">
+  <meta property="og:url" content="http://localhost:4000/documentation/2_app_development">
+  <meta property="og:title" content="Application Development | hugofloresgarcia/museeg">
+  <meta property="og:description" content="The MusEEG package is a Python package containing useful classes thataid developers in preprocessing and classifying EEG data, creating MIDIobjects, instanti...">
+  
+    <meta property="og:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+  <title>Application Development | hugofloresgarcia/museeg</title>
+
+  <!-- CSS files -->
+  <link rel="stylesheet" href="http://localhost:4000/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://localhost:4000/css/main.css">
+
+  <link rel="canonical" href="http://localhost:4000/documentation/2_app_development">
+  <link rel="alternate" type="application/rss+xml" title="hugofloresgarcia/museeg" href="http://localhost:4000/feed.xml" />
+
+  <!-- Icons -->
+  <!-- 16x16 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+  <!-- 32x32 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.png">
+</head>
+
+
+<body>
+  <div class="row">
+    <div class="col s12 m4">
+      <div class="table cover">
+        
+
+<div class="cover-card table-cell table-middle">
+  
+  <a href="http://localhost:4000/">
+    <img src="http://localhost:4000/img/flower_logo_v1_cropped.png" alt="" class="avatar">
+  </a>
+  
+  <a href="http://localhost:4000/" class="author_name">hugofloresgarcia/museeg</a>
+  <span class="author_job"></span>
+  <span class="author_bio mbm">a cool open source brain-computer interface for music performance</span>
+  <nav class="nav">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a href="https://hugofloresgarcia.github.io/">home (hugofloresgarcia)</a>
+      </li>
+      <li class="nav-item">
+        <a href="http://localhost:4000/">about</a>
+      </li>
+       
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/deliverables">deliverables</a>
+      </li>
+        
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/demo">demo</a>
+      </li>
+        
+      <li class="nav-item">
+        <a href="http://localhost:4000/documentation/">documentation</a>
+      </li>
+               
+    </ul>
+  </nav>
+  <script type="text/javascript">
+  // based on http://stackoverflow.com/a/10300743/280842
+  function gen_mail_to_link(hs, subject) {
+    var lhs,rhs;
+    var p = hs.split('@');
+    lhs = p[0];
+    rhs = p[1];
+    document.write("<a class=\"social-link-item\" target=\"_blank\" href=\"mailto");
+    document.write(":" + lhs + "@");
+    document.write(rhs + "?subject=" + subject + "\"><i class=\"fa fa-fw fa-envelope\"></i><\/a>");
+  }
+</script>
+<div class="social-links">
+  <ul>
+    
+      <li>
+      <script>gen_mail_to_link('hf01049@georgiasouthern.edu', 'Hello from website');</script>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <li><a href="http://github.com/hugofloresgarcia/museeg" class="social-link-item" target="_blank"><i class="fa fa-fw fa-github"></i></a></li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  </ul>
+</div>
+
+</div>
+
+      </div>
+    </div>
+    <div class="col s12 m8">
+      <div class="post-listing">
+          <div id="page">
+    <header class="page-header">
+      <h2>Application Development</h2>
+    </header>
+
+    <article class="page-content">
+      <p>The MusEEG package is a Python package containing useful classes that
+aid developers in preprocessing and classifying EEG data, creating MIDI
+objects, instantiating an OSC client, and designing a Brain-Computer
+Music Interface that allows a user to trigger MIDI events and OSC
+messages from performing facial expressions. The MusEEG project is
+available as an open-source package and can be downloaded from its
+GitHub repository<sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup>.</p>
+
+<h2 id="regarding-open-source-privacy-concerns">Regarding Open Source Privacy Concerns</h2>
+
+<p>Due to the open-source, train-it yourself nature of the MusEEG project,
+a particular subject’s EEG data is handled by only the subject himself,
+as it is advised that the neural network model is trained for a single
+individual only for higher classification accuracy. In order for a user
+to create their own personalized neural network model, the user must
+first download the MusEEG package from GitHub to their personal
+computer. The MusEEG eegData module’s training methods facilitate the
+data collection process, organizing and labeling the training data into
+processing chunks inside the MusEEG directory. The processed and labeled
+training data is then used to create and train a new neural network
+model customized to the user’s training data, which will also be stored
+inside the MusEEG directory. It should be noted that all of the EEG data
+acquired by the user is processed and saved inside the user’s local
+MusEEG directory and is never uploaded to the web. Thus, each user’s EEG
+data and trained neural network models reside inside the same user’s
+computer, and are never shared, accessed, or viewed by any other subject
+without the original user’s consent and deliberate intent.</p>
+
+<h2 id="demo-application">Demo Application</h2>
+
+<p><img src="demoApp.png" alt="Demo Application GUI" /></p>
+
+<p>The demo application was created as a static proof-of-concept that
+provides a demonstration of the basic functionality of the MusEEG
+package. In short, the MusEEG demo application lets the user perform the
+following actions:</p>
+
+<ul>
+  <li>
+    <p>Create a MIDI chord dictionary by entering note names next to the
+desired facial expression.</p>
+  </li>
+  <li>
+    <p>Load a pre-recorded facial expression sample from the dataset.</p>
+  </li>
+  <li>
+    <p>Process the pre-recorded sample using wavelet decomposition as well
+as perform the statistical moments calculation.</p>
+  </li>
+  <li>
+    <p>Classify the pre-recorded facial expression sample using the
+<em>bigBrain</em> classifier.</p>
+  </li>
+  <li>
+    <p>Refer the resulting facial expression from the classification result
+to its corresponding chord in the MIDI dictionary.</p>
+  </li>
+  <li>
+    <p>Send the MIDI event to a virtual MIDI port with a set of
+music-related control parameters (arpeggiation, tempo, sustain
+duration, arpeggio note duration).</p>
+  </li>
+</ul>
+
+<h3 id="the-facial-expression-buttons-and-chord-dictionary">The Facial Expression Buttons and Chord Dictionary</h3>
+
+<p>The top left corner of the demo application allows the user to load a
+random sample from the existing facial expression dataset by pressing on
+one of the facial expression buttons. Once loaded, the 14-channel raw
+EEG signal will be plotted in the plot box. Next to each facial
+expression button is a text entry field that allows the user to define
+the set of notes that will be played when the facial expression is sent
+to the main processor. Note: whenever the user changes notes in the
+chord dictionary, the update chord dictionary button must be pressed in
+order for the changes to take effect.</p>
+
+<h3 id="process-and-send-button">Process and Send Button</h3>
+
+<p>The process and send button performs the following actions:\</p>
+<ol>
+  <li>wavelet transform of raw EEG signal\</li>
+  <li>statistical moment calculations of wavelet decomposition vectors\</li>
+  <li>creates ANN input array from extracted stat moments\</li>
+  <li>the ANN classifies the signal into either of the available facial
+expressions\</li>
+  <li>the facial expression is referred to its matching chord in the chord
+dictionary, and a chord object is created from the matching chord\</li>
+  <li>the playchord method is called on the chord object, sending a MIDI
+message according to the additional control parameters </li>
+</ol>
+
+<h3 id="additional-controls">Additional Controls</h3>
+
+<p>Additional controls are available for the demo app:\
+• arpeggiate: if the box is checked, the chord will play in an arpeggio
+as opposed to vertically.\
+• sustain duration: indicates how long (in quarter notes) the chord will
+be sustained (only applied if arpeggiate is unchecked)\
+• arpeggio note duration: indicates how long (in quarter notes) each
+note in the arpeggio will last.\</p>
+
+<h2 id="real-time-processing">Real-Time Processing</h2>
+
+<p>Two different real-time processing algorithms were designed for MusEEG.
+Though both use the same preprocessing and classification methods
+(discussed in ), their methods for segmenting the raw EEG data into
+analyzable chunks are distinct.</p>
+
+<h3 id="real-time-processing-with-smallbrain-wake-up">Real Time Processing with <em>smallBrain</em> Wake Up</h3>
+
+<p>A flowchart describing the real-time processing workflow using
+<em>smallBrain</em> wake up is described in
+(Figure <a href="#fig:realTimeFlowChart">5.2</a>).</p>
+
+<p><img src="realTimeFlowChart.png" alt="Flowchart for real-time processing with *smallBrain* wake
+up" /></p>
+
+<p><img src="clientThread.png" alt="Client Thread" /></p>
+
+<p>In the client thread, a TCP client receives single EEG data packets from
+a live EEG stream using the EPOC+. Each packet is placed into a python
+queue, waiting to be retrieved by the main processing thread when
+requested. A copy of this queue additionally stores 128 sample buffers
+to be acquired by the band power processing thread.</p>
+
+<p>In the main processing thread, a <em>chunkGetter</em> thread takes care of
+receiving EEG packets from the client thread and placing them into
+<em>smallChunk</em>s (64 samples). A "small" ANN model (<em>smallBrain</em>)
+classifies the <em>smallChunk</em> into either a facial expression/no facial
+expression result. If a facial expression is found, a wake up call is
+sent to the <em>bigBrain</em> classifier (320 samples), where facial expression
+classification takes place.</p>
+
+<p>The classification result is sent to a message thread, which in turn
+performs the predefined MIDI event indicated by the facial
+expression-MIDI dictionary, or sends the designated OSC message for each
+facial expression.</p>
+
+<p>The band power processing thread takes care of retrieving 128 sample
+(0.5s) chunks from the client and computing band power data by using the
+aforementioned feature extraction algorithm. Band power values are then
+sent as OSC messages, where they can be used as musical control
+parameters in a sound processing application such as Max/MSP or
+SuperCollider.</p>
+
+<h3 id="real-time-processing-with-rising-edge-wake-up">Real Time Processing with Rising Edge Wake Up</h3>
+
+<p>A flowchart for this real-time processing algorithm is provided in
+(Figure <a href="#fig:processorwithwakeup">5.4</a>). This is the algorithm implemented
+in the current release of the MusEEG app, as it provides a less
+error-prone approach to segmenting facial expressions into analyzable
+chunks.</p>
+
+<p>In this algorithm, the client, band power and MIDI/OSC message threads
+remain the same as the previous algorithm, while the main processsing
+thread proposes a simpler approach.</p>
+
+<p><img src="processorwithwakeup.png" alt="Flowchart for real-time processing with rising edge wake
+up" /></p>
+
+<p>In this algorithm’s main processing thread, single raw EEG samples are
+retrieved from the client’s queue and compared with a threshold voltage.
+If the magnitude of the packet’s voltage surpasses the threshold
+voltage, the <em>bigBrain</em> classifier is woken up, where it classifies the
+chunk to a facial expression.</p>
+
+<p>The classification result is sent to a message thread, which in turn
+performs the predefined MIDI event indicated by the facial
+expression-MIDI dictionary, or sends the designated OSC message for each
+facial expression.</p>
+
+<p>Because the real time processor with <em>smallBrain</em> wake up performs a
+full dedicated analysis on the transient data, it is able to detect
+facial expressions with smaller voltage magnitudes, making it a feasible
+option for classification of motor imagery commands. However, this can
+also lead to multiple false detection results that lead to a neutral
+classification result from the classifier.</p>
+
+<p>On the other hand, the real time processor with rising edge wake up is
+only able to detect facial expressions with high voltage magnitude, but
+it does so with more confidence. It was observed that the rising edge
+wake up algorithm provided more favorable results during unit testing.
+However, this algorithm might not perform well in MI classification
+systems.</p>
+
+<h2 id="graphical-user-interface">Graphical User Interface</h2>
+
+<p>The MusEEG Graphical User Interface (GUI)
+(Figure <a href="#fig:museeg-gui">5.5</a>) was designed to allow the user to perform
+the following actions:</p>
+
+<ul>
+  <li>
+    <p>select their desired EEG device (MusEEG currently supports the
+Emotiv EPOC+, and prerecorded .csv files),</p>
+  </li>
+  <li>
+    <p>open the MIDI menu, which contains a control center for modifying
+the MIDI messages assigned to facial expressions and the way the are
+performed on the system.</p>
+  </li>
+  <li>
+    <p>load a custom <em>bigBrain</em> model, and</p>
+  </li>
+  <li>
+    <p>view several monitoring windows for the raw EEG data, <em>bigBrain</em>
+data chunks, and average band power over all channels.</p>
+  </li>
+</ul>
+
+<p>In addition, a post window prints classification results and other
+useful messages from the backend.</p>
+
+<p><img src="museeg-gui-v2.png" alt="MusEEG GUI" /></p>
+
+<p>-</p>
+
+<h3 id="the-midi-menu">The MIDI Menu</h3>
+
+<p>MusEEG’s MIDI menu allows users to assign custom chords to facial
+expressions and control the way the are performed, such as:</p>
+
+<ul>
+  <li>
+    <p>save the current MIDI-facial expression dictionary</p>
+  </li>
+  <li>
+    <p>load a stored MIDI-facial expression dictionary</p>
+  </li>
+  <li>
+    <p>set sustain duration for non-arpeggiated chords</p>
+  </li>
+  <li>
+    <p>arpeggiate the chord</p>
+  </li>
+  <li>
+    <p>(if the chord is arppegiated) scramble the arpeggio note order</p>
+  </li>
+  <li>
+    <p>set the number of repeats for the arpeggio pattern.</p>
+  </li>
+</ul>
+
+<p><img src="midi-menu.png" alt="MIDI Menu" /></p>
+
+<h2 id="open-sound-control">Open Sound Control</h2>
+
+<p>MusEEG offers a simple OSC module that wraps on top of the open-source
+osc4py3 library. The module introduces availability to refer
+user-defined OSC messages and bundles to facial expressions, and builds
+a client that sends said messages over a network in the message thread.</p>
+
+<p><img src="OSCmsg.png" alt="MusEEG OSC message in SuperCollider" /></p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>To access the MusEEG GitHub repository visit:
+https://github.com/hugofloresgarcia/MusEEG <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </article>
+
+
+  </div><!-- end page content -->
+
+
+  
+
+        <footer>
+  &copy; 2020 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
+</footer>
+
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="http://localhost:4000/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="http://localhost:4000/js/main.js"></script>
+
+
+</body>
+</html>

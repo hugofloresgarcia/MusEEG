@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="The MusEEG root directory(Figure 4.1) consists of a data directory, anexample scripts directory, the MusEEG library, a README file, a libraryrequirements fil...">
+  <meta name="keywords" content="blog and jekyll">
+  <meta name="author" content="Project Structure | hugofloresgarcia/museeg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f5">
+
+  <!-- Twitter Tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Project Structure | hugofloresgarcia/museeg">
+  <meta name="twitter:description" content="The MusEEG root directory(Figure 4.1) consists of a data directory, anexample scripts directory, the MusEEG library, a README file, a libraryrequirements fil...">
+  
+    <meta property="twitter:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+
+  <!-- Open Graph Tags -->
+  <meta property="og:type" content="blog">
+  <meta property="og:url" content="http://localhost:4000/documentation/0_project_structure">
+  <meta property="og:title" content="Project Structure | hugofloresgarcia/museeg">
+  <meta property="og:description" content="The MusEEG root directory(Figure 4.1) consists of a data directory, anexample scripts directory, the MusEEG library, a README file, a libraryrequirements fil...">
+  
+    <meta property="og:image" content="http://localhost:4000/img/leonids-logo.png">
+  
+  <title>Project Structure | hugofloresgarcia/museeg</title>
+
+  <!-- CSS files -->
+  <link rel="stylesheet" href="http://localhost:4000/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://localhost:4000/css/main.css">
+
+  <link rel="canonical" href="http://localhost:4000/documentation/0_project_structure">
+  <link rel="alternate" type="application/rss+xml" title="hugofloresgarcia/museeg" href="http://localhost:4000/feed.xml" />
+
+  <!-- Icons -->
+  <!-- 16x16 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+  <!-- 32x32 -->
+  <link rel="shortcut icon" href="http://localhost:4000/favicon.png">
+</head>
+
+
+<body>
+  <div class="row">
+    <div class="col s12 m4">
+      <div class="table cover">
+        
+
+<div class="cover-card table-cell table-middle">
+  
+  <a href="http://localhost:4000/">
+    <img src="http://localhost:4000/img/flower_logo_v1_cropped.png" alt="" class="avatar">
+  </a>
+  
+  <a href="http://localhost:4000/" class="author_name">hugofloresgarcia/museeg</a>
+  <span class="author_job"></span>
+  <span class="author_bio mbm">a cool open source brain-computer interface for music performance</span>
+  <nav class="nav">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a href="https://hugofloresgarcia.github.io/">home (hugofloresgarcia)</a>
+      </li>
+      <li class="nav-item">
+        <a href="http://localhost:4000/">about</a>
+      </li>
+       
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/deliverables">deliverables</a>
+      </li>
+        
+      <li class="nav-item">
+        <a href="http://localhost:4000/pages/demo">demo</a>
+      </li>
+        
+      <li class="nav-item">
+        <a href="http://localhost:4000/documentation/">documentation</a>
+      </li>
+               
+    </ul>
+  </nav>
+  <script type="text/javascript">
+  // based on http://stackoverflow.com/a/10300743/280842
+  function gen_mail_to_link(hs, subject) {
+    var lhs,rhs;
+    var p = hs.split('@');
+    lhs = p[0];
+    rhs = p[1];
+    document.write("<a class=\"social-link-item\" target=\"_blank\" href=\"mailto");
+    document.write(":" + lhs + "@");
+    document.write(rhs + "?subject=" + subject + "\"><i class=\"fa fa-fw fa-envelope\"></i><\/a>");
+  }
+</script>
+<div class="social-links">
+  <ul>
+    
+      <li>
+      <script>gen_mail_to_link('hf01049@georgiasouthern.edu', 'Hello from website');</script>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <li><a href="http://github.com/hugofloresgarcia/museeg" class="social-link-item" target="_blank"><i class="fa fa-fw fa-github"></i></a></li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  </ul>
+</div>
+
+</div>
+
+      </div>
+    </div>
+    <div class="col s12 m8">
+      <div class="post-listing">
+          <div id="page">
+    <header class="page-header">
+      <h2>Project Structure</h2>
+    </header>
+
+    <article class="page-content">
+      <p>The MusEEG root directory
+(Figure <a href="#fig:projectStructure">4.1</a>) consists of a data directory, an
+example scripts directory, the MusEEG library, a README file, a library
+requirements file, a demo application, and an MIT License file.</p>
+
+<p><img src="projectStructure.png" alt="MusEEG Project Structure" />
+The Data Directory
+——————</p>
+
+<p>The /data directory of the MusEEG module stores EEG data in all of its
+different training stages, inputs and targets for the ANN models, as
+well as the ANN models themselves. The /data/longRawTrainingSamples
+subdirectory stores .csv files with multiple samples of a single
+gesture. During the normal workflow of the data acquisition process, the
+files from the longRawTrainingSamples subdirectory are curated and
+stored into individual chunks in the /data/savedChunks subdirectory,
+which in itself contains subdirectories for smallChunks and bigChunks.
+The /data/savedModels subdirectory saves Keras models that have been
+trained and are ready for usage, while the /data/training subdirectory
+stores preprocessed and prelabeled input and target vectors for
+designing ANN models.</p>
+
+<h2 id="museeg-library">MusEEG Library</h2>
+
+<p>The MusEEG library contains all the required classes to build a
+brain-computer interface for music performance. It is organized into
+five modules:</p>
+
+<ul>
+  <li>
+    <p>eegData.py (import, process, plot, save EEG data).</p>
+  </li>
+  <li>
+    <p>music.py (MIDI objects, chords, and melodies)</p>
+  </li>
+  <li>
+    <p>classifier.py (build, train, save keras models easily)</p>
+  </li>
+  <li>
+    <p>cerebro.py (methods to use music, classifier, and eegData together)</p>
+  </li>
+  <li>
+    <p>client.py (TCP client setup to receive live raw EEG data stream from
+EPOC+ headset and stream .csv giles)</p>
+  </li>
+  <li>
+    <p>Processor.py (real-time processing and OSC communication)</p>
+  </li>
+</ul>
+
+<p><img src="eegDataClass.png" alt="Overview of eegData class methods" /></p>
+
+<p>The eegData class (Figure <a href="#fig:eegDataClass">4.2</a>) helps a user import raw EEG data from
+.csv files, curate it into processable chunks, process using wavelet
+decomposition and statistical extraction, as well as plot the 14-channel
+EEG signal or the five coefficient vectors created by the wavelet
+decomposition. It is currently designed around the EPOC+ model, but can
+be redesigned for any other EEG system, provided that the developer has
+a means of obtaining a raw EEG stream from such system. The eegData
+class builds upon the PyWavelets, matplotlib, SciPy, and Pandas Python
+libraries.</p>
+
+<p><img src="musicClass.png" alt="Overview of music class methods" /></p>
+
+<p>The music class (Figure <a href="#fig:musicClass">4.3</a>) is designed to allow the user to create,
+load, and save different MIDI events for use during performance. As of
+now, the music class allows the creation of chord and melody objects,
+though future iterations will also include the option to load
+pre-written MIDI files created using third-party MIDI sequencing
+software. The music class is built upon the Mido and Audiolazy
+libraries.</p>
+
+<p><img src="classifierClass.png" alt="Overview of classifier class
+methods" /></p>
+
+<p>The classifier class
+(Figure <a href="#fig:classifierClass">4.4</a>) builds upon the TensorFlow and Keras
+libraries to expedite the process of creating, training, loading,
+saving, and analyzing the performance of ANN models.</p>
+
+<p><img src="cerebroClass.png" alt="Overview of cerebro class methods" />
+The cerebro class serves as a high-level API for less experienced
+programmers to make use of the MusEEG package, as it contains methods
+that use the eegData, classifier, and music classes in conjunction to
+create brain-computer music interface systems. The cerebro class is
+built on top of the eegData, music, classifier, and client classes from
+the MusEEG package.</p>
+
+<p><img src="clientClass.png" alt="Overview of client class methods" /></p>
+
+<p>The client class (Figure <a href="#fig:clientClass">4.6</a>) sets up a TCP client that receives raw EEG
+data packets from an EEG stream server and packs them into chunks to
+create eegData objects. The client class is also capable of creating a
+raw EEG streaming simulation by effectively streaming a pre-recorded
+.csv EEG session into the server.</p>
+
+<p><img src="processorClass.png" alt="Overview of Processor class
+methods" /></p>
+
+<p>The processor class
+(Figure <a href="#fig:processorClass">4.7</a>) contains real-time processing methods
+that communicate with the client and eegData classes to perform
+real-time EEG classification and MIDI/OSC processing as described in
+(Figure <a href="#fig:realTimeFlowChart">5.2</a>) and
+(Figure <a href="#fig:processorwithwakeup">5.4</a>).</p>
+
+<h2 id="example-scripts">Example Scripts</h2>
+
+<p>The MusEEG/scripts directory contains a series of sample scripts that
+can be useful during the creation of a user’s training samples and ANN
+model.</p>
+
+<p>evalTrainingData.py provides an example of importing long .csv files
+that contain multiple samples of the same gesture from the
+MusEEG/data/longRawTrainingSamples directory and using the
+TrainingDataMacro class to evaluate, curate, and save individual
+training samples to the /data/savedChunks directory.</p>
+
+<p><img src="evalTrainingData.png" alt="evalTrainingData Script" /></p>
+
+<p>processTrainingData.py grabs the curated chunks from the
+/data/savedChunks directory and performs the preprocessing and feature
+extraction routine (wavelet transform and statistical extraction), as
+well as creates training inputs and targets and stores them in the
+/data/training directory.</p>
+
+<p><img src="processTrainingData.png" alt="processTrainingData
+Script" /></p>
+
+<p>Because the dataset is quite small and one-dimensional, training ANN
+models is relatively computationally inexpensive. This lets a user
+perform an exhaustive search of different ANN models with different
+activation units, hidden layer sizes, and regularization parameters
+within the span of a couple of minutes. iterateThruClassifiers.py
+iterates over every combination of different hidden layer activation
+functions, output layer activations, regularization parameters, number
+of hidden neurons, and loss functions to find the one that performs with
+the highest accuracy. The iterateThruClassifiers.py script creates a
+.csv file in the /data/ClassifierOptimizations directory which contains
+the test results for each of the combinations tried. saveModels.py
+trains and saves a Keras model in the /data/savedModels directory.</p>
+
+    </article>
+
+
+  </div><!-- end page content -->
+
+
+  
+
+        <footer>
+  &copy; 2020 hugofloresgarcia/museeg. Powered by <a href="http://jekyllrb.com/">Jekyll</a>, <a href="http://github.com/renyuanz/leonids/">leonids theme</a> made with <i class="fa fa-heart heart-icon"></i>
+</footer>
+
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="http://localhost:4000/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="http://localhost:4000/js/main.js"></script>
+
+
+</body>
+</html>

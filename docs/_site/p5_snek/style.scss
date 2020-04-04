@@ -1,0 +1,43 @@
+
+button {
+  background-color: #000000 ; /* Green */
+  border: white ;
+  color: white ;
+  padding: 15px 32px ;
+  text-align: center ;
+  text-decoration: none ;
+  display: inline-block ;
+  font-face: "8-Bit Madness";
+  font-size: 16px;
+  &:hover {
+    background-color: white;
+    color: black;
+    border-color: black;
+  }
+}
+
+//
+.btn {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 8px 20px;
+  font-size: 0.875em;
+  font-family: $font-family-base;
+  font-weight: 700;
+  background-color: $primary;
+  color: $white;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: $primary;
+  text-decoration: none !important;
+  border-radius: 5px;
+  &:visited {
+    color: $white;
+    border-color: $primary;
+  }
+  &:hover {
+    background-color: $white;
+    color: $primary;
+    border-color: $primary;
+  }
+}

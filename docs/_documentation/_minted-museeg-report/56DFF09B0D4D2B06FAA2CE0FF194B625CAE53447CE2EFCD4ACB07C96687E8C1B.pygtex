@@ -1,0 +1,107 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{.classifier} \PYG{k+kn}{import} \PYG{o}{*}
+\PYG{k+kn}{from} \PYG{n+nn}{.eegData} \PYG{k+kn}{import} \PYG{o}{*}
+\PYG{k+kn}{from} \PYG{n+nn}{.music} \PYG{k+kn}{import} \PYG{o}{*}
+\PYG{k+kn}{from} \PYG{n+nn}{.client} \PYG{k+kn}{import} \PYG{o}{*}
+
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{parentDir}\PYG{p}{,} \PYG{n}{resetPort}
+
+\PYG{k+kn}{import} \PYG{n+nn}{pickle}
+\PYG{k+kn}{import} \PYG{n+nn}{threading}
+
+\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{DEPRECATED}
+\PYG{l+s+sd}{this is the processor used to run the demo app}
+\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+
+
+\PYG{k}{class} \PYG{n+nc}{cerebro}\PYG{p}{:}
+    \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{    hello message to display in UI}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{demomsg} \PYG{o}{=} \PYG{p}{(}
+        \PYG{l+s+s1}{\PYGZsq{}Hello! welcome to the MusEEG demo. This demo will: }\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}
+        \PYG{l+s+s1}{\PYGZsq{}\PYGZhy{} send a pre\PYGZhy{}recorded brain signal of your choice when you click on any of the gesture buttons}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}
+        \PYG{l+s+s1}{\PYGZsq{}\PYGZhy{} process it using a 4\PYGZhy{}level, db2 wavelet transform}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}
+        \PYG{l+s+s1}{\PYGZsq{}\PYGZhy{} extract the first four statistical moments of the wavelet decompositions (mean, variance, skewness, kurtosis)}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}
+        \PYG{l+s+s1}{\PYGZsq{}\PYGZhy{} classify it using a deep neural network}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}
+        \PYG{l+s+s1}{\PYGZsq{}\PYGZhy{} using the results from the DNN, play the chord that is referenced to the gesture using MIDI}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}
+        \PYG{l+s+s1}{\PYGZsq{}\PYGZhy{} to change a chord, press the \PYGZdq{}update chord dictionary\PYGZdq{} button after youve changed the notes}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+    \PYG{n}{eeg} \PYG{o}{=} \PYG{n}{eegData}\PYG{p}{()}
+
+    \PYG{n}{gestures} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}smile\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}eyebrows\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}lookleft\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}lookright\PYGZsq{}}\PYG{p}{,}
+                     \PYG{l+s+s1}{\PYGZsq{}neutral\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}scrunch\PYGZsq{}}\PYG{p}{]}
+
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{c+c1}{\PYGZsh{}default mididict. it will be updated everytime the user presses the update chord button}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{loadMIDIdict}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,}  \PYG{l+s+s1}{\PYGZsq{}MIDIdicts\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}cMajorExtended.pickle\PYGZsq{}}\PYG{p}{))}
+
+        \PYG{c+c1}{\PYGZsh{} open and reset midiport}
+        \PYG{n}{resetPort}\PYG{p}{()}
+
+        \PYG{c+c1}{\PYGZsh{} load the ANN classifier (bigbrain for whole eeg chunks, small brain for small chunks)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain} \PYG{o}{=} \PYG{n}{classifier}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}bigBrain\PYGZus{}v2\PYGZsq{}}\PYG{p}{))}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrain} \PYG{o}{=} \PYG{n}{classifier}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}smallBrain\PYGZus{}v1\PYGZsq{}}\PYG{p}{))}
+
+        \PYG{c+c1}{\PYGZsh{} define chords and tempo to be used}
+        \PYG{n}{music}\PYG{o}{.}\PYG{n}{tempo} \PYG{o}{=} \PYG{l+m+mi}{60}  \PYG{c+c1}{\PYGZsh{} bpm}
+        \PYG{n}{music}\PYG{o}{.}\PYG{n}{midiChannel} \PYG{o}{=} \PYG{l+m+mi}{0}  \PYG{c+c1}{\PYGZsh{} add 1}
+
+    \PYG{k}{def} \PYG{n+nf}{setupClient}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client} \PYG{o}{=} \PYG{n}{client}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{setup}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{updateChordList}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chordlistlist}\PYG{p}{):}
+        \PYG{k}{for} \PYG{n}{c} \PYG{o+ow}{in} \PYG{n}{chordlistlist}\PYG{p}{:}
+            \PYG{n}{index} \PYG{o}{=} \PYG{n}{chordlistlist}\PYG{o}{.}\PYG{n}{index}\PYG{p}{(}\PYG{n}{c}\PYG{p}{)}
+            \PYG{n}{gestureBeingDefined} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{[}\PYG{n}{gestureBeingDefined}\PYG{p}{]} \PYG{o}{=} \PYG{n}{chord}\PYG{p}{(}\PYG{n}{notelist}\PYG{o}{=}\PYG{n}{chordlistlist}\PYG{p}{[}\PYG{n}{index}\PYG{p}{],} \PYG{n}{name}\PYG{o}{=}\PYG{n}{gestureBeingDefined}\PYG{p}{)}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{saveMIDIdict}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{addressPath}\PYG{p}{):}
+        \PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{addressPath}\PYG{p}{),} \PYG{l+s+s1}{\PYGZsq{}wb\PYGZsq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{handle}\PYG{p}{:}
+            \PYG{n}{pickle}\PYG{o}{.}\PYG{n}{dump}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{,} \PYG{n}{handle}\PYG{p}{,} \PYG{n}{protocol}\PYG{o}{=}\PYG{n}{pickle}\PYG{o}{.}\PYG{n}{HIGHEST\PYGZus{}PROTOCOL}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{loadMIDIdict}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{addressPath}\PYG{p}{):}
+        \PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{n}{addressPath}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}rb\PYGZsq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{handle}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict} \PYG{o}{=} \PYG{n}{pickle}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{n}{handle}\PYG{p}{)}
+            \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}
+
+    \PYG{k}{def} \PYG{n+nf}{loadFromDataSet}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{name}\PYG{p}{):}
+        \PYG{c+c1}{\PYGZsh{} subdirectory where sample chunks are located and load a random chunk from trianing dataset}
+        \PYG{n}{SUBDIR} \PYG{o}{=} \PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}trainbatch1\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}bigChunks\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{loadChunkFromTraining}\PYG{p}{(}\PYG{n}{subdir}\PYG{o}{=}\PYG{n}{SUBDIR}\PYG{p}{,} \PYG{n}{filename}\PYG{o}{=}\PYG{n}{name} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}\PYGZus{}\PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randint}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{60}\PYG{p}{))} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.csv\PYGZsq{}}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{processAndPlay}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{arp}\PYG{p}{,} \PYG{n}{tempo}\PYG{p}{,} \PYG{n}{arpDurationFromGUI}\PYG{p}{,} \PYG{n}{noteDurationFromGUI}\PYG{p}{):}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}performing wavelet transform\PYGZsq{}}\PYG{p}{)}
+        \PYG{n}{brainInput} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{process}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpDurationFromGUI} \PYG{o}{=} \PYG{n}{arpDurationFromGUI}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{noteDurationFromGUI} \PYG{o}{=} \PYG{n}{noteDurationFromGUI}
+
+        \PYG{c+c1}{\PYGZsh{} classify facial gesture in DNN}
+        \PYG{n}{brainOutput} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain}\PYG{o}{.}\PYG{n}{classify}\PYG{p}{(}\PYG{n}{brainInput}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{350}\PYG{p}{))}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}the neural network has taken the brain signal and classified it.\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{gestureResult} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{[}\PYG{n}{brainOutput}\PYG{p}{]}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}classification result: \PYGZsq{}} \PYG{o}{+} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{gestureResult}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} refer classification to midi dictionary and refer chord object to musician}
+        \PYG{n}{musician} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{[}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{gestureResult}\PYG{p}{]}
+        \PYG{n}{musician}\PYG{o}{.}\PYG{n}{set\PYGZus{}tempo}\PYG{p}{(}\PYG{n}{tempo}\PYG{o}{=}\PYG{n}{tempo}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{}with threading}
+        \PYG{n}{musicianProcess} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{perform}\PYG{p}{,} \PYG{n}{args}\PYG{o}{=}\PYG{p}{[}\PYG{n}{musician}\PYG{p}{,} \PYG{n}{arp}\PYG{p}{])}
+        \PYG{n}{musicianProcess}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{perform}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{musician}\PYG{p}{,} \PYG{n}{arp}\PYG{p}{):}
+        \PYG{k}{if} \PYG{n}{arp}\PYG{p}{:}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}arpeggiate!\PYGZsq{}}\PYG{p}{)}
+            \PYG{n}{musician}\PYG{o}{.}\PYG{n}{arpeggiate}\PYG{p}{(}\PYG{n}{notelength}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpDurationFromGUI}\PYG{p}{,} \PYG{n}{vel}\PYG{o}{=}\PYG{l+m+mi}{30}\PYG{p}{,} \PYG{n}{numTimes}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{)}
+
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n}{musician}\PYG{o}{.}\PYG{n}{panic}\PYG{p}{()}
+            \PYG{n}{musician}\PYG{o}{.}\PYG{n}{playchord}\PYG{p}{(}\PYG{n}{qtrnotes}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{noteDurationFromGUI}\PYG{p}{,} \PYG{n}{vel}\PYG{o}{=}\PYG{l+m+mi}{30}\PYG{p}{)}
+\end{Verbatim}

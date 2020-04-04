@@ -1,0 +1,487 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{tkinter} \PYG{k}{as} \PYG{n+nn}{tk}
+\PYG{k+kn}{import} \PYG{n+nn}{MusEEG}
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{Processor}\PYG{p}{,} \PYG{n}{eegData}\PYG{p}{,} \PYG{n}{parentDir}
+\PYG{k+kn}{from} \PYG{n+nn}{tkinter} \PYG{k+kn}{import} \PYG{n}{filedialog}
+\PYG{k+kn}{from} \PYG{n+nn}{tkinter.scrolledtext} \PYG{k+kn}{import} \PYG{n}{ScrolledText}
+\PYG{k+kn}{import} \PYG{n+nn}{sys}
+\PYG{k+kn}{import} \PYG{n+nn}{os}
+
+\PYG{k+kn}{import} \PYG{n+nn}{queue}
+
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib}
+\PYG{n}{matplotlib}\PYG{o}{.}\PYG{n}{use}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}TkAgg\PYGZdq{}}\PYG{p}{)}
+\PYG{k+kn}{from} \PYG{n+nn}{matplotlib.backends.backend\PYGZus{}tkagg} \PYG{k+kn}{import} \PYG{n}{FigureCanvasTkAgg}
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.animation} \PYG{k}{as} \PYG{n+nn}{animation}
+
+\PYG{n}{processor} \PYG{o}{=} \PYG{n}{Processor}\PYG{p}{()}
+\PYG{n}{processor}\PYG{o}{.}\PYG{n}{OSCstart}\PYG{p}{()}
+\PYG{n}{processor}\PYG{o}{.}\PYG{n}{defineOSCMessages}\PYG{p}{()}
+\PYG{n}{processor}\PYG{o}{.}\PYG{n}{sendMIDI} \PYG{o}{=} \PYG{k+kc}{False}
+
+\PYG{n}{lastbandpwr} \PYG{o}{=} \PYG{p}{[[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{],} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{baselinedB}\PYG{p}{]}
+
+\PYG{k}{class} \PYG{n+nc}{MIDIOSCControl}\PYG{p}{():}
+
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{master}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{startRow}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{startColumn}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master} \PYG{o}{=} \PYG{n}{master}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow} \PYG{o}{=} \PYG{n}{startRow}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn} \PYG{o}{=} \PYG{n}{startColumn}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow} \PYG{o}{=} \PYG{n}{startRow} \PYG{c+c1}{\PYGZsh{}\PYGZsh{}this gets overwritten if defineChordEntry() is on}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlColumn} \PYG{o}{=} \PYG{n}{startColumn}
+
+    \PYG{k}{def} \PYG{n+nf}{defineChordEntry}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{listToString}\PYG{p}{(}\PYG{n}{s}\PYG{p}{):}
+            \PYG{c+c1}{\PYGZsh{} initialize an empty string}
+            \PYG{n}{str1} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{} \PYGZdq{}}
+            \PYG{c+c1}{\PYGZsh{} return string}
+            \PYG{k}{return} \PYG{p}{(}\PYG{n}{str1}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{s}\PYG{p}{))}
+
+        \PYG{k}{def} \PYG{n+nf}{stringToList}\PYG{p}{(}\PYG{n}{s}\PYG{p}{):}
+            \PYG{k}{return} \PYG{n}{s}\PYG{o}{.}\PYG{n}{split}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntryLbl} \PYG{o}{=} \PYG{n+nb}{list}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx} \PYG{o}{=} \PYG{n+nb}{list}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist} \PYG{o}{=} \PYG{p}{[}\PYG{n}{chord} \PYG{k}{for} \PYG{n}{chord} \PYG{o+ow}{in} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{mididict}\PYG{o}{.}\PYG{n}{values}\PYG{p}{()]}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow} \PYG{o}{+} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mi}{3}
+
+        \PYG{k}{for} \PYG{n}{gesture} \PYG{o+ow}{in} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{:}
+            \PYG{n}{index} \PYG{o}{=} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{o}{.}\PYG{n}{index}\PYG{p}{(}\PYG{n}{gesture}\PYG{p}{)}
+
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntryLbl}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{Label}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{))}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntryLbl}\PYG{p}{[}\PYG{n}{index}\PYG{p}{][}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{gesture}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntryLbl}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow}\PYG{o}{+}\PYG{n}{index}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{p}{)}
+
+            \PYG{c+c1}{\PYGZsh{} create entry box and set defaultchordlist as default}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{Entry}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{))}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{listToString}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]))}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow} \PYG{o}{+} \PYG{n}{index}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} retrieve chords from list}
+        \PYG{k}{def} \PYG{n+nf}{defineChordList}\PYG{p}{():}
+            \PYG{k}{for} \PYG{n}{items} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{)):}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{[}\PYG{n}{items}\PYG{p}{]} \PYG{o}{=} \PYG{n}{stringToList}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx}\PYG{p}{[}\PYG{n}{items}\PYG{p}{]}\PYG{o}{.}\PYG{n}{get}\PYG{p}{())}
+
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{updateMIDIdict}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} button to update chords}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateChords} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{defineChordList}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateChords}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}update MIDIdict\PYGZdq{}}
+        \PYG{c+c1}{\PYGZsh{} place the button under all the entry boxes}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateChords}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow} \PYG{o}{+} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+
+        \PYG{k}{def} \PYG{n+nf}{saveChordDict}\PYG{p}{():}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{saveMIDIdict}\PYG{p}{(}
+                \PYG{n}{addressPath}\PYG{o}{=}\PYG{n}{filedialog}\PYG{o}{.}\PYG{n}{asksaveasfilename}\PYG{p}{(}\PYG{n}{initialdir}\PYG{o}{=}\PYG{n}{MusEEG}\PYG{o}{.}\PYG{n}{parentDir} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}/data/MIDIdicts\PYGZsq{}}\PYG{p}{,}
+                                                         \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}save MIDI dictionary\PYGZsq{}}\PYG{p}{)} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}.pickle\PYGZsq{}}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} button to save chords}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{saveChords} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{saveChordDict}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{saveChords}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}save MIDIdict\PYGZdq{}}
+        \PYG{c+c1}{\PYGZsh{} place the button under all the entry boxes}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{saveChords}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow} \PYG{o}{+} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{p}{)}
+
+        \PYG{k}{def} \PYG{n+nf}{loadChordDict}\PYG{p}{():}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{loadMIDIdict}\PYG{p}{(}
+                \PYG{n}{addressPath}\PYG{o}{=}\PYG{n}{filedialog}\PYG{o}{.}\PYG{n}{askopenfilename}\PYG{p}{(}\PYG{n}{initialdir}\PYG{o}{=}\PYG{n}{MusEEG}\PYG{o}{.}\PYG{n}{parentDir} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}/data/MIDIdicts\PYGZsq{}}\PYG{p}{,}
+                                                       \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}load MIDI dictionary\PYGZsq{}}\PYG{p}{))}
+
+            \PYG{k}{for} \PYG{n}{gesture} \PYG{o+ow}{in} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{:}
+                \PYG{n}{index} \PYG{o}{=} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{o}{.}\PYG{n}{index}\PYG{p}{(}\PYG{n}{gesture}\PYG{p}{)}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{o}{.}\PYG{n}{delete}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}end\PYGZsq{}}\PYG{p}{)}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordEntrybx}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{listToString}\PYG{p}{(}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{[}\PYG{n}{gesture}\PYG{p}{]))}
+
+        \PYG{c+c1}{\PYGZsh{} button to load chords}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{loadChords} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{loadChordDict}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{loadChords}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}load MIDIdict\PYGZdq{}}
+        \PYG{c+c1}{\PYGZsh{} place the button under all the entry boxes}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{loadChords}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startRow} \PYG{o}{+} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordlist}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{checkboxArpeggiate}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpeggiateVar} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{BooleanVar}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{checkboxArp} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Checkbutton}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}arpeggiate?\PYGZdq{}}\PYG{p}{,} \PYG{n}{variable}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpeggiateVar}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{checkboxArp}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{checkboxScramble}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scrambleVar} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{BooleanVar}\PYG{p}{()}
+        \PYG{n}{checkboxScramble} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Checkbutton}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}scramble?\PYGZdq{}}\PYG{p}{,} \PYG{n}{variable}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scrambleVar}\PYG{p}{)}
+        \PYG{n}{checkboxScramble}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{chordDuration}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sustainlbl} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Label}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}sustain duration (in qtr notes)\PYGZsq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sustainbx} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Entry}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sustainbx}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}8\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sustainbx}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{numRepeats}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepeatsLabel} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Label}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}number of repeats (for arpeggios)\PYGZsq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{o}{+}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepBx} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Entry}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepBx}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}8\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepBx}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{o}{+}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startColumn}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{updateAllButton}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{updateAll}\PYG{p}{():}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{scrambleBool} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scrambleVar}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{arpBool} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpeggiateVar}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{durVal} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sustainbx}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{numRepeats} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepBx}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateAllBttn} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{updateAll}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateAllBttn}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}update these \PYGZca{}\PYGZca{}\PYGZca{}\PYGZca{}\PYGZca{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateAllBttn}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlRow}\PYG{o}{+}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{controlColumn}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{createWidgets}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{defineChordEntry}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{checkboxArpeggiate}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{checkboxScramble}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chordDuration}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepeats}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{updateAllButton}\PYG{p}{()}
+
+\PYG{k}{class} \PYG{n+nc}{App}\PYG{p}{(}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{Frame}\PYG{p}{):}
+
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{master}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{):}
+        \PYG{n+nb}{super}\PYG{p}{()}\PYG{o}{.}\PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n}{master}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master} \PYG{o}{=} \PYG{n}{master}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{pack}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{create\PYGZus{}widgets}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{buttonLoadModel}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{loadModel}\PYG{p}{():}
+            \PYG{n}{path} \PYG{o}{=} \PYG{n}{filedialog}\PYG{o}{.}\PYG{n}{askdirectory}\PYG{p}{(}\PYG{n}{initialdir}\PYG{o}{=}\PYG{n}{MusEEG}\PYG{o}{.}\PYG{n}{parentDir}\PYG{o}{+}\PYG{l+s+s1}{\PYGZsq{}/data/savedModels\PYGZsq{}}\PYG{p}{,} \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}load classifier\PYGZsq{}}\PYG{p}{)}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{bigBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{filename}\PYG{o}{=}\PYG{n}{path}\PYG{p}{,} \PYG{n}{loadScaler}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{n}{loadModelBttn} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{loadModel}\PYG{p}{)}
+        \PYG{n}{loadModelBttn}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}Load a bigBrain\PYGZdq{}}
+        \PYG{n}{loadModelBttn}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{buttonLoadSmallModel}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{loadModel}\PYG{p}{():}
+            \PYG{n}{path} \PYG{o}{=} \PYG{n}{filedialog}\PYG{o}{.}\PYG{n}{askdirectory}\PYG{p}{(}\PYG{n}{initialdir}\PYG{o}{=}\PYG{n}{MusEEG}\PYG{o}{.}\PYG{n}{parentDir}\PYG{o}{+}\PYG{l+s+s1}{\PYGZsq{}/data/savedModels\PYGZsq{}}\PYG{p}{,} \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}load classifier\PYGZsq{}}\PYG{p}{)}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{smallBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{filename}\PYG{o}{=}\PYG{n}{path}\PYG{p}{,} \PYG{n}{loadScaler}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{n}{loadModelBttn} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{loadModel}\PYG{p}{)}
+        \PYG{n}{loadModelBttn}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}Load a smallBrain\PYGZdq{}}
+        \PYG{n}{loadModelBttn}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{buttonStartProcessor}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startProcessorBttn} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{on\PYGZus{}click}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startProcessorBttn}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}Start Processor\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{startProcessorBttn}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{9}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{plotWindow}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{running} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ani} \PYG{o}{=} \PYG{k+kc}{None}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{fig} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{Figure}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ax1} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{lines} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{):}
+            \PYG{n}{templine}\PYG{p}{,} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ax1}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{([],} \PYG{p}{[],} \PYG{n}{lw}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{lines}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{templine}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} self.line, = self.ax1.plot([], [], lw=2)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{canvas} \PYG{o}{=} \PYG{n}{FigureCanvasTkAgg}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{fig}\PYG{p}{,} \PYG{n}{master}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{get\PYGZus{}tk\PYGZus{}widget}\PYG{p}{()}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{rowspan}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Raw EEG\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{500}\PYG{p}{,} \PYG{l+m+mi}{6000}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlim}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{windowSize}\PYG{o}{/}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{bandPowerWindow}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{BPani} \PYG{o}{=} \PYG{k+kc}{None}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpfig} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{Figure}\PYG{p}{((}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpax1} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpfig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpline}\PYG{p}{,} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpax1}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{([}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{],} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{baselinedB}\PYG{p}{,} \PYG{n}{lw}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} self.line, = self.ax1.plot([], [], lw=2)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpcanvas} \PYG{o}{=} \PYG{n}{FigureCanvasTkAgg}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpfig}\PYG{p}{,} \PYG{n}{master}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpcanvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpcanvas}\PYG{o}{.}\PYG{n}{get\PYGZus{}tk\PYGZus{}widget}\PYG{p}{()}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{6}\PYG{p}{,} \PYG{n}{rowspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{40}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Band Power (dB)\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{4}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpax1}\PYG{o}{.}\PYG{n}{set\PYGZus{}xticklabels}\PYG{p}{([}\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}theta\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}alpha\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}beta\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}gamma\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{])}
+
+    \PYG{k}{def} \PYG{n+nf}{smallBrainMonitor}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbani} \PYG{o}{=} \PYG{k+kc}{None}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbfig} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{Figure}\PYG{p}{((}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbax} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbfig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sblines} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{):}
+            \PYG{n}{templine}\PYG{p}{,} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbax}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{([],} \PYG{p}{[],} \PYG{n}{lw}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sblines}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{templine}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbcanvas} \PYG{o}{=} \PYG{n}{FigureCanvasTkAgg}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbfig}\PYG{p}{,} \PYG{n}{master}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbcanvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbcanvas}\PYG{o}{.}\PYG{n}{get\PYGZus{}tk\PYGZus{}widget}\PYG{p}{()}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{6}\PYG{p}{,} \PYG{n}{rowspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbax}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{800}\PYG{p}{,} \PYG{l+m+mi}{800}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} self.sbax.set\PYGZus{}title(\PYGZsq{}smallBrain monitor\PYGZsq{})}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbax}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{smallchunkSize}\PYG{o}{+}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{bigBrainMonitor}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbani} \PYG{o}{=} \PYG{k+kc}{None}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbfig} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{Figure}\PYG{p}{((}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{))}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbax} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbfig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bblines} \PYG{o}{=} \PYG{p}{[]}
+        \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{):}
+            \PYG{n}{templine}\PYG{p}{,} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbax}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{([],} \PYG{p}{[],} \PYG{n}{lw}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bblines}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{templine}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbcanvas} \PYG{o}{=} \PYG{n}{FigureCanvasTkAgg}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbfig}\PYG{p}{,} \PYG{n}{master}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbcanvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbcanvas}\PYG{o}{.}\PYG{n}{get\PYGZus{}tk\PYGZus{}widget}\PYG{p}{()}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{6}\PYG{p}{,} \PYG{n}{rowspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbax}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{800}\PYG{p}{,} \PYG{l+m+mi}{800}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbax}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}bigBrain monitor\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbax}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{o}{+}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{on\PYGZus{}click}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}the button is a start, pause and unpause button all in one}
+\PYG{l+s+sd}{        this method sorts out which of those actions to take\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ani} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{startStream}\PYG{p}{()}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{runProcessorThread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{mainProcessorWithBackTrack}\PYG{p}{)}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{bandPowerThread}\PYG{p}{(}\PYG{n}{asThread}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+            \PYG{c+c1}{\PYGZsh{} animation is not running; start it}
+            \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+
+        \PYG{c+c1}{\PYGZsh{} if self.running:}
+        \PYG{c+c1}{\PYGZsh{}     \PYGZsh{} animation is running; pause it}
+        \PYG{c+c1}{\PYGZsh{}     self.ani.event\PYGZus{}source.stop()}
+        \PYG{c+c1}{\PYGZsh{}     self.startProcessorBttn.config(text=\PYGZsq{}Un\PYGZhy{}Pause\PYGZsq{})}
+        \PYG{c+c1}{\PYGZsh{} else:}
+        \PYG{c+c1}{\PYGZsh{}     \PYGZsh{} animation is paused; unpause it}
+        \PYG{c+c1}{\PYGZsh{}     self.ani.event\PYGZus{}source.start()}
+        \PYG{c+c1}{\PYGZsh{}     self.startProcessorBttn.config(text=\PYGZsq{}Pause\PYGZsq{})}
+        \PYG{c+c1}{\PYGZsh{} self.running = not self.running}
+
+    \PYG{k}{def} \PYG{n+nf}{start}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ani} \PYG{o}{=} \PYG{n}{animation}\PYG{o}{.}\PYG{n}{FuncAnimation}\PYG{p}{(}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{fig}\PYG{p}{,}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{update\PYGZus{}graph}\PYG{p}{,}
+            \PYG{n}{interval}\PYG{o}{=}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{windowSize}\PYG{o}{/}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{refreshScale}\PYG{o}{/}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{o}{*}\PYG{l+m+mi}{1000}\PYG{p}{,}
+            \PYG{n}{repeat}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpani} \PYG{o}{=} \PYG{n}{animation}\PYG{o}{.}\PYG{n}{FuncAnimation}\PYG{p}{(}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpfig}\PYG{p}{,}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{update\PYGZus{}graph\PYGZus{}bp}\PYG{p}{,}
+            \PYG{n}{interval}\PYG{o}{=}\PYG{l+m+mi}{500}\PYG{p}{,}
+            \PYG{n}{repeat}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbani} \PYG{o}{=} \PYG{n}{animation}\PYG{o}{.}\PYG{n}{FuncAnimation}\PYG{p}{(}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbfig}\PYG{p}{,}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{update\PYGZus{}graph\PYGZus{}sb}\PYG{p}{,}
+            \PYG{n}{interval}\PYG{o}{=}\PYG{l+m+mi}{250}\PYG{p}{,}
+            \PYG{n}{repeat}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbani} \PYG{o}{=} \PYG{n}{animation}\PYG{o}{.}\PYG{n}{FuncAnimation}\PYG{p}{(}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbfig}\PYG{p}{,}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{update\PYGZus{}graph\PYGZus{}bb}\PYG{p}{,}
+            \PYG{n}{interval}\PYG{o}{=}\PYG{l+m+mi}{250}\PYG{p}{,}
+            \PYG{n}{repeat}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{running} \PYG{o}{=} \PYG{k+kc}{True}
+        \PYG{c+c1}{\PYGZsh{} self.startProcessorBttn.config(text=\PYGZsq{}Pause\PYGZsq{})}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ani}\PYG{o}{.}\PYG{n}{\PYGZus{}start}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpani}\PYG{o}{.}\PYG{n}{\PYGZus{}start}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbani}\PYG{o}{.}\PYG{n}{\PYGZus{}start}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbani}\PYG{o}{.}\PYG{n}{\PYGZus{}start}\PYG{p}{()}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}started animation\PYGZsq{}}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{get\PYGZus{}data\PYGZus{}raw}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{=} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{getPlotData}\PYG{p}{()}
+        \PYG{k}{return} \PYG{n}{x}\PYG{p}{,} \PYG{n}{y}
+
+    \PYG{k}{def} \PYG{n+nf}{get\PYGZus{}data\PYGZus{}bp}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{global} \PYG{n}{lastbandpwr}
+        \PYG{k}{try}\PYG{p}{:}
+            \PYG{n}{bandpwr} \PYG{o}{=} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{bandPowerQueue}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+            \PYG{n}{lastbandpwr} \PYG{o}{=} \PYG{n}{bandpwr}
+
+        \PYG{k}{except} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Empty}\PYG{p}{:}
+            \PYG{n}{bandpwr} \PYG{o}{=} \PYG{n}{lastbandpwr}
+        \PYG{c+c1}{\PYGZsh{} x = bandpwr[0]}
+        \PYG{n}{x} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{]}
+        \PYG{n}{y} \PYG{o}{=} \PYG{n}{bandpwr}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}
+        \PYG{k}{return} \PYG{n}{x}\PYG{p}{,} \PYG{n}{y}
+
+    \PYG{k}{def} \PYG{n+nf}{update\PYGZus{}graph}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{i}\PYG{p}{):}
+        \PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{get\PYGZus{}data\PYGZus{}raw}\PYG{p}{()}
+
+        \PYG{k}{for} \PYG{n}{idx}\PYG{p}{,} \PYG{n}{line} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{lines}\PYG{p}{):}
+            \PYG{n}{line}\PYG{o}{.}\PYG{n}{set\PYGZus{}data}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{[:,} \PYG{n}{idx}\PYG{p}{])}
+
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{lines}
+
+    \PYG{k}{def} \PYG{n+nf}{update\PYGZus{}graph\PYGZus{}bp}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{i}\PYG{p}{):}
+        \PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{get\PYGZus{}data\PYGZus{}bp}\PYG{p}{()}
+        \PYG{k}{if} \PYG{n}{y} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpline}\PYG{o}{.}\PYG{n}{set\PYGZus{}data}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{)}
+
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpline}
+
+    \PYG{k}{def} \PYG{n+nf}{update\PYGZus{}graph\PYGZus{}sb}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{i}\PYG{p}{):}
+        \PYG{k}{try}\PYG{p}{:}
+           \PYG{n}{y} \PYG{o}{=} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{smallBrainMonitorQueue}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+           \PYG{k}{for} \PYG{n}{idx}\PYG{p}{,} \PYG{n}{line} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sblines}\PYG{p}{):}
+               \PYG{n}{line}\PYG{o}{.}\PYG{n}{set\PYGZus{}data}\PYG{p}{(}\PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{smallchunkSize}\PYG{p}{),} \PYG{n}{y}\PYG{p}{[:,} \PYG{n}{idx}\PYG{p}{])}
+
+        \PYG{k}{except} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Empty}\PYG{p}{:}
+            \PYG{k}{pass}
+
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sblines}
+
+    \PYG{k}{def} \PYG{n+nf}{update\PYGZus{}graph\PYGZus{}bb}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{i}\PYG{p}{):}
+        \PYG{k}{try}\PYG{p}{:}
+            \PYG{n}{y} \PYG{o}{=} \PYG{n}{processor}\PYG{o}{.}\PYG{n}{bigBrainMonitorQueue}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+            \PYG{k}{for} \PYG{n}{idx}\PYG{p}{,} \PYG{n}{line} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bblines}\PYG{p}{):}
+                \PYG{n}{line}\PYG{o}{.}\PYG{n}{set\PYGZus{}data}\PYG{p}{(}\PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{),} \PYG{n}{y}\PYG{p}{[:,} \PYG{n}{idx}\PYG{p}{])}
+        \PYG{k}{except} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Empty}\PYG{p}{:}
+            \PYG{k}{pass}
+
+        \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bblines}
+
+    \PYG{k}{def} \PYG{n+nf}{commandWindow}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cmd} \PYG{o}{=} \PYG{n}{ScrolledText}\PYG{p}{(}\PYG{n}{master}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{height}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{,} \PYG{n}{width}\PYG{o}{=}\PYG{l+m+mi}{50}\PYG{p}{,} \PYG{n}{relief}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}solid\PYGZdq{}}\PYG{p}{,} \PYG{n}{bd} \PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cmd}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{rowspan}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,}  \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{6}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{add\PYGZus{}timestamp}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{add\PYGZus{}timestamp}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cmd}\PYG{o}{.}\PYG{n}{see}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}end\PYGZdq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{after}\PYG{p}{(}\PYG{l+m+mi}{1000}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{add\PYGZus{}timestamp}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{buttonConnect}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{setup}\PYG{p}{():}
+            \PYG{n}{device} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceVar}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+            \PYG{k}{if} \PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}sim\PYGZsq{}}\PYG{p}{:}
+                \PYG{n}{processor}\PYG{o}{.}\PYG{n}{setDevice}\PYG{p}{(}\PYG{k+kc}{None}\PYG{p}{)}
+                \PYG{n}{simPath} \PYG{o}{=} \PYG{n}{filedialog}\PYG{o}{.}\PYG{n}{askopenfilename}\PYG{p}{(}\PYG{n}{initialdir}\PYG{o}{=}\PYG{n}{MusEEG}\PYG{o}{.}\PYG{n}{parentDir}\PYG{o}{+}\PYG{l+s+s1}{\PYGZsq{}/data/longRawTrainingSamples\PYGZsq{}}\PYG{p}{,} \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}choose a .csv file!\PYGZsq{}}\PYG{p}{)}
+                \PYG{n}{processor}\PYG{o}{.}\PYG{n}{simPath} \PYG{o}{=} \PYG{n}{simPath}
+                \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}loaded \PYGZsq{}} \PYG{o}{+} \PYG{n}{simPath} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}!\PYGZsq{}}\PYG{p}{)}
+
+            \PYG{k}{else}\PYG{p}{:}
+                \PYG{n}{processor}\PYG{o}{.}\PYG{n}{setDevice}\PYG{p}{(}\PYG{n}{device}\PYG{p}{)}
+                \PYG{n}{processor}\PYG{o}{.}\PYG{n}{simulation} \PYG{o}{=} \PYG{k+kc}{False}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{connectBttn} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{setup}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{connectBttn}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}text\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}setup\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{connectBttn}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{deviceDropDown}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceLabel} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Label}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}pick a device above \PYGZca{}\PYGZca{}\PYGZca{}\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceLabel}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{9}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceVar} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{StringVar}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceVar}\PYG{o}{.}\PYG{n}{set}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}sim\PYGZdq{}}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceMenu} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{OptionMenu}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceVar}\PYG{p}{,} \PYG{o}{*}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{deviceList}\PYG{p}{)}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{columnspan}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{quitButton}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{quitbttn} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Shutdown\PYGZdq{}}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{quitProcessor}\PYG{p}{)}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{9}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{quitProcessor}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{c+c1}{\PYGZsh{} global processor}
+        \PYG{c+c1}{\PYGZsh{} processor.client.done = True}
+        \PYG{c+c1}{\PYGZsh{} processor.processorShutDown()}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}starting animation shutdown\PYGZsq{}}\PYG{p}{)}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{running}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bbani}\PYG{o}{.}\PYG{n}{\PYGZus{}stop}\PYG{p}{()}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bpani}\PYG{o}{.}\PYG{n}{\PYGZus{}stop}\PYG{p}{()}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{ani}\PYG{o}{.}\PYG{n}{\PYGZus{}stop}\PYG{p}{()}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sbani}\PYG{o}{.}\PYG{n}{\PYGZus{}stop}\PYG{p}{()}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}starting processor shutdown\PYGZsq{}}\PYG{p}{)}
+            \PYG{n}{processor}\PYG{o}{.}\PYG{n}{processorShutDown}\PYG{p}{()}
+            \PYG{c+c1}{\PYGZsh{} del processor}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}processor object deleted\PYGZsq{}}\PYG{p}{)}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}shutdown! feel free to quit\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{o}{.}\PYG{n}{destroy}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{midiOSCCOntrolButton}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{createMIDIWindow}\PYG{p}{():}
+            \PYG{k}{if} \PYG{o+ow}{not} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{MIDIWindowOpen}\PYG{p}{:}
+                \PYG{n}{submaster} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Toplevel}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{)}
+                \PYG{n}{submaster}\PYG{o}{.}\PYG{n}{wm\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}MusEEG MIDI\PYGZsq{}}\PYG{p}{)}
+                \PYG{n}{midiOSC} \PYG{o}{=} \PYG{n}{MIDIOSCControl}\PYG{p}{(}\PYG{n}{master}\PYG{o}{=}\PYG{n}{submaster}\PYG{p}{,} \PYG{n}{startRow}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{startColumn}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+                \PYG{n}{midiOSC}\PYG{o}{.}\PYG{n}{createWidgets}\PYG{p}{()}
+                \PYG{n}{processor}\PYG{o}{.}\PYG{n}{sendMIDI} \PYG{o}{=} \PYG{k+kc}{True}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{MIDIWindowOpen} \PYG{o}{=} \PYG{k+kc}{True}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{MIDIWindowOpen} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{n}{button} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Show MIDI Menu\PYGZdq{}}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{createMIDIWindow}\PYG{p}{)}
+        \PYG{n}{button}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{row}\PYG{o}{=}\PYG{l+m+mi}{9}\PYG{p}{,} \PYG{n}{column}\PYG{o}{=}\PYG{l+m+mi}{3}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{create\PYGZus{}widgets}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{winfo\PYGZus{}toplevel}\PYG{p}{()}\PYG{o}{.}\PYG{n}{title}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}MusEEG (OSC)\PYGZdq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{buttonStartProcessor}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{buttonLoadModel}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotWindow}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{commandWindow}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bandPowerWindow}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceDropDown}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{buttonConnect}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrainMonitor}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrainMonitor}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{midiOSCCOntrolButton}\PYG{p}{()}
+        \PYG{c+c1}{\PYGZsh{} self.buttonLoadSmallModel()}
+        \PYG{c+c1}{\PYGZsh{} self.quitButton()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{master}\PYG{o}{.}\PYG{n}{protocol}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}WM\PYGZus{}DELETE\PYGZus{}WINDOW\PYGZdq{}}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{quitProcessor}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} replace sys.stdout with our object}
+        \PYG{n}{sys}\PYG{o}{.}\PYG{n}{stdout} \PYG{o}{=} \PYG{n}{PrintLogger}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cmd}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{}}
+
+
+\PYG{k}{class} \PYG{n+nc}{PrintLogger}\PYG{p}{():} \PYG{c+c1}{\PYGZsh{} createa file like object}
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{textbox}\PYG{p}{):} \PYG{c+c1}{\PYGZsh{} pass reference to text widget}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{textbox} \PYG{o}{=} \PYG{n}{textbox} \PYG{c+c1}{\PYGZsh{} keep ref}
+
+    \PYG{k}{def} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{text}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{textbox}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{END}\PYG{p}{,} \PYG{n}{text}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} write text to textbox}
+            \PYG{c+c1}{\PYGZsh{} could also scroll to end of textbox here to make sure always visible}
+
+    \PYG{k}{def} \PYG{n+nf}{flush}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):} \PYG{c+c1}{\PYGZsh{} needed for file like object}
+        \PYG{k}{pass}
+
+
+\PYG{k}{if} \PYG{n+nv+vm}{\PYGZus{}\PYGZus{}name\PYGZus{}\PYGZus{}} \PYG{o}{==} \PYG{l+s+s2}{\PYGZdq{}\PYGZus{}\PYGZus{}main\PYGZus{}\PYGZus{}\PYGZdq{}}\PYG{p}{:}
+    \PYG{n}{root} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Tk}\PYG{p}{()}
+    \PYG{n}{root}\PYG{o}{.}\PYG{n}{lift}\PYG{p}{()}
+    \PYG{n}{root}\PYG{o}{.}\PYG{n}{iconbitmap}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}museeg\PYGZhy{}logo.ico\PYGZsq{}}\PYG{p}{))}
+    \PYG{n}{app} \PYG{o}{=} \PYG{n}{App}\PYG{p}{(}\PYG{n}{master}\PYG{o}{=}\PYG{n}{root}\PYG{p}{)}
+
+
+
+    \PYG{c+c1}{\PYGZsh{} todo: the app isnt quitting properly}
+    \PYG{k}{while} \PYG{k+kc}{True}\PYG{p}{:}
+        \PYG{k}{try}\PYG{p}{:}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}hello! this is the MusEEG log\PYGZsq{}}\PYG{p}{)}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}classification results are printed here}\PYG{l+s+se}{\PYGZbs{}n\PYGZbs{}n}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+            \PYG{n}{flower} \PYG{o}{=} \PYG{p}{[}
+                \PYG{l+s+s2}{\PYGZdq{}/                   \PYGZus{}\PYGZus{}     \PYGZus{}\PYGZus{}                  /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/                 .\PYGZsq{}  `...\PYGZsq{}  `.                /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/               \PYGZus{}\PYGZus{}|     |     |\PYGZus{}\PYGZus{}              /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/             .\PYGZsq{}    \PYGZbs{}   .   /    `.            /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/             |      ./\PYGZsh{}\PYGZsh{}\PYGZsh{}\PYGZbs{}.      |            /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/              \PYGZgt{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} |\PYGZsh{}\PYGZsh{}\PYGZsh{}\PYGZsh{}\PYGZsh{}| \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZlt{}             /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/             |      `\PYGZbs{}\PYGZsh{}\PYGZsh{}\PYGZsh{}/\PYGZsq{}      |            /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/             `.\PYGZus{}\PYGZus{} /    .    \PYGZbs{} \PYGZus{}\PYGZus{}.\PYGZsq{}            /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/                 |     |     |                /\PYGZdq{}}\PYG{p}{,}
+                \PYG{l+s+s2}{\PYGZdq{}/                 `.\PYGZus{}\PYGZus{}\PYGZus{}.\PYGZca{}.\PYGZus{}\PYGZus{}\PYGZus{}.\PYGZsq{}                /\PYGZdq{}}\PYG{p}{]}
+
+            \PYG{k}{for} \PYG{n}{line} \PYG{o+ow}{in} \PYG{n}{flower}\PYG{p}{:}
+                \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{line}\PYG{p}{)}
+
+            \PYG{n}{app}\PYG{o}{.}\PYG{n}{mainloop}\PYG{p}{()}
+            \PYG{k}{break}
+        \PYG{k}{except} \PYG{n+ne}{UnicodeDecodeError}\PYG{p}{:}
+            \PYG{k}{pass}
+\end{Verbatim}

@@ -1,3 +1,4 @@
+OSCdef.trace(false, false);
 
 s.waitForBoot({
 	OSCdef.freeAll;

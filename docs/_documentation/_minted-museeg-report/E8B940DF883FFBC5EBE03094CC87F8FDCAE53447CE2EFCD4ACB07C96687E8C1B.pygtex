@@ -1,0 +1,332 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{eegData}\PYG{p}{,} \PYG{n}{client}\PYG{p}{,} \PYG{n}{classifier}\PYG{p}{,} \PYG{n}{cerebro}
+\PYG{k+kn}{from} \PYG{n+nn}{audiolazy.lazy\PYGZus{}midi} \PYG{k+kn}{import} \PYG{n}{str2midi}
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{parentDir}
+\PYG{k+kn}{import} \PYG{n+nn}{os}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{import} \PYG{n+nn}{threading}
+\PYG{k+kn}{from} \PYG{n+nn}{osc4py3.as\PYGZus{}eventloop} \PYG{k+kn}{import} \PYG{o}{*}
+\PYG{k+kn}{from} \PYG{n+nn}{osc4py3} \PYG{k+kn}{import} \PYG{n}{oscbuildparse}
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+\PYG{k+kn}{import} \PYG{n+nn}{queue}
+\PYG{k+kn}{import} \PYG{n+nn}{pickle}
+
+\PYG{k+kn}{import} \PYG{n+nn}{time}
+
+\PYG{k}{class} \PYG{n+nc}{Processor}\PYG{p}{:}
+    \PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cerebro} \PYG{o}{=} \PYG{n}{cerebro}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain} \PYG{o}{=} \PYG{n}{classifier}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrain} \PYG{o}{=} \PYG{n}{classifier}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}smallBrain\PYGZus{}v5\PYGZus{}norm\PYGZsq{}}\PYG{p}{),} \PYG{n}{loadScaler}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client} \PYG{o}{=} \PYG{n}{client}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bandPowerQueue} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrainMonitorQueue} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrainMonitorQueue} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simPath} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{deviceList} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sim\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}OpenBCI\PYGZsq{}}\PYG{p}{]}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sendOSC} \PYG{o}{=} \PYG{k+kc}{True} \PYG{c+c1}{\PYGZsh{}send OSC messages for facial expressions}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sendMIDI} \PYG{o}{=} \PYG{k+kc}{True} \PYG{c+c1}{\PYGZsh{}send midi chords for facial expressions}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{GUIcontrol} \PYG{o}{=} \PYG{k+kc}{False} \PYG{c+c1}{\PYGZsh{}get arpeggio/scramble/duration messages from GUI}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpBool} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scrambleBool} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{durVal} \PYG{o}{=} \PYG{l+m+mf}{0.5}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepeats} \PYG{o}{=} \PYG{l+m+mi}{8}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{isSleeping} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{debounceTime} \PYG{o}{=} \PYG{l+m+mi}{3}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict} \PYG{o}{=}\PYG{n+nb}{dict}\PYG{p}{(}\PYG{n+nb}{zip}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{,} \PYG{p}{[[}\PYG{l+s+s2}{\PYGZdq{}C4\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}E4\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}G4\PYGZdq{}}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{))]))}
+
+        \PYG{c+c1}{\PYGZsh{}\PYGZsh{}these are just some average bandpower values from the neutral track}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{baseline} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{310.0973281373556}\PYG{p}{,} \PYG{l+m+mf}{99.40740830852117}\PYG{p}{,} \PYG{l+m+mf}{59.90541365434281}\PYG{p}{,} \PYG{l+m+mf}{31.977649759096565}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{baselinedB} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{log10}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{baseline}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{setDevice}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{device}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{n}{device}
+
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o+ow}{is} \PYG{k+kc}{None} \PYG{o+ow}{or} \PYG{l+s+s1}{\PYGZsq{}sim\PYGZsq{}}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{k+kc}{None}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simulation} \PYG{o}{=} \PYG{k+kc}{True}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}bigBrain\PYGZus{}v5\PYGZus{}norm\PYGZsq{}}\PYG{p}{),}
+                                    \PYG{n}{loadScaler}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+        \PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}}\PYG{p}{:}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate} \PYG{o}{=} \PYG{l+m+mi}{256}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize} \PYG{o}{=} \PYG{l+m+mi}{256}\PYG{o}{*}\PYG{l+m+mf}{1.25}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{nchannels} \PYG{o}{=} \PYG{l+m+mi}{14}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain}\PYG{o}{.}\PYG{n}{loadmodel}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{parentDir}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}data\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}savedModels\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}bigBrain\PYGZus{}v5\PYGZus{}norm\PYGZsq{}}\PYG{p}{),}
+                                    \PYG{n}{loadScaler}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simulation} \PYG{o}{=} \PYG{k+kc}{False}
+
+        \PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}openBCI\PYGZsq{}}\PYG{p}{:}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate} \PYG{o}{=} \PYG{l+m+mi}{125}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{o}{/}\PYG{l+m+mi}{2}
+            \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{nchannels} \PYG{o}{=} \PYG{l+m+mi}{16}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simulation} \PYG{o}{=} \PYG{k+kc}{False}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{setup}\PYG{p}{(}\PYG{n}{device}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{startStream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simulation}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{simulateStream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simPath}\PYG{p}{,} \PYG{n}{streamSpeed}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{setup}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{stream}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{OSCstart}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{address}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}127.0.0.1\PYGZdq{}}\PYG{p}{,} \PYG{n}{port}\PYG{o}{=}\PYG{l+m+mi}{57120}\PYG{p}{,} \PYG{n}{clientName} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}MusEEGosc\PYGZdq{}}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{clientNameOSC} \PYG{o}{=} \PYG{n}{clientName}
+        \PYG{n}{osc\PYGZus{}startup}\PYG{p}{()}
+        \PYG{n}{osc\PYGZus{}udp\PYGZus{}client}\PYG{p}{(}\PYG{n}{address}\PYG{p}{,} \PYG{n}{port}\PYG{p}{,} \PYG{n}{clientName}\PYG{p}{)}
+
+        \PYG{n}{baselinemsg} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/baseline\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{baselinedB}\PYG{p}{)}
+        \PYG{n}{osc\PYGZus{}send}\PYG{p}{(}\PYG{n}{baselinemsg}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{clientNameOSC}\PYG{p}{)}
+        \PYG{n}{osc\PYGZus{}process}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{OSCclose}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n}{osc\PYGZus{}terminate}\PYG{p}{()}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}osc port closed\PYGZsq{}}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{defineOSCMessages}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n}{smileOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/smile\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+        \PYG{n}{eyebrowsOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/eyebrows\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+        \PYG{n}{hardblinkOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/hardblink\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+        \PYG{n}{scrunchOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/scrunch\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+        \PYG{n}{lookleftOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/lookleft\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+        \PYG{n}{lookrightOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/lookright\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+        \PYG{n}{neutralOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/neutral\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}true\PYGZsq{}}\PYG{p}{])}
+
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{discreteOSCdict} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}smile\PYGZsq{}}\PYG{p}{:} \PYG{n}{smileOSC}\PYG{p}{,}
+                           \PYG{l+s+s1}{\PYGZsq{}eyebrows\PYGZsq{}}\PYG{p}{:} \PYG{n}{eyebrowsOSC}\PYG{p}{,}
+                           \PYG{l+s+s1}{\PYGZsq{}hardblink\PYGZsq{}}\PYG{p}{:} \PYG{n}{hardblinkOSC}\PYG{p}{,}
+                           \PYG{l+s+s1}{\PYGZsq{}scrunch\PYGZsq{}}\PYG{p}{:} \PYG{n}{scrunchOSC}\PYG{p}{,}
+                           \PYG{l+s+s1}{\PYGZsq{}lookleft\PYGZsq{}}\PYG{p}{:} \PYG{n}{lookleftOSC}\PYG{p}{,}
+                           \PYG{l+s+s1}{\PYGZsq{}lookright\PYGZsq{}}\PYG{p}{:} \PYG{n}{lookrightOSC}\PYG{p}{,}
+                           \PYG{l+s+s1}{\PYGZsq{}neutral\PYGZsq{}}\PYG{p}{:} \PYG{n}{neutralOSC}\PYG{p}{\PYGZcb{}}
+
+    \PYG{k}{def} \PYG{n+nf}{sendChordSC}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chord}\PYG{p}{):}
+        \PYG{n}{midiChord} \PYG{o}{=} \PYG{p}{[}\PYG{n}{str2midi}\PYG{p}{(}\PYG{n}{note}\PYG{p}{)} \PYG{k}{for} \PYG{n}{note} \PYG{o+ow}{in} \PYG{n}{chord}\PYG{p}{]}
+        \PYG{n}{chordOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/chord\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{midiChord}\PYG{p}{)}
+        \PYG{n}{arpeggiateOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/arpeggiate\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{arpBool}\PYG{p}{])}
+        \PYG{n}{durationOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/duration\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{durVal}\PYG{p}{])}
+        \PYG{n}{scrambleOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/scramble\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{scrambleBool}\PYG{p}{])}
+        \PYG{n}{numRepeatsOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/numRepeats\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{numRepeats}\PYG{p}{])}
+
+        \PYG{n}{messages} \PYG{o}{=} \PYG{p}{[}\PYG{n}{arpeggiateOSC}\PYG{p}{,} \PYG{n}{durationOSC}\PYG{p}{,} \PYG{n}{scrambleOSC}\PYG{p}{,} \PYG{n}{chordOSC}\PYG{p}{,} \PYG{n}{numRepeatsOSC}\PYG{p}{]}
+
+        \PYG{k}{for} \PYG{n}{msg} \PYG{o+ow}{in} \PYG{n}{messages}\PYG{p}{:}
+            \PYG{n}{osc\PYGZus{}send}\PYG{p}{(}\PYG{n}{msg}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{clientNameOSC}\PYG{p}{)}
+            \PYG{n}{osc\PYGZus{}process}\PYG{p}{()}
+            \PYG{c+c1}{\PYGZsh{} print(msg)}
+
+
+    \PYG{k}{def} \PYG{n+nf}{updateMIDIdict}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chordlistlist}\PYG{p}{):}
+        \PYG{k}{for} \PYG{n}{index}\PYG{p}{,} \PYG{n}{c} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n}{chordlistlist}\PYG{p}{):}
+            \PYG{n}{gestureBeingDefined} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{[}\PYG{n}{gestureBeingDefined}\PYG{p}{]} \PYG{o}{=} \PYG{n}{c}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{saveMIDIdict}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{addressPath}\PYG{p}{):}
+        \PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{n}{os}\PYG{o}{.}\PYG{n}{path}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{addressPath}\PYG{p}{),} \PYG{l+s+s1}{\PYGZsq{}wb\PYGZsq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{handle}\PYG{p}{:}
+            \PYG{n}{pickle}\PYG{o}{.}\PYG{n}{dump}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{,} \PYG{n}{handle}\PYG{p}{,} \PYG{n}{protocol}\PYG{o}{=}\PYG{n}{pickle}\PYG{o}{.}\PYG{n}{HIGHEST\PYGZus{}PROTOCOL}\PYG{p}{)}
+
+    \PYG{k}{def} \PYG{n+nf}{loadMIDIdict}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{addressPath}\PYG{p}{):}
+        \PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{n}{addressPath}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}rb\PYGZsq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{handle}\PYG{p}{:}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict} \PYG{o}{=} \PYG{n}{pickle}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{n}{handle}\PYG{p}{)}
+            \PYG{k}{return} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}
+
+    \PYG{k}{def} \PYG{n+nf}{sleep}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{secs}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{isSleeping} \PYG{o}{=} \PYG{k+kc}{True}
+        \PYG{c+c1}{\PYGZsh{} print(\PYGZsq{}sleeping: \PYGZsq{} + str(self.isSleeping))}
+        \PYG{k}{def} \PYG{n+nf}{sleepThread}\PYG{p}{():}
+            \PYG{n}{time}\PYG{o}{.}\PYG{n}{sleep}\PYG{p}{(}\PYG{n}{secs}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{isSleeping} \PYG{o}{=} \PYG{k+kc}{False}
+            \PYG{c+c1}{\PYGZsh{} print(\PYGZsq{}sleeping: \PYGZsq{} + str(self.isSleeping))}
+
+        \PYG{n}{thread} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{sleepThread}\PYG{p}{)}
+        \PYG{n}{thread}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+
+
+    \PYG{k}{def} \PYG{n+nf}{processAndPlay}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{eeg}\PYG{p}{):}
+        \PYG{n}{TIMEstart} \PYG{o}{=} \PYG{n}{time}\PYG{o}{.}\PYG{n}{clock}\PYG{p}{()}
+        \PYG{n}{brainInput} \PYG{o}{=} \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{process}\PYG{p}{()}
+        \PYG{n}{brainOutput} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrain}\PYG{o}{.}\PYG{n}{classify}\PYG{p}{(}\PYG{n}{brainInput}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{350}\PYG{p}{))}
+        \PYG{n}{gestureResult} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{cerebro}\PYG{o}{.}\PYG{n}{gestures}\PYG{p}{[}\PYG{n}{brainOutput}\PYG{p}{]}
+
+
+        \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{isSleeping}\PYG{p}{:}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}I think this is a bounce though!\PYGZsq{}}\PYG{p}{)}
+
+        \PYG{k}{if} \PYG{o+ow}{not} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{isSleeping}\PYG{p}{:}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}i found a \PYGZsq{}} \PYG{o}{+} \PYG{n}{gestureResult} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{}!\PYGZsq{}}\PYG{p}{)}
+            \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sleep}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{debounceTime}\PYG{p}{)}
+            \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sendOSC}\PYG{p}{:}
+                \PYG{n}{message} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{discreteOSCdict}\PYG{p}{[}\PYG{n}{gestureResult}\PYG{p}{]}
+                \PYG{n}{osc\PYGZus{}send}\PYG{p}{(}\PYG{n}{message}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{clientNameOSC}\PYG{p}{)}
+                \PYG{n}{osc\PYGZus{}process}\PYG{p}{()}
+
+            \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sendMIDI}\PYG{p}{:}
+                \PYG{n}{resultingChord} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{mididict}\PYG{p}{[}\PYG{n}{gestureResult}\PYG{p}{]}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{sendChordSC}\PYG{p}{(}\PYG{n}{resultingChord}\PYG{p}{)}
+                \PYG{n}{osc\PYGZus{}process}\PYG{p}{()}
+
+            \PYG{n}{TIMEend} \PYG{o}{=} \PYG{n}{time}\PYG{o}{.}\PYG{n}{clock}\PYG{p}{()}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}classification took \PYGZsq{}} \PYG{o}{+} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n+nb}{round}\PYG{p}{(}\PYG{n}{TIMEend} \PYG{o}{\PYGZhy{}} \PYG{n}{TIMEstart}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{))} \PYG{o}{+} \PYG{l+s+s1}{\PYGZsq{} s\PYGZsq{}}\PYG{p}{)}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}...\PYGZsq{}}\PYG{p}{)}
+
+
+
+    \PYG{k}{def} \PYG{n+nf}{getMoreChunks}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chunk}\PYG{p}{):}
+        \PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{:}
+            \PYG{n}{chunk}\PYG{o}{.}\PYG{n}{extend}\PYG{p}{(}\PYG{n+nb}{list}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{getChunk}\PYG{p}{(}\PYG{n}{chunkSize}\PYG{o}{=}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{smallchunkSize}\PYG{p}{)))}
+            \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{stopChunkGetter}\PYG{p}{:}
+                \PYG{k}{break}
+
+    \PYG{k}{def} \PYG{n+nf}{bandPowerProcessor}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n}{buffer} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{getBuffer}\PYG{p}{(}\PYG{n}{bufferSize}\PYG{o}{=}\PYG{l+m+mi}{128}\PYG{p}{)}
+        \PYG{n}{freqBins} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+m+mi}{8}\PYG{p}{,} \PYG{l+m+mi}{12}\PYG{p}{,} \PYG{l+m+mi}{30}\PYG{p}{,} \PYG{l+m+mi}{60}\PYG{p}{]}
+
+        \PYG{c+c1}{\PYGZsh{} compute delta, theta, alpha, beta, bands}
+        \PYG{c+c1}{\PYGZsh{} delta = eegData.dbBandPower(buffer=buffer, band=freqBins[0:2])}
+        \PYG{n}{theta} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{dbBandPower}\PYG{p}{(}\PYG{n}{buffer}\PYG{o}{=}\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{o}{=}\PYG{n}{freqBins}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{3}\PYG{p}{])}
+        \PYG{n}{alpha} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{dbBandPower}\PYG{p}{(}\PYG{n}{buffer}\PYG{o}{=}\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{o}{=}\PYG{n}{freqBins}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{l+m+mi}{4}\PYG{p}{])}
+        \PYG{n}{beta} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{dbBandPower}\PYG{p}{(}\PYG{n}{buffer}\PYG{o}{=}\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{o}{=}\PYG{n}{freqBins}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{:}\PYG{l+m+mi}{5}\PYG{p}{])}
+        \PYG{n}{gamma} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{dbBandPower}\PYG{p}{(}\PYG{n}{buffer}\PYG{o}{=}\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{band}\PYG{o}{=}\PYG{n}{freqBins}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{:}\PYG{l+m+mi}{6}\PYG{p}{])}
+
+        \PYG{c+c1}{\PYGZsh{} deltaAvg = float(np.mean(delta))}
+        \PYG{n}{thetaAvg} \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{theta}\PYG{p}{))}
+        \PYG{n}{alphaAvg} \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{alpha}\PYG{p}{))}
+        \PYG{n}{betaAvg}  \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{beta}\PYG{p}{))}
+        \PYG{n}{gammaAvg} \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{gamma}\PYG{p}{))}
+
+        \PYG{n}{bandPowerArray} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([} \PYG{n}{theta}\PYG{p}{,} \PYG{n}{alpha}\PYG{p}{,} \PYG{n}{beta}\PYG{p}{,} \PYG{n}{gamma}\PYG{p}{])}
+
+        \PYG{n}{bandPowerStr} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}theta\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}alpha\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}beta\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}gamma\PYGZsq{}}\PYG{p}{]}
+        \PYG{c+c1}{\PYGZsh{} put these in a dataframe}
+        \PYG{n}{bandPowers} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{bandPowerArray}\PYG{p}{,} \PYG{n}{index}\PYG{o}{=}\PYG{n}{bandPowerStr}\PYG{p}{)}
+        \PYG{n}{bandPowers}\PYG{o}{.}\PYG{n}{columns} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{eegChannels}
+        \PYG{c+c1}{\PYGZsh{}send OSC messages}
+        \PYG{c+c1}{\PYGZsh{} deltaOSC = oscbuildparse.OSCMessage(\PYGZsq{}/delta\PYGZsq{}, None, [deltaAvg])}
+        \PYG{n}{thetaOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/theta\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n}{thetaAvg}\PYG{p}{])}
+        \PYG{n}{alphaOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/alpha\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n}{alphaAvg}\PYG{p}{])}
+        \PYG{n}{betaOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/beta\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n}{betaAvg}\PYG{p}{])}
+        \PYG{n}{gammaOSC} \PYG{o}{=} \PYG{n}{oscbuildparse}\PYG{o}{.}\PYG{n}{OSCMessage}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}/gamma\PYGZsq{}}\PYG{p}{,} \PYG{k+kc}{None}\PYG{p}{,} \PYG{p}{[}\PYG{n}{gammaAvg}\PYG{p}{])}
+
+        \PYG{n}{OSCmsglist} \PYG{o}{=} \PYG{p}{[}\PYG{n}{thetaOSC}\PYG{p}{,} \PYG{n}{alphaOSC}\PYG{p}{,} \PYG{n}{betaOSC}\PYG{p}{,} \PYG{n}{gammaOSC}\PYG{p}{]}
+
+        \PYG{n}{queueX} \PYG{o}{=} \PYG{n}{bandPowerStr}
+        \PYG{n}{queueY} \PYG{o}{=} \PYG{p}{[}\PYG{n}{thetaAvg}\PYG{p}{,} \PYG{n}{alphaAvg}\PYG{p}{,} \PYG{n}{betaAvg}\PYG{p}{,} \PYG{n}{gammaAvg}\PYG{p}{]}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bandPowerQueue}\PYG{o}{.}\PYG{n}{put}\PYG{p}{([}\PYG{n}{queueX}\PYG{p}{,} \PYG{n}{queueY}\PYG{p}{])}
+
+        \PYG{k}{for} \PYG{n}{message} \PYG{o+ow}{in} \PYG{n}{OSCmsglist}\PYG{p}{:}
+            \PYG{n}{osc\PYGZus{}send}\PYG{p}{(}\PYG{n}{message}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{clientNameOSC}\PYG{p}{)}
+            \PYG{n}{osc\PYGZus{}process}\PYG{p}{()}
+
+        \PYG{c+c1}{\PYGZsh{} self.bandPowerFigure = Figure()}
+        \PYG{c+c1}{\PYGZsh{} eegData.bandPowerHistogram(bandPowers, figure=self.bandPowerFigure)}
+
+    \PYG{k}{def} \PYG{n+nf}{bandPowerThread}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{asThread}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{):}
+        \PYG{k}{def} \PYG{n+nf}{bandPowerLoop}\PYG{p}{():}
+            \PYG{k}{while} \PYG{k+kc}{True}\PYG{p}{:}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bandPowerProcessor}\PYG{p}{()}
+
+        \PYG{k}{if} \PYG{n}{asThread}\PYG{p}{:}
+            \PYG{n}{thread} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{bandPowerLoop}\PYG{p}{)}
+            \PYG{n}{thread}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n}{bandPowerLoop}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{mainProcessorWithSmallBrain}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{stopChunkGetter} \PYG{o}{=} \PYG{k+kc}{False}
+        \PYG{k}{while} \PYG{o+ow}{not} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{done}\PYG{p}{:}
+            \PYG{k}{try}\PYG{p}{:}
+                \PYG{n}{activeGesture} \PYG{o}{=} \PYG{k+kc}{False}
+                \PYG{k}{while} \PYG{o+ow}{not} \PYG{n}{activeGesture}\PYG{p}{:}
+                    \PYG{n}{eeg} \PYG{o}{=} \PYG{n}{eegData}\PYG{p}{()}
+                    \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{getChunk}\PYG{p}{(}\PYG{n}{chunkSize}\PYG{o}{=}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{smallchunkSize}\PYG{p}{)}
+
+                    \PYG{n}{fullchunk} \PYG{o}{=} \PYG{n+nb}{list}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+                    \PYG{n}{chunkGetter} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{getMoreChunks}\PYG{p}{,} \PYG{n}{args}\PYG{o}{=}\PYG{p}{(}\PYG{n}{fullchunk}\PYG{p}{,))}
+                    \PYG{n}{chunkGetter}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+                    \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+                    \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrainMonitorQueue}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+                    \PYG{n}{brainInput} \PYG{o}{=} \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{process}\PYG{p}{()}
+                    \PYG{n}{brainOutput} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{smallBrain}\PYG{o}{.}\PYG{n}{classify}\PYG{p}{(}\PYG{n}{brainInput}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{350}\PYG{p}{))}
+
+                    \PYG{k}{if} \PYG{n}{brainOutput} \PYG{o}{==} \PYG{l+m+mi}{0}\PYG{p}{:}
+                        \PYG{n}{activeGesture} \PYG{o}{=} \PYG{k+kc}{True}
+                        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{stopChunkGetter} \PYG{o}{=} \PYG{k+kc}{False}
+                        \PYG{n}{chunkGetter}\PYG{o}{.}\PYG{n}{join}\PYG{p}{()}
+                    \PYG{k}{else}\PYG{p}{:}
+                        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}...\PYGZsq{}}\PYG{p}{)}
+                        \PYG{n}{activeGesture} \PYG{o}{=} \PYG{k+kc}{False}
+                        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{stopChunkGetter} \PYG{o}{=} \PYG{k+kc}{True}
+                        \PYG{n}{chunkGetter}\PYG{o}{.}\PYG{n}{join}\PYG{p}{()}
+
+                \PYG{n}{eeg} \PYG{o}{=} \PYG{n}{eegData}\PYG{p}{()}
+
+                \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{fullchunk}\PYG{p}{)}
+                \PYG{c+c1}{\PYGZsh{} eeg.plotRawEEG(figure=self.streamPlotFigure)}
+                \PYG{k}{if} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)} \PYG{o}{!=} \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{:}
+                    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}chunk size error\PYGZsq{}}\PYG{p}{)}
+
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrainMonitorQueue}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+                \PYG{n}{processor} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{processAndPlay}\PYG{p}{,} \PYG{n}{args}\PYG{o}{=}\PYG{p}{(}\PYG{n}{eeg}\PYG{p}{,))}
+                \PYG{n}{processor}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+            \PYG{k}{except} \PYG{n+ne}{KeyboardInterrupt}\PYG{p}{:}
+                \PYG{k}{break}
+
+    \PYG{k}{def} \PYG{n+nf}{mainProcessorWithBackTrack}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{k}{while} \PYG{p}{(}\PYG{k+kc}{True}\PYG{p}{):}
+            \PYG{k}{try}\PYG{p}{:}
+                \PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{done}\PYG{p}{:}
+                    \PYG{k}{break}
+                \PYG{n}{eeg} \PYG{o}{=} \PYG{n}{eegData}\PYG{p}{()}
+                \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{getChunkWithBackTrack}\PYG{p}{())}
+
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{bigBrainMonitorQueue}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)}
+
+                \PYG{k}{if} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk}\PYG{p}{)} \PYG{o}{!=} \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{:}
+                    \PYG{k}{raise} \PYG{n+ne}{RuntimeError}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}this chunk did not have the \PYGZsq{}}
+                                       \PYG{l+s+s1}{\PYGZsq{}required number of samples. something went wrong\PYGZsq{}}\PYG{p}{)}
+                \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{processAndPlay}\PYG{p}{(}\PYG{n}{eeg}\PYG{p}{)}
+                \PYG{n}{time}\PYG{o}{.}\PYG{n}{sleep}\PYG{p}{(}\PYG{l+m+mf}{20e\PYGZhy{}3}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{}try sleeping 20 ms to  debounce}
+
+            \PYG{k}{except} \PYG{n+ne}{KeyboardInterrupt}\PYG{p}{:}
+                \PYG{k}{break}
+
+    \PYG{k}{def} \PYG{n+nf}{runProcessorThread}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{target}\PYG{p}{):}
+        \PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{        run the processor in a separate thread}
+\PYG{l+s+sd}{        \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{processorThread} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{target}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{processorThread}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+
+    \PYG{k}{def} \PYG{n+nf}{processorShutDown}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}processor shutting down\PYGZsq{}}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}\PYG{o}{.}\PYG{n}{done}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{processorThread}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{l+m+mf}{3.0}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{OSCclose}\PYG{p}{()}
+        \PYG{k}{del} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{client}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}client deleted\PYGZsq{}}\PYG{p}{)}
+
+
+\PYG{k}{if} \PYG{n+nv+vm}{\PYGZus{}\PYGZus{}name\PYGZus{}\PYGZus{}} \PYG{o}{==} \PYG{l+s+s2}{\PYGZdq{}\PYGZus{}\PYGZus{}main\PYGZus{}\PYGZus{}\PYGZdq{}}\PYG{p}{:}
+    \PYG{n}{processor} \PYG{o}{=} \PYG{n}{Processor}\PYG{p}{(}\PYG{n}{device}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{)}
+    \PYG{n}{processor}\PYG{o}{.}\PYG{n}{OSCstart}\PYG{p}{()}
+    \PYG{n}{processor}\PYG{o}{.}\PYG{n}{defineOSCMessages}\PYG{p}{()}
+    \PYG{n}{processor}\PYG{o}{.}\PYG{n}{startStream}\PYG{p}{()}
+    \PYG{n}{processor}\PYG{o}{.}\PYG{n}{runProcessorThread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{processor}\PYG{o}{.}\PYG{n}{mainProcessorWithSmallBrain}\PYG{p}{)}
+    \PYG{n}{processor}\PYG{o}{.}\PYG{n}{bandPowerThread}\PYG{p}{(}\PYG{n}{asThread}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\end{Verbatim}

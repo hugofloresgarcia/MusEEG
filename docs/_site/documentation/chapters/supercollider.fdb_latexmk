@@ -1,0 +1,13 @@
+# Fdb version 3
+["pdflatex"] 1584558925 "supercollider.tex" "supercollider.pdf" "supercollider" 1584558925
+  "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "/usr/local/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm" 1136768653 1328 c834bbb027764024c09d3d2bf908b5f0 ""
+  "/usr/local/texlive/2019/texmf-dist/web2c/texmf.cnf" 1577314212 39451 6c50cbbc48279cc2d67f72e32ca48ad5 ""
+  "/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1578364353 4737568 8dc80f0a5919f1d0dcc6dab9ecf62275 ""
+  "/usr/local/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1578364418 4294506 646721ae1760f5050df8c6819cf4e8d7 ""
+  "/usr/local/texlive/2019/texmf.cnf" 1578364339 577 d150fef99ac436ad1156e86b0892f6ef ""
+  "supercollider.aux" 1583250418 8 a94a2480d3289e625eea47cd1b285758 ""
+  "supercollider.tex" 1584558925 4291 150c3b9f4bd3460322bb9e7bfdf37150 ""
+  (generated)
+  "supercollider.pdf"
+  "supercollider.log"

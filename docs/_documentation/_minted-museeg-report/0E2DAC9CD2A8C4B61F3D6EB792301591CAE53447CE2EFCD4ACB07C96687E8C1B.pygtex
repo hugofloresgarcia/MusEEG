@@ -1,0 +1,323 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{eegData}
+\PYG{k+kn}{from} \PYG{n+nn}{MusEEG} \PYG{k+kn}{import} \PYG{n}{TrainingDataMacro}
+\PYG{k+kn}{from} \PYG{n+nn}{numpy} \PYG{k+kn}{import} \PYG{n}{array}
+\PYG{k+kn}{import} \PYG{n+nn}{threading}
+\PYG{k+kn}{import} \PYG{n+nn}{time}
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+\PYG{k+kn}{from} \PYG{n+nn}{collections} \PYG{k+kn}{import} \PYG{n}{deque}
+\PYG{k+kn}{from} \PYG{n+nn}{scipy} \PYG{k+kn}{import} \PYG{n}{signal}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+
+
+\PYG{k+kn}{import} \PYG{n+nn}{socket}
+\PYG{k+kn}{import} \PYG{n+nn}{queue}
+
+\PYG{k}{class} \PYG{n+nc}{client}\PYG{p}{:}
+
+	\PYG{k}{def} \PYG{n+nf+fm}{\PYGZus{}\PYGZus{}init\PYGZus{}\PYGZus{}}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{BUFFER\PYGZus{}SIZE} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{host} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}127.0.0.1\PYGZdq{}}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{port} \PYG{o}{=} \PYG{l+m+mi}{5555}
+
+
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{windowSize} \PYG{o}{=} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize} \PYG{o}{*} \PYG{l+m+mi}{4}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{refreshScale} \PYG{o}{=} \PYG{l+m+mi}{64} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} a higher number means a smoother plot in the GUI}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line} \PYG{o}{=} \PYG{n}{deque}\PYG{p}{([[}\PYG{l+m+mi}{0} \PYG{k}{for} \PYG{n}{channels} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{nchannels}\PYG{p}{)]} \PYG{k}{for} \PYG{n}{packets} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{windowSize}\PYG{p}{)])}
+
+
+		\PYG{c+c1}{\PYGZsh{} Named fields according to Warren doc !}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{FIELDS} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}COUNTER\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}DATA\PYGZhy{}TYPE\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}AF3\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}F7\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{5}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}F3\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}FC5\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}T7\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{6}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}P7\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{7}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}O1\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{8}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}O2\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{9}\PYG{p}{,}
+				  \PYG{l+s+s2}{\PYGZdq{}P8\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}T8\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{11}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}FC6\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{14}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}F4\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{15}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}F8\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{12}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}AF4\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{13}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}DATALINE\PYGZus{}1\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{16}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}DATALINE\PYGZus{}2\PYGZdq{}}\PYG{p}{:} \PYG{l+m+mi}{17}\PYG{p}{\PYGZcb{}}
+
+	\PYG{k}{def} \PYG{n+nf}{getCounter}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{packet}\PYG{p}{):}
+		\PYG{n}{counter} \PYG{o}{=} \PYG{n}{packet}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}COUNTER\PYGZdq{}}\PYG{p}{]}
+		\PYG{k}{return} \PYG{n}{counter}
+
+	\PYG{k}{def} \PYG{n+nf}{data2dic}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{data}\PYG{p}{):}
+		\PYG{n}{field\PYGZus{}list} \PYG{o}{=} \PYG{n}{data}\PYG{o}{.}\PYG{n}{split}\PYG{p}{(}\PYG{l+s+sa}{b}\PYG{l+s+s1}{\PYGZsq{},\PYGZsq{}}\PYG{p}{)}
+
+		\PYG{k}{if} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{field\PYGZus{}list}\PYG{p}{)} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{17}\PYG{p}{:}
+			\PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{n}{field}\PYG{p}{:} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{field\PYGZus{}list}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{4100}\PYG{p}{)} \PYG{k}{for} \PYG{n}{field}\PYG{p}{,} \PYG{n}{index} \PYG{o+ow}{in} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{FIELDS}\PYG{o}{.}\PYG{n}{items}\PYG{p}{()\PYGZcb{}}
+		\PYG{k}{else}\PYG{p}{:}
+			\PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}
+
+	\PYG{k}{def} \PYG{n+nf}{dict2list}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{data}\PYG{p}{):}
+		\PYG{n+nb}{list} \PYG{o}{=} \PYG{p}{[}\PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}AF3\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}F7\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}F3\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}FC5\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}T7\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}P7\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}O1\PYGZdq{}}\PYG{p}{],}
+				\PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}O2\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}P8\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}T8\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}FC6\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}F4\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}F8\PYGZdq{}}\PYG{p}{],} \PYG{n}{data}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}AF4\PYGZdq{}}\PYG{p}{]]}
+		\PYG{k}{return} \PYG{n+nb}{list}
+
+	\PYG{k}{def} \PYG{n+nf}{setup}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{device}\PYG{p}{):}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{=} \PYG{n}{device}
+
+		\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}sim\PYGZsq{}}\PYG{p}{:}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{streamFunc} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{simulateStream}
+
+		\PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}}\PYG{p}{:}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{streamFunc} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{emotivStream}
+
+		\PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}openBCI\PYGZsq{}}\PYG{p}{:}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{streamFunc} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{openBCIStream}
+
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{done} \PYG{o}{=} \PYG{k+kc}{False}
+
+		\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}}\PYG{p}{:}
+			\PYG{k}{try}\PYG{p}{:}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{s} \PYG{o}{=} \PYG{n}{socket}\PYG{o}{.}\PYG{n}{socket}\PYG{p}{(}\PYG{n}{socket}\PYG{o}{.}\PYG{n}{AF\PYGZus{}INET}\PYG{p}{,} \PYG{n}{socket}\PYG{o}{.}\PYG{n}{SOCK\PYGZus{}STREAM}\PYG{p}{)}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{s}\PYG{o}{.}\PYG{n}{connect}\PYG{p}{((}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{host}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{port}\PYG{p}{))}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{s}\PYG{o}{.}\PYG{n}{send}\PYG{p}{(}\PYG{l+s+sa}{b}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}r\PYGZbs{}n}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+				\PYG{c+c1}{\PYGZsh{} To read the header msgs about cykit etc...}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{s}\PYG{o}{.}\PYG{n}{recv}\PYG{p}{(}\PYG{l+m+mi}{168}\PYG{p}{,} \PYG{n}{socket}\PYG{o}{.}\PYG{n}{MSG\PYGZus{}WAITALL}\PYG{p}{)}
+
+				\PYG{c+c1}{\PYGZsh{} Local buffer to store parts of the messages}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{buffer} \PYG{o}{=} \PYG{l+s+sa}{b}\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}
+
+				\PYG{c+c1}{\PYGZsh{} If when when split by \PYGZbs{}r, \PYGZbs{}r was the last character of the message, we know that we have to remove \PYGZbs{}n from}
+				\PYG{c+c1}{\PYGZsh{} the begining of the next message}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{remove\PYGZus{}newline} \PYG{o}{=} \PYG{k+kc}{False}
+			\PYG{k}{except} \PYG{n+ne}{ConnectionRefusedError}\PYG{p}{:}
+				\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}uh oh. looks like CyKIT isn}\PYG{l+s+se}{\PYGZbs{}\PYGZsq{}}\PYG{l+s+s1}{t setup right. \PYGZsq{}}
+					  \PYG{l+s+s1}{\PYGZsq{}try again by restarting MusEEG\PYGZsq{}}\PYG{p}{)}
+
+		\PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}openBCI\PYGZsq{}}\PYG{p}{:}
+			\PYG{k+kn}{from} \PYG{n+nn}{pyOpenBCI} \PYG{k+kn}{import} \PYG{n}{OpenBCICyton}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{board} \PYG{o}{=} \PYG{n}{OpenBCICyton}\PYG{p}{(}\PYG{n}{port}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}/dev/tty.usbserial\PYGZhy{}DM0258BS\PYGZsq{}}\PYG{p}{,} \PYG{n}{daisy}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+	\PYG{k}{def} \PYG{n+nf}{emotivStream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{LifoQueue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{LifoQueue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{LifoQueue}\PYG{p}{()}
+		\PYG{k}{def} \PYG{n+nf}{workerjob}\PYG{p}{():}
+			\PYG{k}{try}\PYG{p}{:}
+				\PYG{k}{while} \PYG{k+kc}{True}\PYG{p}{:}
+					\PYG{c+c1}{\PYGZsh{} \PYGZhy{}*\PYGZhy{} coding: utf8 \PYGZhy{}*\PYGZhy{}}
+					\PYG{c+c1}{\PYGZsh{}}
+					\PYG{c+c1}{\PYGZsh{} Cykit Example TCP \PYGZhy{} Client}
+					\PYG{c+c1}{\PYGZsh{} author: Icannos}
+					\PYG{c+c1}{\PYGZsh{} modified for MusEEG by: hugo flores garcia}
+
+					\PYG{n}{data} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{s}\PYG{o}{.}\PYG{n}{recv}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{BUFFER\PYGZus{}SIZE}\PYG{p}{)}
+
+					\PYG{c+c1}{\PYGZsh{} If we have to remove \PYGZbs{}n at the begining}
+					\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{remove\PYGZus{}newline}\PYG{p}{:}
+						\PYG{n}{data} \PYG{o}{=} \PYG{n}{data}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:]}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{remove\PYGZus{}newline} \PYG{o}{=} \PYG{k+kc}{False}
+
+					\PYG{c+c1}{\PYGZsh{} Splitting the chunk into the end of the previous message and the begining of the next message}
+					\PYG{n}{msg\PYGZus{}parts} \PYG{o}{=} \PYG{n}{data}\PYG{o}{.}\PYG{n}{split}\PYG{p}{(}\PYG{l+s+sa}{b}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+se}{\PYGZbs{}r}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+					\PYG{c+c1}{\PYGZsh{} If the second part ends with nothing when splitted we will have to remove \PYGZbs{}n next time}
+					\PYG{k}{if} \PYG{n}{msg\PYGZus{}parts}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{==} \PYG{l+s+sa}{b}\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{:}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{remove\PYGZus{}newline} \PYG{o}{=} \PYG{k+kc}{True}
+						\PYG{c+c1}{\PYGZsh{} Therefore the buffer for the next step is empty}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{n\PYGZus{}buffer} \PYG{o}{=} \PYG{l+s+sa}{b}\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}
+					\PYG{k}{else}\PYG{p}{:}
+						\PYG{c+c1}{\PYGZsh{} otherwise we store the begining of the next message as the next buffer}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{n\PYGZus{}buffer} \PYG{o}{=} \PYG{n}{msg\PYGZus{}parts}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{][}\PYG{l+m+mi}{1}\PYG{p}{:]}
+
+					\PYG{c+c1}{\PYGZsh{} We interprete a whole message (begining from the previous step + the end}
+					\PYG{n}{fields} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{data2dic}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{buffer} \PYG{o}{+} \PYG{n}{msg\PYGZus{}parts}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{])}
+
+					\PYG{c+c1}{\PYGZsh{} We setup the buffer for next step}
+					\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{buffer} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{n\PYGZus{}buffer}
+					\PYG{k}{if} \PYG{o+ow}{not} \PYG{n+nb}{isinstance}\PYG{p}{(}\PYG{n}{fields}\PYG{p}{,} \PYG{n+nb}{int}\PYG{p}{):}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{fields}\PYG{p}{,} \PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{fields}\PYG{p}{,}\PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+						\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{fields}\PYG{p}{,} \PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+					\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{done}\PYG{p}{:}
+						\PYG{k}{del} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq}
+						\PYG{k}{break}
+
+			\PYG{k}{except} \PYG{n+ne}{Exception}\PYG{p}{:}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{join}\PYG{p}{()}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{s}\PYG{o}{.}\PYG{n}{close}\PYG{p}{()}
+
+		\PYG{n}{worker} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{workerjob}\PYG{p}{,} \PYG{n}{args}\PYG{o}{=}\PYG{p}{())}
+		\PYG{n}{worker}\PYG{o}{.}\PYG{n}{setDaemon}\PYG{p}{(}\PYG{k+kc}{True}\PYG{p}{)}
+		\PYG{n}{worker}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+
+	\PYG{k}{def} \PYG{n+nf}{openBCIStream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{LifoQueue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{LifoQueue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{LifoQueue}\PYG{p}{()}
+
+		\PYG{k}{def} \PYG{n+nf}{callback}\PYG{p}{(}\PYG{n}{sample}\PYG{p}{):}
+			\PYG{n}{dataRAW} \PYG{o}{=} \PYG{n}{sample}\PYG{o}{.}\PYG{n}{channels\PYGZus{}data}
+			\PYG{n}{uVolts\PYGZus{}per\PYGZus{}count} \PYG{o}{=} \PYG{p}{(}\PYG{l+m+mi}{4500000}\PYG{p}{)} \PYG{o}{/} \PYG{l+m+mi}{24} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{2} \PYG{o}{**} \PYG{l+m+mi}{23} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{)}
+			\PYG{n}{formattedData} \PYG{o}{=} \PYG{n}{dataRAW} \PYG{o}{*} \PYG{n}{uVolts\PYGZus{}per\PYGZus{}count}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{formattedData}\PYG{p}{,} \PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{formattedData}\PYG{p}{,} \PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+			\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{formattedData}\PYG{p}{,} \PYG{n}{block}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}
+
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{board}\PYG{o}{.}\PYG{n}{start\PYGZus{}stream}\PYG{p}{(}\PYG{n}{callback}\PYG{p}{)}
+
+	\PYG{k}{def} \PYG{n+nf}{simulateStream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{address}\PYG{p}{,} \PYG{n}{streamSpeed}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{):}
+		\PYG{n}{eeg} \PYG{o}{=} \PYG{n}{TrainingDataMacro}\PYG{p}{()}
+		\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{importCSV}\PYG{p}{(}\PYG{n}{address}\PYG{p}{)}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{streamSpeed} \PYG{o}{=} \PYG{n}{streamSpeed}
+		\PYG{k}{def} \PYG{n+nf}{worker}\PYG{p}{():}
+			\PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{)):}
+					\PYG{n}{packet} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{eegChannels}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]:} \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{matrix}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{n}{j}\PYG{p}{]} \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{emotivChannels}\PYG{p}{))\PYGZcb{}}
+					\PYG{n}{packet}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}COUNTER\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{i}
+					\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{item}\PYG{o}{=}\PYG{n}{packet}\PYG{p}{)}
+					\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{item}\PYG{o}{=}\PYG{n}{packet}\PYG{p}{)}
+					\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{item}\PYG{o}{=}\PYG{n}{packet}\PYG{p}{)}
+					\PYG{n}{time}\PYG{o}{.}\PYG{n}{sleep}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{o}{/}\PYG{n}{streamSpeed}\PYG{p}{)}
+					\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{done}\PYG{p}{:}
+						\PYG{k}{del} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq}
+						\PYG{k}{break}
+
+		\PYG{n}{simulationWorker} \PYG{o}{=} \PYG{n}{threading}\PYG{o}{.}\PYG{n}{Thread}\PYG{p}{(}\PYG{n}{target}\PYG{o}{=}\PYG{n}{worker}\PYG{p}{)}
+		\PYG{n}{simulationWorker}\PYG{o}{.}\PYG{n}{setDaemon}\PYG{p}{(}\PYG{k+kc}{True}\PYG{p}{)}
+		\PYG{n}{simulationWorker}\PYG{o}{.}\PYG{n}{start}\PYG{p}{()}
+
+	\PYG{k}{def} \PYG{n+nf}{stream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{):}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{streamFunc}\PYG{p}{()}
+
+	\PYG{k}{def} \PYG{n+nf}{getBuffer}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{bufferSize}\PYG{o}{=}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{o}{/}\PYG{l+m+mf}{1.25}\PYG{o}{*}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n}{highpass}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{):}
+		\PYG{n}{buffer} \PYG{o}{=} \PYG{p}{[]}
+		\PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{buffer}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{bufferSize}\PYG{p}{:}
+			\PYG{k}{try}\PYG{p}{:}
+				\PYG{n}{packet} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{psdq}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+				\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}} \PYG{o+ow}{or} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}sim\PYGZsq{}}\PYG{p}{:}
+					\PYG{n}{buffer}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{array}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{dict2list}\PYG{p}{(}\PYG{n}{packet}\PYG{p}{)))}
+				\PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}openBCI\PYGZsq{}}\PYG{p}{:}
+					\PYG{n}{buffer}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{packet}\PYG{p}{)}
+
+			\PYG{k}{except} \PYG{n+ne}{TypeError}\PYG{p}{:}
+				\PYG{k}{pass}
+
+		\PYG{n}{buffer} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{buffer}\PYG{p}{)}\PYG{o}{.}\PYG{n}{transpose}\PYG{p}{()}
+		\PYG{k}{if} \PYG{n}{highpass}\PYG{p}{:}
+			\PYG{c+c1}{\PYGZsh{} highpass at 4Hz}
+			\PYG{n+nb}{filter} \PYG{o}{=} \PYG{n}{signal}\PYG{o}{.}\PYG{n}{butter}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}hp\PYGZsq{}}\PYG{p}{,} \PYG{n}{fs}\PYG{o}{=}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}\PYG{p}{,} \PYG{n}{output}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}sos\PYGZsq{}}\PYG{p}{)}
+			\PYG{n}{buffer} \PYG{o}{=} \PYG{n}{signal}\PYG{o}{.}\PYG{n}{sosfilt}\PYG{p}{(}\PYG{n+nb}{filter}\PYG{p}{,} \PYG{n}{buffer}\PYG{p}{)}
+		\PYG{k}{return} \PYG{n}{buffer}
+
+	\PYG{k}{def} \PYG{n+nf}{getChunk}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chunkSize}\PYG{o}{=}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{):}
+		\PYG{n}{chunk} \PYG{o}{=} \PYG{p}{[]}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunkq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+		\PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{chunkSize}\PYG{p}{:}
+			\PYG{k}{try}\PYG{p}{:}
+				\PYG{n}{data} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+				\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}} \PYG{o+ow}{or} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+					\PYG{n}{formattedData} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{dict2list}\PYG{p}{(}\PYG{n}{data}\PYG{p}{)}
+				\PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}openBCI\PYGZsq{}}\PYG{p}{:}
+					\PYG{n}{formattedData} \PYG{o}{=} \PYG{n}{data}
+
+				\PYG{n}{chunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{formattedData}\PYG{p}{)}
+
+			\PYG{k}{except} \PYG{n+ne}{TypeError}\PYG{p}{:}
+				\PYG{k}{pass}
+
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunkq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{array}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{))}
+
+		\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)}
+
+		\PYG{k}{return} \PYG{n}{chunk}
+
+	\PYG{k}{def} \PYG{n+nf}{getChunkWithBackTrack}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{chunkSize}\PYG{o}{=}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{):}
+		\PYG{n}{bufferchunk} \PYG{o}{=} \PYG{p}{[]}
+		\PYG{n}{chunk} \PYG{o}{=} \PYG{p}{[]}
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunkq} \PYG{o}{=} \PYG{n}{queue}\PYG{o}{.}\PYG{n}{Queue}\PYG{p}{()}
+		\PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{chunkSize}\PYG{p}{:}
+			\PYG{k}{try}\PYG{p}{:}
+				\PYG{c+c1}{\PYGZsh{}\PYGZsh{} get packets until u find one that passes the threshold}
+				\PYG{n}{data} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+				\PYG{k}{if} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}emotiv\PYGZsq{}} \PYG{o+ow}{or} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+					\PYG{n}{formattedData} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{dict2list}\PYG{p}{(}\PYG{n}{data}\PYG{p}{)}
+				\PYG{k}{elif} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{device} \PYG{o}{==} \PYG{l+s+s1}{\PYGZsq{}openBCI\PYGZsq{}}\PYG{p}{:}
+					\PYG{n}{formattedData} \PYG{o}{=} \PYG{n}{data}
+
+				\PYG{n}{bufferchunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{formattedData}\PYG{p}{)}
+
+
+				\PYG{c+c1}{\PYGZsh{}\PYGZsh{} backtrack a couple samples to get all the transient info, then finish getting the chunk}
+				\PYG{k}{if} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{checkThreshold}\PYG{p}{(}\PYG{n}{data}\PYG{p}{):}
+					\PYG{n}{chunk}\PYG{o}{.}\PYG{n}{extend}\PYG{p}{(}\PYG{n}{bufferchunk}\PYG{p}{[(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{o}{\PYGZhy{}}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{backTrack}\PYG{p}{):}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{])}
+					\PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{chunkSize}\PYG{p}{:}
+						\PYG{n}{data} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{q}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+						\PYG{n}{formattedData} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{dict2list}\PYG{p}{(}\PYG{n}{data}\PYG{p}{)}
+						\PYG{n}{chunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{formattedData}\PYG{p}{)}
+			\PYG{k}{except} \PYG{n+ne}{TypeError}\PYG{p}{:}
+				\PYG{k}{pass}
+
+		\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunkq}\PYG{o}{.}\PYG{n}{put}\PYG{p}{(}\PYG{n}{array}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{))}
+
+		\PYG{n}{chunk} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{)}
+
+		\PYG{k}{return} \PYG{n}{chunk}
+
+	\PYG{k}{def} \PYG{n+nf}{getPlotData}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,}  \PYG{n}{offset}\PYG{o}{=}\PYG{l+m+mi}{400}\PYG{p}{):}
+		\PYG{k}{while} \PYG{o+ow}{not} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{empty}\PYG{p}{():}
+			\PYG{n}{appendedChunk} \PYG{o}{=} \PYG{p}{[]}
+			\PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{appendedChunk}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{windowSize} \PYG{o}{/} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{refreshScale}\PYG{p}{:}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line}\PYG{o}{.}\PYG{n}{popleft}\PYG{p}{()}
+				\PYG{n}{packet} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{dict2list}\PYG{p}{(}\PYG{n}{packet}\PYG{p}{))}
+				\PYG{n}{appendedChunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{packet}\PYG{p}{)}
+
+		\PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{windowSize}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} create time axis w same length as the data matrix}
+		\PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{tAxis} \PYG{o}{/} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}  \PYG{c+c1}{\PYGZsh{} adjust time axis to 256 sample rate}
+
+		\PYG{n}{plotBuffer} \PYG{o}{=} \PYG{n}{array}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line}\PYG{p}{)}
+
+		\PYG{n}{yAxis} \PYG{o}{=} \PYG{n}{plotBuffer} \PYG{o}{+} \PYG{n}{offset} \PYG{o}{*} \PYG{l+m+mi}{13}
+
+		\PYG{c+c1}{\PYGZsh{} add offset to display all channels}
+		\PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{plotBuffer}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])):}
+			\PYG{n}{yAxis}\PYG{p}{[:,} \PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZhy{}=} \PYG{n}{offset} \PYG{o}{*} \PYG{n}{i}
+
+		\PYG{k}{return} \PYG{n}{tAxis}\PYG{p}{,} \PYG{n}{yAxis}
+
+	\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{	DEPRECATED}
+\PYG{l+s+sd}{	only works with emotiv}
+\PYG{l+s+sd}{	\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+	\PYG{k}{def} \PYG{n+nf}{plotClientStream}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{streamfigure}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{plotChunks}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,}  \PYG{n}{chunkfigure}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{offset}\PYG{o}{=}\PYG{l+m+mi}{400}\PYG{p}{):}
+		\PYG{k}{if} \PYG{n}{streamfigure} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+			\PYG{n}{streamfigure} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{Figure}\PYG{p}{()}
+		\PYG{k}{while} \PYG{o+ow}{not} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{empty}\PYG{p}{():}
+			\PYG{n}{appendedChunk} \PYG{o}{=} \PYG{p}{[]}
+			\PYG{k}{while} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{appendedChunk}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{windowSize}\PYG{o}{/}\PYG{l+m+mi}{8}\PYG{p}{:}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line}\PYG{o}{.}\PYG{n}{popleft}\PYG{p}{()}
+				\PYG{n}{packet} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{plotq}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+				\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{dict2list}\PYG{p}{(}\PYG{n}{packet}\PYG{p}{))}
+				\PYG{n}{appendedChunk}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{packet}\PYG{p}{)}
+
+			\PYG{c+c1}{\PYGZsh{} define time axis}
+			\PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{windowSize}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} create time axis w same length as the data matrix}
+			\PYG{n}{tAxis} \PYG{o}{=} \PYG{n}{tAxis} \PYG{o}{/} \PYG{n}{eegData}\PYG{o}{.}\PYG{n}{sampleRate}  \PYG{c+c1}{\PYGZsh{} adjust time axis to 256 sample rate}
+
+			\PYG{n}{plotBuffer} \PYG{o}{=} \PYG{n}{array}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{line}\PYG{p}{)}
+			\PYG{n}{yAxis} \PYG{o}{=} \PYG{n}{plotBuffer} \PYG{o}{+} \PYG{n}{offset} \PYG{o}{*} \PYG{l+m+mi}{13}
+
+			\PYG{c+c1}{\PYGZsh{} add offset to display all channels}
+			\PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{plotBuffer}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:])):}
+				\PYG{n}{yAxis}\PYG{p}{[:,} \PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZhy{}=} \PYG{n}{offset} \PYG{o}{*} \PYG{n}{i}
+
+			\PYG{k}{if} \PYG{n}{plotChunks}\PYG{p}{:}
+				\PYG{k}{if} \PYG{n}{chunkfigure} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+					\PYG{n}{chunkfigure} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{Figure}\PYG{p}{()}
+				\PYG{k}{if} \PYG{o+ow}{not} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunkq}\PYG{o}{.}\PYG{n}{empty}\PYG{p}{():}
+					\PYG{n}{eeg} \PYG{o}{=} \PYG{n}{eegData}\PYG{p}{()}
+					\PYG{n}{eeg}\PYG{o}{.}\PYG{n}{chunk} \PYG{o}{=} \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{chunkq}\PYG{o}{.}\PYG{n}{get}\PYG{p}{()}
+					\PYG{n}{chunkfigure} \PYG{o}{=} \PYG{n}{eeg}\PYG{o}{.}\PYG{n}{plotRawEEG}\PYG{p}{(}\PYG{n}{chunkfigure}\PYG{p}{)}
+
+
+			\PYG{n}{streamfigure}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{flush\PYGZus{}events}\PYG{p}{()}
+			\PYG{n}{ax} \PYG{o}{=} \PYG{n}{streamfigure}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{)}
+			\PYG{n}{ax}\PYG{o}{.}\PYG{n}{clear}\PYG{p}{()}
+			\PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylim}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{300}\PYG{p}{,} \PYG{n}{offset} \PYG{o}{*} \PYG{l+m+mi}{20}\PYG{p}{)}
+			\PYG{n}{ax}\PYG{o}{.}\PYG{n}{legend}\PYG{p}{(}\PYG{n}{eegData}\PYG{o}{.}\PYG{n}{eegChannels}\PYG{p}{)}
+			\PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}time\PYGZsq{}}\PYG{p}{)}
+			\PYG{n}{ax}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{tAxis}\PYG{p}{,} \PYG{n}{yAxis}\PYG{p}{)}
+			\PYG{n}{streamfigure}\PYG{o}{.}\PYG{n}{canvas}\PYG{o}{.}\PYG{n}{draw}\PYG{p}{()}
+			\PYG{n}{plt}\PYG{o}{.}\PYG{n}{pause}\PYG{p}{(}\PYG{l+m+mf}{0.001}\PYG{p}{)}
+
+		\PYG{k}{return} \PYG{n}{streamfigure}\PYG{p}{,} \PYG{n}{chunkfigure}
+\end{Verbatim}

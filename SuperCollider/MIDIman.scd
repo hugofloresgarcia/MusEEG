@@ -3,7 +3,7 @@
 
 ~midiOut = MIDIOut.new(0);
 MIDIIn.connectAll;
-~clock = TempoClock.new(120/60);
+l = LinkClock.new(120/60);
 m = NetAddr("localhost", 57120);
 
 //default values
@@ -44,7 +44,8 @@ OSCdef.new(\chordDef, {
 OSCdef.new(\numRepeats, {
 	arg numRepeats;
 	numRepeats.removeAt(0);
-	~numRepeats = numRepeats.at(0);
+	numRepeats.postln;
+	~numRepeats = numRepeats.at(0).asInteger;
 }, '/numRepeats');
 
 ~playChord = {
@@ -55,7 +56,7 @@ OSCdef.new(\numRepeats, {
 		// play all the notes
 		if(~arpeggioBool,
 			{
-				4.do({
+				~numRepeats.do({
 					noteArray.do({
 						arg note, count;
 						~midiOut.noteOn(1, note, 69);
@@ -77,7 +78,7 @@ OSCdef.new(\numRepeats, {
 		);
 	});
 
-	~clock.play(task: ~routine, quant: 4);
+	l.play(task: ~routine, quant: 4);
 };
 );
 

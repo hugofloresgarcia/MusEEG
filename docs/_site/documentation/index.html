@@ -147,59 +147,306 @@
 
 
   <h2>
-      <li><a href="/documentation/classification">classification</a></li>
+      <li><a href="/documentation/0_data_acquisition">Data Acquisition, Preprocessing, and Training</a></li>
   </h2>
-  <!-- <p><p>A three-layer Artificial Neural Network (ANN) architecture was used for the classification of the EEG signals. Two models were created: a small model designed to analyze 64-sample chunks and determine whether the chunk contains a facial expression or not (smallBrain), and a large model designed to analyze 320-sample chunks to determine what facial expression is present in the chunk (bigBrain).</p>
+  <!-- <p><h2 id="the-emotiv-epoc">The Emotiv^®^ EPOC+</h2>
 
-<p>The smallBrain model is meant to perform a quick classification of whether a facial expression is present in a 64-sample chunk. The smallBrain model was designed with the intent of having an always-on processor for real-time implementation. By analyzing a chunk with a duration of 250ms, the smallBrain model returns a result fairly quickly, allowing for continuous real-time classification with little latency.</p>
+<p><img src="epoc.png" alt="Emotiv EPOC+ Headset" /></p>
 
-<p>The smallBrain model consists of a three-layer ANN with L1 regularization methods and a sparse categorical cross entropy loss function. During testing, the model exhibited 98.75% accuracy. Its test confusion matrix can be observed below.</p>
+<p>Although easily modifiable, the MusEEG package is designed to work with
+the Emotiv^®^ EPOC+. The EPOC+ is an affordable commercial-grade EEG
+headset that records 14 EEG channels and samples at a rate of 256Hz with
+14-bit resolution, with a least significant bit value of approximately
+0.51 $\mu$V. The EPOC+ headset proves to be an economically feasible
+alternative to a medical-grade headset as various studies confirm its
+viability for noncritical applications.</p>
 
-<p><img src="../img/smallBrainConfusion.png" alt="smallBrainConfusion" /></p>
+<h2 id="data-acquisition">Data Acquisition</h2>
 
-<p>The bigBrain model consists of a three-layer ANN with L1_L2 regularization methods and a sparse categorical cross entropy loss function.  During testing, the model exhibited 87.04% accuracy. Its test confusion matrix can be observed below.</p>
+<p>To maximize classification accuracy, the MusEEG package is designed with
+a train-it-yourself structure, meaning that the end-user will have to
+train their own ANN model to work with their preferred set of facial or
+body expressions. Because of the train-it-yourself nature of the
+package, data was recorded for a single subject only. Six facial
+expressions were recorded using the Emotiv^®^ PRO application. 80
+samples were recorded of the following facial expressions:</p>
 
-<p><img src="../img/bigBrainConfusion.png" alt="bigBrainConfusion" /></p>
+<ul>
+  <li>
+    <p>smile</p>
+  </li>
+  <li>
+    <p>raise eyebrows</p>
+  </li>
+  <li>
+    <p>look left</p>
+  </li>
+  <li>
+    <p>look right</p>
+  </li>
+  <li>
+    <p>neutral</p>
+  </li>
+  <li>
+    <p>scrunch</p>
+  </li>
+</ul>
+
+<p>To expedite recording times, the MusEEG package was designed to allow
+the user to record all samples of a single facial expression to a single
+.csv file. The MusEEG package then aids the user through curating and
+cutting the samples into individual chunks for feature extraction and
+classification.</p>
+
+<p><img src="smileBigChunk_320.png" alt="EEG plot of a smile sample
+(*bigChunk*)" /></p>
+
+<p>During the curation process, the samples were examined for any
+discontinuities in contact quality, noise, and other artifacts. Samples
+that appeared to be corrupted with electrode contact discontinuities
+were discarded, while samples that were clean were stored in the
+project’s saved chunks directory. From each sample, two different sample
+chunks were created: a <em>bigChunk</em> (1250ms, 320 samples) for facial
+expression recognition, and a <em>smallChunk</em> (250ms, 64 samples) for
+facial expression/no facial expression classification. Examples of a
+<em>bigChunk</em> and <em>smallChunk</em> can be observed in
+(Figures <a href="#fig:smileBigChunk">3.2</a> and
+<a href="#fig:smileSmallChunk">3.3</a>), respectively.</p>
+
+<p><img src="smileSmallChunk_64.png" alt="EEG plot of a smile sample
+(*smallChunk*)" /></p>
+
+<h2 id="feature-extraction">Feature Extraction</h2>
+
+<h3 id="facial-expression-feature-extraction">Facial Expression Feature Extraction</h3>
+
+<p>A feature extraction method similar to the one in [@14] was used. A
+4-level wavelet decomposition using Daubechies order-2 (db2) mother
+wavelet is performed on all 14 channels of the chunk of EEG data.</p>
+
+<p>One advantage of wavelet analysis over other time-frequency distribution
+methods (e.g. STFT) is that wavelet analysis varies the time-frequency
+aspect ratio, producing good frequency localization at low frequencies
+(long time windows) and good time localization at high frequencies
+(short time windows). This results in a segmentation of the
+time-frequency plane that will reveal transient features of the signal,
+which are typically not obvious during Fourier analysis [@14].</p>
+
+<p>Following the wavelet decomposition, the first four statistical moments
+(mean, variance, skewness, kurtosis) are calculated for each wavelet
+vector. Since four moments are calculated for each of the 5 wavelet
+decomposition vectors per EEG channel, a total of 14 x 4 x 5 (280)
+features are calculated. The data is then normalized using <em>sklearn</em>’s
+MinMaxScaler. These features are used as an input for the classification
+models.</p>
+
+<p><img src="smileWavelets.png" alt="Wavelet coefficients plot for
+smile" /></p>
+
+<h3 id="band-power-feature-extraction">Band Power Feature Extraction</h3>
+
+<p>The MusEEG system is capable of sending continuous theta (4 - 8 Hz),
+alpha (8 - 12 Hz), beta (12 - 30 Hz), and gamma (30 - 60 Hz) band power
+information at a rate of 2Hz.</p>
+
+<p><img src="bandPower.png" alt="EEG band power during neutral state" /></p>
+
+<p>Before the average band power is calculated, the power spectral density
+of all of the 14-channel data is calculated using Welch’s periodogram,
+with a window duration of 0.5s. Once the power spectral density is
+calculated, the average band power over a certain range of frequencies
+is found by integrating the power spectral density over the frequency
+ranges.</p>
+
+<h2 id="classification">Classification</h2>
+
+<p>A three-layer Artificial Neural Network (ANN) architecture was used for
+the classification of the EEG signals. Two models were created: a small
+model designed to analyze 64-sample chunks and determine whether the
+chunk contains a facial expression or not (<em>smallBrain</em>), and a large
+model designed to analyze 320-sample chunks to determine what facial
+expression is present in the chunk (<em>bigBrain</em>).</p>
+
+<p>The <em>smallBrain</em> model is meant to perform a quick classification of
+whether a facial expression is present in a 64-sample chunk. The
+<em>smallBrain</em> model was designed with the intent of having an always-on
+processor for real-time implementation. By analyzing a chunk with a
+duration of 250ms, the <em>smallBrain</em> model returns a result fairly
+quickly, allowing for continuous real-time classification with little
+latency.</p>
+
+<p><img src="smallBrain.png" alt="ANN architecture for *smallBrain*
+model." /></p>
+
+<p><img src="smallBrainConfusion.png" alt="Confusion Matrix for *smallBrain*
+model." /></p>
+
+<p>The <em>smallBrain</em> model consists of a three-layer ANN with L1
+regularization methods and a sparse categorical cross entropy loss
+function. During testing, the model exhibited 98.75% accuracy. Its test
+confusion matrix can be observed in
+(Figure <a href="#fig:smallBrainConfusion">3.7</a>) .</p>
+
+<p>The <em>bigBrain</em> model consists of a three-layer ANN with L1_L2
+regularization methods and a sparse categorical cross entropy loss
+function. During testing, the model exhibited 87.04% accuracy. Its test
+confusion matrix can be observed in
+(Figure <a href="#fig:bigBrainConfusion">3.9</a>).</p>
+
+<p><img src="bigBrain.png" alt="ANN Architecture for *bigBrain* model." /></p>
+
+<p><img src="bigBrainConfusion.png" alt="Confusion Matrix for *bigBrain*
+model." /></p>
 </p> -->
 
   <h2>
-      <li><a href="/documentation/feature-extraction">feature extraction</a></li>
+      <li><a href="/documentation/0_project_structure">Project Structure</a></li>
   </h2>
-  <!-- <p><p>A 4-level wavelet decomposition using Daubechies order-2 (db2) mother wavelet is performed on all 14 channels of the chunk of EEG data.</p>
+  <!-- <p><p>The MusEEG root directory
+(Figure <a href="#fig:projectStructure">4.1</a>) consists of a data directory, an
+example scripts directory, the MusEEG library, a README file, a library
+requirements file, a demo application, and an MIT License file.</p>
 
-<p><img src="../img/smileWavelets.png" alt="img" /></p>
+<p><img src="projectStructure.png" alt="MusEEG Project Structure" />
+The Data Directory
+——————</p>
 
-<p>One advantage of wavelet analysis over other time-frequency distribution methods (e.g. STFT) is that wavelet analysis varies the time-frequency aspect ratio, producing good frequency localization at low frequencies (long time windows), and good time localization at high frequencies (short time windows). This results in a segmentation of the time-frequency plane that will reveal transient features of the signal, which are typically not obvious during Fourier analysis.</p>
+<p>The /data directory of the MusEEG module stores EEG data in all of its
+different training stages, inputs and targets for the ANN models, as
+well as the ANN models themselves. The /data/longRawTrainingSamples
+subdirectory stores .csv files with multiple samples of a single
+gesture. During the normal workflow of the data acquisition process, the
+files from the longRawTrainingSamples subdirectory are curated and
+stored into individual chunks in the /data/savedChunks subdirectory,
+which in itself contains subdirectories for smallChunks and bigChunks.
+The /data/savedModels subdirectory saves Keras models that have been
+trained and are ready for usage, while the /data/training subdirectory
+stores preprocessed and prelabeled input and target vectors for
+designing ANN models.</p>
 
-<p>Following the wavelet decomposition, the first four statistical moments (mean, variance, skewness, kurtosis) are calculated for each wavelet vector. Since four moments are calculated for each of the 5 wavelet decomposition vector per EEG channel, a total of 14 x 4 x 5 (280) features are calculated. These features are used as an input for the classification models.</p>
+<h2 id="museeg-library">MusEEG Library</h2>
+
+<p>The MusEEG library contains all the required classes to build a
+brain-computer interface for music performance. It is organized into
+five modules:</p>
+
+<ul>
+  <li>
+    <p>eegData.py (import, process, plot, save EEG data).</p>
+  </li>
+  <li>
+    <p>music.py (MIDI objects, chords, and melodies)</p>
+  </li>
+  <li>
+    <p>classifier.py (build, train, save keras models easily)</p>
+  </li>
+  <li>
+    <p>cerebro.py (methods to use music, classifier, and eegData together)</p>
+  </li>
+  <li>
+    <p>client.py (TCP client setup to receive live raw EEG data stream from
+EPOC+ headset and stream .csv giles)</p>
+  </li>
+  <li>
+    <p>Processor.py (real-time processing and OSC communication)</p>
+  </li>
+</ul>
+
+<p><img src="eegDataClass.png" alt="Overview of eegData class methods" /></p>
+
+<p>The eegData class (Figure <a href="#fig:eegDataClass">4.2</a>) helps a user import raw EEG data from
+.csv files, curate it into processable chunks, process using wavelet
+decomposition and statistical extraction, as well as plot the 14-channel
+EEG signal or the five coefficient vectors created by the wavelet
+decomposition. It is currently designed around the EPOC+ model, but can
+be redesigned for any other EEG system, provided that the developer has
+a means of obtaining a raw EEG stream from such system. The eegData
+class builds upon the PyWavelets, matplotlib, SciPy, and Pandas Python
+libraries.</p>
+
+<p><img src="musicClass.png" alt="Overview of music class methods" /></p>
+
+<p>The music class (Figure <a href="#fig:musicClass">4.3</a>) is designed to allow the user to create,
+load, and save different MIDI events for use during performance. As of
+now, the music class allows the creation of chord and melody objects,
+though future iterations will also include the option to load
+pre-written MIDI files created using third-party MIDI sequencing
+software. The music class is built upon the Mido and Audiolazy
+libraries.</p>
+
+<p><img src="classifierClass.png" alt="Overview of classifier class
+methods" /></p>
+
+<p>The classifier class
+(Figure <a href="#fig:classifierClass">4.4</a>) builds upon the TensorFlow and Keras
+libraries to expedite the process of creating, training, loading,
+saving, and analyzing the performance of ANN models.</p>
+
+<p><img src="cerebroClass.png" alt="Overview of cerebro class methods" />
+The cerebro class serves as a high-level API for less experienced
+programmers to make use of the MusEEG package, as it contains methods
+that use the eegData, classifier, and music classes in conjunction to
+create brain-computer music interface systems. The cerebro class is
+built on top of the eegData, music, classifier, and client classes from
+the MusEEG package.</p>
+
+<p><img src="clientClass.png" alt="Overview of client class methods" /></p>
+
+<p>The client class (Figure <a href="#fig:clientClass">4.6</a>) sets up a TCP client that receives raw EEG
+data packets from an EEG stream server and packs them into chunks to
+create eegData objects. The client class is also capable of creating a
+raw EEG streaming simulation by effectively streaming a pre-recorded
+.csv EEG session into the server.</p>
+
+<p><img src="processorClass.png" alt="Overview of Processor class
+methods" /></p>
+
+<p>The processor class
+(Figure <a href="#fig:processorClass">4.7</a>) contains real-time processing methods
+that communicate with the client and eegData classes to perform
+real-time EEG classification and MIDI/OSC processing as described in
+(Figure <a href="#fig:realTimeFlowChart">5.2</a>) and
+(Figure <a href="#fig:processorwithwakeup">5.4</a>).</p>
+
+<h2 id="example-scripts">Example Scripts</h2>
+
+<p>The MusEEG/scripts directory contains a series of sample scripts that
+can be useful during the creation of a user’s training samples and ANN
+model.</p>
+
+<p>evalTrainingData.py provides an example of importing long .csv files
+that contain multiple samples of the same gesture from the
+MusEEG/data/longRawTrainingSamples directory and using the
+TrainingDataMacro class to evaluate, curate, and save individual
+training samples to the /data/savedChunks directory.</p>
+
+<p><img src="evalTrainingData.png" alt="evalTrainingData Script" /></p>
+
+<p>processTrainingData.py grabs the curated chunks from the
+/data/savedChunks directory and performs the preprocessing and feature
+extraction routine (wavelet transform and statistical extraction), as
+well as creates training inputs and targets and stores them in the
+/data/training directory.</p>
+
+<p><img src="processTrainingData.png" alt="processTrainingData
+Script" /></p>
+
+<p>Because the dataset is quite small and one-dimensional, training ANN
+models is relatively computationally inexpensive. This lets a user
+perform an exhaustive search of different ANN models with different
+activation units, hidden layer sizes, and regularization parameters
+within the span of a couple of minutes. iterateThruClassifiers.py
+iterates over every combination of different hidden layer activation
+functions, output layer activations, regularization parameters, number
+of hidden neurons, and loss functions to find the one that performs with
+the highest accuracy. The iterateThruClassifiers.py script creates a
+.csv file in the /data/ClassifierOptimizations directory which contains
+the test results for each of the combinations tried. saveModels.py
+trains and saves a Keras model in the /data/savedModels directory.</p>
 </p> -->
 
   <h2>
-      <li><a href="/documentation/previous-work">previous work</a></li>
-  </h2>
-  <!-- <p><p>MusEEG builds upon my research on the recognition of facial expressions using EEG signals. The facial expression recognition process consisted of three phases: filtering, feature extraction, and classification. For more information, take a look at the poster shown below.</p>
-
-<p><img src="../img/GURC_FloresGarcia_v2.png" alt="previous work" /></p>
-
-<p><img src="" alt="" /></p>
-</p> -->
-
-  <h2>
-      <li><a href="/documentation/real-time">real-time processing</a></li>
-  </h2>
-  <!-- <p><p>The current iteration of the real-time application consists of a multithreaded process. A flowchart describing the real-time processing work flow is described below.</p>
-
-<p><img src="../img/realTimeFlowChart.png" alt="img" /></p>
-
-<p>In the client thread, a TCP client receives single EEG data packets from a live EEG stream using the EPOC+. Each packet is placed into a python queue, waiting to be retrieved by the main processing thread when requested.</p>
-
-<p>In the main processing thread, a helper chunkGetter thread takes care of receiving EEG packets from the client thread and placing them into smallChunks and bigChunks for processing by smallBrain and bigBrain, respectively. Once the smallChunk array is full (250ms, 64 samples), the chunk is sent through preprocessing and feature extraction, and is classified into either a facial expression/no facial expression. While the smallChunk array goes through preprocessing and feature extraction, the chunkGetter thread takes care of filling up the bigChunk array, in case the smallBrain classifier indicates that a facial expression is present and a 320-sample chunk is needed for complete facial expression classification.</p>
-
-<p>If the smallChunk classification indicates that a facial expression was just performed, the main thread waits for the chunkGetter thread to finish collecting all 320 samples into a bigChunk, and sends the bigChunk to be processed and classified using bigBrain. The classification result is sent to a musician thread, which in turn performs the predefined MIDI event indicated by the facial expression-MIDI dictionary.</p>
-</p> -->
-
-  <h2>
-      <li><a href="/documentation/the-eegData-module">the eegData module</a></li>
+      <li><a href="/documentation/1_the-eegData-module">the eegData module</a></li>
   </h2>
   <!-- <p><h5 id="the-eegdata-class">The eegData Class</h5>
 
@@ -301,20 +548,418 @@ As an output, the <code class="language-plaintext highlighter-rouge">wavelet</co
 </p> -->
 
   <h2>
-      <li><a href="/documentation/the-emotiv-epoc">the emotiv EPOC+</a></li>
+      <li><a href="/documentation/2_app_development">Application Development</a></li>
   </h2>
-  <!-- <p><p>This project was made using the Emotiv EPOC+ EEG headset.</p>
+  <!-- <p><p>The MusEEG package is a Python package containing useful classes that
+aid developers in preprocessing and classifying EEG data, creating MIDI
+objects, instantiating an OSC client, and designing a Brain-Computer
+Music Interface that allows a user to trigger MIDI events and OSC
+messages from performing facial expressions. The MusEEG project is
+available as an open-source package and can be downloaded from its
+GitHub repository<sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup>.</p>
 
-<p><img src="../img/epoc.png" alt="epoc" height="183px" width="263px" /></p>
+<h2 id="regarding-open-source-privacy-concerns">Regarding Open Source Privacy Concerns</h2>
 
-<p>Some specs on it:</p>
+<p>Due to the open-source, train-it yourself nature of the MusEEG project,
+a particular subject’s EEG data is handled by only the subject himself,
+as it is advised that the neural network model is trained for a single
+individual only for higher classification accuracy. In order for a user
+to create their own personalized neural network model, the user must
+first download the MusEEG package from GitHub to their personal
+computer. The MusEEG eegData module’s training methods facilitate the
+data collection process, organizing and labeling the training data into
+processing chunks inside the MusEEG directory. The processed and labeled
+training data is then used to create and train a new neural network
+model customized to the user’s training data, which will also be stored
+inside the MusEEG directory. It should be noted that all of the EEG data
+acquired by the user is processed and saved inside the user’s local
+MusEEG directory and is never uploaded to the web. Thus, each user’s EEG
+data and trained neural network models reside inside the same user’s
+computer, and are never shared, accessed, or viewed by any other subject
+without the original user’s consent and deliberate intent.</p>
+
+<h2 id="demo-application">Demo Application</h2>
+
+<p><img src="demoApp.png" alt="Demo Application GUI" /></p>
+
+<p>The demo application was created as a static proof-of-concept that
+provides a demonstration of the basic functionality of the MusEEG
+package. In short, the MusEEG demo application lets the user perform the
+following actions:</p>
+
 <ul>
-  <li>number of channels: 14</li>
-  <li>sampling rate: 128 or 256 Hz</li>
-  <li>resolution 14 bits with 1 LSB = 0.51μV</li>
+  <li>
+    <p>Create a MIDI chord dictionary by entering note names next to the
+desired facial expression.</p>
+  </li>
+  <li>
+    <p>Load a pre-recorded facial expression sample from the dataset.</p>
+  </li>
+  <li>
+    <p>Process the pre-recorded sample using wavelet decomposition as well
+as perform the statistical moments calculation.</p>
+  </li>
+  <li>
+    <p>Classify the pre-recorded facial expression sample using the
+<em>bigBrain</em> classifier.</p>
+  </li>
+  <li>
+    <p>Refer the resulting facial expression from the classification result
+to its corresponding chord in the MIDI dictionary.</p>
+  </li>
+  <li>
+    <p>Send the MIDI event to a virtual MIDI port with a set of
+music-related control parameters (arpeggiation, tempo, sustain
+duration, arpeggio note duration).</p>
+  </li>
 </ul>
 
-<p>but you can probably learn more about it from <a href="https://www.emotiv.com/product/emotiv-epoc-14-channel-mobile-eeg/">Emotiv</a> themselves.</p>
+<h3 id="the-facial-expression-buttons-and-chord-dictionary">The Facial Expression Buttons and Chord Dictionary</h3>
+
+<p>The top left corner of the demo application allows the user to load a
+random sample from the existing facial expression dataset by pressing on
+one of the facial expression buttons. Once loaded, the 14-channel raw
+EEG signal will be plotted in the plot box. Next to each facial
+expression button is a text entry field that allows the user to define
+the set of notes that will be played when the facial expression is sent
+to the main processor. Note: whenever the user changes notes in the
+chord dictionary, the update chord dictionary button must be pressed in
+order for the changes to take effect.</p>
+
+<h3 id="process-and-send-button">Process and Send Button</h3>
+
+<p>The process and send button performs the following actions:\</p>
+<ol>
+  <li>wavelet transform of raw EEG signal\</li>
+  <li>statistical moment calculations of wavelet decomposition vectors\</li>
+  <li>creates ANN input array from extracted stat moments\</li>
+  <li>the ANN classifies the signal into either of the available facial
+expressions\</li>
+  <li>the facial expression is referred to its matching chord in the chord
+dictionary, and a chord object is created from the matching chord\</li>
+  <li>the playchord method is called on the chord object, sending a MIDI
+message according to the additional control parameters </li>
+</ol>
+
+<h3 id="additional-controls">Additional Controls</h3>
+
+<p>Additional controls are available for the demo app:\
+• arpeggiate: if the box is checked, the chord will play in an arpeggio
+as opposed to vertically.\
+• sustain duration: indicates how long (in quarter notes) the chord will
+be sustained (only applied if arpeggiate is unchecked)\
+• arpeggio note duration: indicates how long (in quarter notes) each
+note in the arpeggio will last.\</p>
+
+<h2 id="real-time-processing">Real-Time Processing</h2>
+
+<p>Two different real-time processing algorithms were designed for MusEEG.
+Though both use the same preprocessing and classification methods
+(discussed in ), their methods for segmenting the raw EEG data into
+analyzable chunks are distinct.</p>
+
+<h3 id="real-time-processing-with-smallbrain-wake-up">Real Time Processing with <em>smallBrain</em> Wake Up</h3>
+
+<p>A flowchart describing the real-time processing workflow using
+<em>smallBrain</em> wake up is described in
+(Figure <a href="#fig:realTimeFlowChart">5.2</a>).</p>
+
+<p><img src="realTimeFlowChart.png" alt="Flowchart for real-time processing with *smallBrain* wake
+up" /></p>
+
+<p><img src="clientThread.png" alt="Client Thread" /></p>
+
+<p>In the client thread, a TCP client receives single EEG data packets from
+a live EEG stream using the EPOC+. Each packet is placed into a python
+queue, waiting to be retrieved by the main processing thread when
+requested. A copy of this queue additionally stores 128 sample buffers
+to be acquired by the band power processing thread.</p>
+
+<p>In the main processing thread, a <em>chunkGetter</em> thread takes care of
+receiving EEG packets from the client thread and placing them into
+<em>smallChunk</em>s (64 samples). A "small" ANN model (<em>smallBrain</em>)
+classifies the <em>smallChunk</em> into either a facial expression/no facial
+expression result. If a facial expression is found, a wake up call is
+sent to the <em>bigBrain</em> classifier (320 samples), where facial expression
+classification takes place.</p>
+
+<p>The classification result is sent to a message thread, which in turn
+performs the predefined MIDI event indicated by the facial
+expression-MIDI dictionary, or sends the designated OSC message for each
+facial expression.</p>
+
+<p>The band power processing thread takes care of retrieving 128 sample
+(0.5s) chunks from the client and computing band power data by using the
+aforementioned feature extraction algorithm. Band power values are then
+sent as OSC messages, where they can be used as musical control
+parameters in a sound processing application such as Max/MSP or
+SuperCollider.</p>
+
+<h3 id="real-time-processing-with-rising-edge-wake-up">Real Time Processing with Rising Edge Wake Up</h3>
+
+<p>A flowchart for this real-time processing algorithm is provided in
+(Figure <a href="#fig:processorwithwakeup">5.4</a>). This is the algorithm implemented
+in the current release of the MusEEG app, as it provides a less
+error-prone approach to segmenting facial expressions into analyzable
+chunks.</p>
+
+<p>In this algorithm, the client, band power and MIDI/OSC message threads
+remain the same as the previous algorithm, while the main processsing
+thread proposes a simpler approach.</p>
+
+<p><img src="processorwithwakeup.png" alt="Flowchart for real-time processing with rising edge wake
+up" /></p>
+
+<p>In this algorithm’s main processing thread, single raw EEG samples are
+retrieved from the client’s queue and compared with a threshold voltage.
+If the magnitude of the packet’s voltage surpasses the threshold
+voltage, the <em>bigBrain</em> classifier is woken up, where it classifies the
+chunk to a facial expression.</p>
+
+<p>The classification result is sent to a message thread, which in turn
+performs the predefined MIDI event indicated by the facial
+expression-MIDI dictionary, or sends the designated OSC message for each
+facial expression.</p>
+
+<p>Because the real time processor with <em>smallBrain</em> wake up performs a
+full dedicated analysis on the transient data, it is able to detect
+facial expressions with smaller voltage magnitudes, making it a feasible
+option for classification of motor imagery commands. However, this can
+also lead to multiple false detection results that lead to a neutral
+classification result from the classifier.</p>
+
+<p>On the other hand, the real time processor with rising edge wake up is
+only able to detect facial expressions with high voltage magnitude, but
+it does so with more confidence. It was observed that the rising edge
+wake up algorithm provided more favorable results during unit testing.
+However, this algorithm might not perform well in MI classification
+systems.</p>
+
+<h2 id="graphical-user-interface">Graphical User Interface</h2>
+
+<p>The MusEEG Graphical User Interface (GUI)
+(Figure <a href="#fig:museeg-gui">5.5</a>) was designed to allow the user to perform
+the following actions:</p>
+
+<ul>
+  <li>
+    <p>select their desired EEG device (MusEEG currently supports the
+Emotiv EPOC+, and prerecorded .csv files),</p>
+  </li>
+  <li>
+    <p>open the MIDI menu, which contains a control center for modifying
+the MIDI messages assigned to facial expressions and the way the are
+performed on the system.</p>
+  </li>
+  <li>
+    <p>load a custom <em>bigBrain</em> model, and</p>
+  </li>
+  <li>
+    <p>view several monitoring windows for the raw EEG data, <em>bigBrain</em>
+data chunks, and average band power over all channels.</p>
+  </li>
+</ul>
+
+<p>In addition, a post window prints classification results and other
+useful messages from the backend.</p>
+
+<p><img src="museeg-gui-v2.png" alt="MusEEG GUI" /></p>
+
+<p>-</p>
+
+<h3 id="the-midi-menu">The MIDI Menu</h3>
+
+<p>MusEEG’s MIDI menu allows users to assign custom chords to facial
+expressions and control the way the are performed, such as:</p>
+
+<ul>
+  <li>
+    <p>save the current MIDI-facial expression dictionary</p>
+  </li>
+  <li>
+    <p>load a stored MIDI-facial expression dictionary</p>
+  </li>
+  <li>
+    <p>set sustain duration for non-arpeggiated chords</p>
+  </li>
+  <li>
+    <p>arpeggiate the chord</p>
+  </li>
+  <li>
+    <p>(if the chord is arppegiated) scramble the arpeggio note order</p>
+  </li>
+  <li>
+    <p>set the number of repeats for the arpeggio pattern.</p>
+  </li>
+</ul>
+
+<p><img src="midi-menu.png" alt="MIDI Menu" /></p>
+
+<h2 id="open-sound-control">Open Sound Control</h2>
+
+<p>MusEEG offers a simple OSC module that wraps on top of the open-source
+osc4py3 library. The module introduces availability to refer
+user-defined OSC messages and bundles to facial expressions, and builds
+a client that sends said messages over a network in the message thread.</p>
+
+<p><img src="OSCmsg.png" alt="MusEEG OSC message in SuperCollider" /></p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>To access the MusEEG GitHub repository visit:
+https://github.com/hugofloresgarcia/MusEEG <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</p> -->
+
+  <h2>
+      <li><a href="/documentation/3_supercollider">Using MusEEG and SuperCollider Together</a></li>
+  </h2>
+  <!-- <p><p>Because of the limited amount of discrete commands MusEEG is able to
+send, it may be helpful for users to control higher level musical events
+(such as chords, phrases, drum beats, or pre-recorded samples) instead
+of singular notes. The SuperCollider programming language facilitates
+the creation of such objects, and may act as a dedicated musical server
+that responds to OSC commands sent from MusEEG.</p>
+
+<h2 id="oscdefs">OSCdefs</h2>
+
+<p><img src="OSCdefs.png" alt="OSCdefs for MusEEG in SuperCollider " /></p>
+
+<p>OSCdefs are SuperCollider objects that execute a callback function when
+a specific OSC message is received. In
+(Figure <a href="#fig:oscdefs">6.1</a>), a distinct callback function is assigned to
+each facial expression and band power message, allowing for different
+facial expressions to send control commands to user-specified musical
+objects.</p>
+
+<h2 id="using-supercollider-as-a-midi-server">Using SuperCollider as a MIDI server</h2>
+
+<p>SuperCollider’s innately friendly MIDI API makes it a more favorable
+option for programming MIDI patterns than Python. Because of this,
+MusEEG’s MIDI interface
+(Figure <a href="#fig:midi-menu">5.6</a>) simply sends OSC messages containing
+information regarding the chord chosen and some additional control
+paremeters: arpeggiation, number of repeats, chord duration, and note
+scrambling. On the other hand, a SuperCollider script takes care of
+receiving the OSC messages and creating the specified MIDI messages.</p>
+
+<p>The playChord function
+(Figure <a href="#fig:playchord">6.3</a>) allows for MIDI messages to be sent in a
+quantized manner, allowing asynchronously performed facial expressions
+to have a synchronous effect on the music being performed, and thus
+rendering a more accessible work flow.</p>
+
+<p><img src="midi-oscdefs.png" alt="OSCdefs for MusEEG MIDI" /></p>
+
+<p><img src="playchord.png" alt="MIDI performance Routine" /></p>
+
+<h2 id="the-pattern-system">The Pattern System</h2>
+
+<p>SuperCollider’s pattern system provides a simple way of sequencing
+synthesizer sounds. The MusEEG package includes two examples that
+demonstrate ways SuperCollider’s pattern system may be used in
+conjunction with MusEEG to control higher level musical events.</p>
+
+<h3 id="a-simple-drum-sequencer">A Simple Drum Sequencer</h3>
+
+<p><img src="drumsequencer.png" alt="Facial Expression Controls for Drum
+Sequencer" /></p>
+
+<p>(Figure <a href="#fig:oscdefs">6.1</a>) shows the facial expression callback functions
+for a drum sequencer pattern in SuperCollider. In this example, the
+following facial expression controls are enabled:</p>
+
+<ul>
+  <li>
+    <p>A smile expression toggles a kick drum sound in a drumbeat.</p>
+  </li>
+  <li>
+    <p>A scrunch expression toggles a hi-hat drum sound in a drumbeat.</p>
+  </li>
+  <li>
+    <p>A hard blink expression toggles a snare drum sound in a drumbeat.</p>
+  </li>
+  <li>
+    <p>A look left expression decreases the beat tempo by 5 bpm.</p>
+  </li>
+  <li>
+    <p>A look right expression increases the beat tempo by 5 bpm.</p>
+  </li>
+</ul>
+
+<h3 id="a-generative-arpeggio-pattern">A Generative Arpeggio Pattern</h3>
+
+<p><img src="daisypat.png" alt="Facial Expression Controls for Arpeggio
+Pattern" /></p>
+
+<p>(Figure <a href="#fig:oscdefs">6.1</a>) shows the facial expression callback functions
+for a generative arpeggio pattern in SuperCollider. In this particular
+pattern, a note is chosen randomly from a chord array. Once a note is
+chosen, the chosen note itself (or one of its overtones) is played
+through a synthesizer of the user’s choice. This process is then
+repeated over time at a certain density.</p>
+
+<p>In this example, the following facial expression controls are enabled:</p>
+
+<ul>
+  <li>
+    <p>A smile expression randomly chooses a new chord from a pre-existing
+chord bank.</p>
+  </li>
+  <li>
+    <p>A scrunch expression increases the number of overtones to choose
+from.</p>
+  </li>
+  <li>
+    <p>A hard blink expression decreases the number of overtones to choose
+from.</p>
+  </li>
+  <li>
+    <p>A look left expression decreases note density with respect to time.</p>
+  </li>
+  <li>
+    <p>A look right expression increases note density with respect to time.</p>
+  </li>
+</ul>
+</p> -->
+
+  <h2>
+      <li><a href="/documentation/4_future_work">Future Work</a></li>
+  </h2>
+  <!-- <p><h2 id="design-of-a-robust-and-interactive-gui">Design of a robust and interactive GUI</h2>
+
+<p>The current MusEEG GUI is rather clunky and unintuitive. Redesigning the
+GUI with the goal of giving the user more interactive control over the
+MIDI patterns being played will result in more musical freedom while
+using the MusEEG.</p>
+
+<p>For example, using an 8-bar piano roll MIDI sequencer as an alternative
+to simple chord and chord arpeggios would provide the user with more
+musical options to choose from, as well as a more interactive overall
+experience.</p>
+
+<h2 id="a-supercollider-pattern-designer">A SuperCollider Pattern Designer</h2>
+
+<p>Currently, the only way to design SuperCollider patterns beyond the ones
+provided in the /SuperCollider directory is through programming them in
+the language itself. Because one of MusEEG’s goals is to provide a
+highly accessible musical interface, a more intuitive way of designing
+MusEEG-controlled SuperCollider patterns must be implemented.</p>
+
+<h2 id="a-hybrid-eeg-classification-system">A Hybrid EEG Classification System</h2>
+
+<p>Success has been found in building hybrid BCI systems that implement
+both facial expression recognition and motor imagery
+simultaneously[@gsu:facialexpression]. Since the classification methods
+used in motor imagery and facial expression recognition are similar,
+methods to implement a hybrid motor imagery-facial expression
+recognition BCMI will be added. The addition of motor imagery commands
+to the BCMI will increase the total number of available commands to the
+user, allowing for greater variety in performance without having to
+redefine the command-MIDI dictionary in the system.</p>
 </p> -->
 
 

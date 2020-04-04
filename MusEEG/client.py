@@ -178,16 +178,21 @@ class client:
 		self.streamFunc()
 
 	def getBuffer(self, bufferSize=eegData.chunkSize/1.25*4, highpass=True):
+
 		buffer = []
 		while len(buffer) < bufferSize:
 			try:
 				packet = self.psdq.get()
+				# print(self.device)
 				if self.device == 'emotiv' or self.device == 'sim':
-					buffer.append(array(self.dict2list(packet)))
+					# print('trying to append to buffer')
+					buffer.append((self.dict2list(packet)))
+					# print('successful to append to buffer')
 				elif self.device == 'openBCI':
 					buffer.append(packet)
 
 			except TypeError:
+				# print('found a type error')
 				pass
 
 		buffer = np.array(buffer).transpose()
@@ -203,7 +208,7 @@ class client:
 		while len(chunk) < chunkSize:
 			try:
 				data = self.q.get()
-				if self.device == 'emotiv' or self.device is None:
+				if self.device == 'emotiv' or self.device == 'sim':
 					formattedData = self.dict2list(data)
 				elif self.device == 'openBCI':
 					formattedData = data
@@ -227,7 +232,7 @@ class client:
 			try:
 				## get packets until u find one that passes the threshold
 				data = self.q.get()
-				if self.device == 'emotiv' or self.device is None:
+				if self.device == 'emotiv' or self.device == 'sim':
 					formattedData = self.dict2list(data)
 				elif self.device == 'openBCI':
 					formattedData = data

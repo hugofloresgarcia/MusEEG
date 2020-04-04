@@ -8,6 +8,7 @@ image:
 
 #### about museeg
 
+
 The MusEEG project is an initiative that aims to connect the human brain and music creation with as few physical barriers as possible. In short, MusEEG is a python package designed to function as a music-oriented Brain-Computer Interface.
 
 MusEEG is a python package designed to function as the software component for a music-oriented Brain-Computer Interface. The code is currently designed for the 14-Channel Emotiv EPOC+ (that's the only headset I have available at the moment), but it should be easily modifiable, provided that you have a means of obtaining a RAW EEG stream from your device.

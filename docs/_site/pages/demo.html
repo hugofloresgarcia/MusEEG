@@ -143,35 +143,7 @@
     </header>
 
     <article class="page-content">
-      <p>The MusEEG demo application provides an example of the basic functionality of the package.</p>
-
-<p><img src="/img/demoapp_v2.png" alt="demo app" /></p>
-
-<h5 id="the-facial-expression-buttons-and-chord-dictionary">the facial expression buttons and chord dictionary</h5>
-<p>The top left corner allows you to load a random sample from the existing facial expression dataset by pressing on one of the facial expression buttons. Once loaded, the 14-channel raw EEG signal will be plotted in the plot box.</p>
-
-<p>Next to each facial expression button is a text entry field that allows you to define the set of notes that will be played when the facial expression is sent to the main processor. Note: whenever the user changes notes in the chord dictionary, the <code class="language-plaintext highlighter-rouge">update chord dictionary</code> button must be pressed in order for the changes to take effect.</p>
-
-<h5 id="process-and-send-to-musician-button">process and send to musician button</h5>
-<p>The <code class="language-plaintext highlighter-rouge">process and send to musician</code> button performs the following actions:</p>
-<ol>
-  <li>wavelet transform of raw eeg signal</li>
-  <li>statistical moment calculations of wavelet decomposition signals</li>
-  <li>creates DNN input array from extracted stat moments</li>
-  <li>the DNN classifies the signal into either of the available facial expressions</li>
-  <li>the facial expression is referred to its matching chord in the chord dictionary, and a <code class="language-plaintext highlighter-rouge">chord</code> object is created from the matching chord</li>
-  <li>the <code class="language-plaintext highlighter-rouge">playchord</code> method is called on the <code class="language-plaintext highlighter-rouge">chord</code> object, sending a midi message according to the additional control parameters</li>
-</ol>
-
-<h5 id="additional-controls">additional controls</h5>
-<p>Additional controls are available for the demo app:</p>
-<ul>
-  <li>arpeggiate: if the box is checked, the chord will play in an arpeggio as opposed to vertically.</li>
-  <li>sustain duration: indicates how long (in quarter notes) the chord will be sustained (only applied if <code class="language-plaintext highlighter-rouge">arpeggiate</code> is unchecked)</li>
-  <li>arpeggio note duration: indicates how long (in quarter notes) each note in the arpeggio will last.</li>
-</ul>
-
-<p>to run the demo application, run <code class="language-plaintext highlighter-rouge">demoApp.py</code> from the <a href="https://github.com/hugofloresgarcia/MusEEG">github</a> repository.</p>
+      <p>Here are a couple of videos demonstrating the functionality of MusEEG.</p>
 
     </article>
 
