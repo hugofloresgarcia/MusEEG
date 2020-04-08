@@ -6,8 +6,12 @@ pinned: true
 image:
 ---
 
-#### about museeg
+#### About MusEEG
 
+Welcome! Enjoy this little tree synthesizer before you learn about MusEEG
+
+<iframe src="https://hugofloresgarcia.github.io/trees" width="800" height="600">
+</iframe>
 
 The MusEEG project is an initiative that aims to connect the human brain and music creation with as few physical barriers as possible. In short, MusEEG is a python package designed to function as a music-oriented Brain-Computer Interface.
 
